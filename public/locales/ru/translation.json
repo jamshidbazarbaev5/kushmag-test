@@ -1,0 +1,74 @@
+{
+  "common":{
+    "yes": "Да",
+    "no": "Нет",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "submit": "Отправить",
+    "sending": "Отправка..."
+  },
+  "navigation": {
+    "beadings": "Бидинги",
+    "colors": "Цвета",
+    "materials": "Материалы",
+    "material_types": "Типы материалов",
+    "patina_colors": "Цвета патины",
+    "create_beading": "Создать бидинг",
+    "create_color": "Создать цвет",
+    "create_material": "Создать материал",
+    "create_material_type": "Создать тип материала",
+    "create_patina_color": "Создать цвет патины",
+    "settings":"Настройки",
+    "material":"Материал",
+    "massifs":"Массивы",
+    "glass_types":"Типы стёкл",
+    "thresholds":"Пороги"
+
+
+
+
+  },
+  "forms": {
+    "beading_name": "Название бидинга",
+    "beading_type": "Тип бидинга",
+    "beading_type_main": "Основной",
+    "beading_type_additional": "Дополнительный",
+    "color_name": "Название цвета",
+    "material_name": "Название материала",
+    "material_type_name": "Название типа материала",
+    "patina_color_name": "Название цвета патины",
+    "massif_name": "Название массива",
+    "threshold_name": "Название порога",
+    "glass_type_name": "Название типа стёкла"
+
+  },
+  "messages": {
+    "success": {
+      "created": "{{item}} успешно создан",
+      "updated": "{{item}} успешно обновлен",
+      "deleted": "{{item}} успешно удален"
+    },
+    "error": {
+      "create": "Произошла ошибка при создании {{item}}",
+      "update": "Произошла ошибка при обновлении {{item}}",
+      "delete": "Произошла ошибка при удалении {{item}}"
+    },
+    "edit": "Редактировать",
+    "create": "Создать"
+  },
+  "placeholders": {
+    "enter_name": "Введите название",
+    "search_beading": "Поиск бидинга",
+    "search_color": "Поиск цвета",
+    "search_material": "Поиск материала",
+    "search_material_type": "Поиск типа материала",
+    "search_patina_color": "Поиск цвета патины",
+    "search_massif": "Поиск массива",
+    "search_glass_type": "Поиск типа стёкла",
+    "search_threshold": "Поиск порога",
+    "select":"Выберите"
+  }
+}

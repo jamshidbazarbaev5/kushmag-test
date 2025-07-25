@@ -1,0 +1,47 @@
+{
+  "navigation": {
+    "beadings": "Bidingter",
+    "colors": "Túsler",
+    "materials": "Materialdar",
+    "material_types": "Material túrleri",
+    "patina_colors": "Patina túsleri",
+    "create_beading": "Biding jasaw",
+    "create_color": "Tús jasaw",
+    "create_material": "Material jasaw",
+    "create_material_type": "Material túrin jasaw",
+    "create_patina_color": "Patina túsin jasaw",
+    "settings":"Sazlawlar"
+  },
+  "forms": {
+    "beading_name": "Biding atawı",
+    "beading_type": "Biding túri",
+    "beading_type_main": "Negizgi",
+    "beading_type_additional": "Qosımsha",
+    "color_name": "Tús atawı",
+    "material_name": "Material atawı",
+    "material_type_name": "Material túriniń atawı",
+    "patina_color_name": "Patina túsiniń atawı"
+  },
+  "messages": {
+    "success": {
+      "created": "{{item}} sátti jasaldı",
+      "updated": "{{item}} sátti jańartıldı",
+      "deleted": "{{item}} sátti joyıldı"
+    },
+    "error": {
+      "create": "{{item}} jasaw kezinde qate payda boldı",
+      "update": "{{item}} jańartw kezinde qate payda boldı",
+      "delete": "{{item}} joyw kezinde qate payda boldı"
+    },
+    "edit": "Óńdew",
+    "create": "Jasaw"
+  },
+  "placeholders": {
+    "enter_name": "Atawın engizińiz",
+    "search_beading": "Bidingti izdew",
+    "search_color": "Tústi izdew",
+    "search_material": "Materialdı izdew",
+    "search_material_type": "Material túrin izdew",
+    "search_patina_color": "Patina túsin izdew"
+  }
+}
