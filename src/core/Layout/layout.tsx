@@ -181,6 +181,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label: t("navigation.thresholds"),
             href: "/thresholds",
           },
+          {
+            icon: User,
+            label: t("navigation.users"),
+            href: "/users",
+          },
+          {
+            icon: Package,
+            label: t("navigation.measures"),
+            href: "/measures",
+          }
+
+          
         ],
       },
     ];

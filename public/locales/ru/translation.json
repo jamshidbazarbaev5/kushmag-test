@@ -1,4 +1,12 @@
 {
+  "tables": {
+    "client_name": "Имя клиента",
+    "client_phone": "Телефон клиента",
+    "address": "Адрес",
+    "status": "Статус",
+    "created_at": "Дата создания",
+    "actions": "Действия"
+  },
   "common":{
     "yes": "Да",
     "no": "Нет",
@@ -8,7 +16,20 @@
     "edit": "Редактировать",
     "create": "Создать",
     "submit": "Отправить",
-    "sending": "Отправка..."
+    "sending": "Отправка...",
+    "actions": "Действия",
+    "loading": "Загрузка...",
+    "not_found": "{{item}} не найден",
+    "width": "Ширина",
+    "height": "Высота",
+    "quantity": "Количество"
+  },
+  "roles": {
+    "admin": "Администратор",
+    "prodavec": "Продавец",
+    "zamershik": "Замерщик",
+    "operator": "Оператор",
+    "sotrudnik": "Сотрудник"
   },
   "navigation": {
     "beadings": "Бидинги",
@@ -25,11 +46,11 @@
     "material":"Материал",
     "massifs":"Массивы",
     "glass_types":"Типы стёкл",
-    "thresholds":"Пороги"
-
-
-
-
+    "thresholds":"Пороги",
+    "users": "Пользователи",
+    "create_user": "Создать пользователя",
+    "measures": "Замеры",
+    "create_measure": "Создать замер"
   },
   "forms": {
     "beading_name": "Название бидинга",
@@ -40,10 +61,65 @@
     "material_name": "Название материала",
     "material_type_name": "Название типа материала",
     "patina_color_name": "Название цвета патины",
+    "client_name": "Имя клиента",
+    "client_phone": "Телефон клиента",
+    "address": "Адрес",
+    "status": "Статус",
+    "comment": "Комментарий",
+    "room_name": "Название комнаты",
+    "glass_type": "Тип стекла",
+    "width": "Ширина",
+    "height": "Высота",
+    "quantity": "Количество",
+    "opening_side": "Сторона открытия",
+    "swing_direction": "Направление открытия",
+    "construction_side": "Сторона конструкции",
+    "promog": "Промог",
+    "threshold": "Порог",
+    "casing_zamer": "Замер короба",
+    "extensions": "Доборы",
+    "crowns": "Короны",
+    "doors": "Двери",
     "massif_name": "Название массива",
     "threshold_name": "Название порога",
-    "glass_type_name": "Название типа стёкла"
-
+    "glass_type_name": "Название типа стёкла",
+    "username": "Имя пользователя",
+    "password": "Пароль",
+    "full_name": "Полное имя",
+    "phone_number": "Номер телефона",
+    "role": "Роль",
+    
+    "api_login": "API логин",
+    "api_password": "API пароль",
+    "fixed_salary": "Фиксированная зарплата",
+    "staff_member": "Сотрудник",
+    "zamershik": "Замерщик",
+    "door": "Дверь",
+    "opening_side_onga": "Направо",
+    "opening_side_shepke": "Налево",
+    "swing_direction_sirtka": "Наружу",
+    "swing_direction_ishke": "Внутрь",
+    "construction_side_sirtka": "Наружу",
+    "construction_side_ishke": "Внутрь",
+    "promog_bar": "Есть",
+    "promog_joq": "Нет",
+    "casing_zamer_p": "П-образный",
+    "casing_zamer_g": "Г-образный"
+  },
+  "status": {
+    "new": "Новый",
+    "completed": "Завершен",
+    "cancelled": "Отменен"
+  },
+  "options": {
+    "right": "Направо",
+    "left": "Налево",
+    "outward": "Наружу",
+    "inward": "Внутрь",
+    "yes": "Есть",
+    "no": "Нет",
+    "p_shaped": "П-образный",
+    "g_shaped": "Г-образный"
   },
   "messages": {
     "success": {
@@ -69,6 +145,35 @@
     "search_massif": "Поиск массива",
     "search_glass_type": "Поиск типа стёкла",
     "search_threshold": "Поиск порога",
-    "select":"Выберите"
+    "select": "Выберите",
+    "search_user": "Поиск пользователя",
+    "enter_username": "Введите имя пользователя",
+    "enter_password": "Введите пароль",
+    "enter_full_name": "Введите полное имя",
+    "enter_phone_number": "Введите номер телефона",
+    "enter_api_login": "Введите API логин",
+    "enter_api_password": "Введите API пароль",
+    "enter_fixed_salary": "Введите фиксированную зарплату",
+    "enter_client_name": "Введите имя клиента",
+    "enter_client_phone": "Введите номер телефона клиента",
+    "enter_address": "Введите адрес",
+    "enter_room_name": "Введите название комнаты",
+    "enter_glass_type": "Введите тип стёкла",
+    "enter_width": "Введите ширину",
+    "enyer_quantity": "Введите количество",
+    "enter_height": "Введите высоту"
+  },
+  "titles": {
+    "create_measure": "Создать замер",
+    "edit_measure": "Редактировать замер",
+    "doors": "Двери",
+    "add_door": "Добавить дверь"
+  },
+  "actions": {
+    "add_door": "Добавить дверь",
+    "save_all_changes": "Сохранить все изменения",
+    "saving": "Сохранение..."
   }
+
+  
 }

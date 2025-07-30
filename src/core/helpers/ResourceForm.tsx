@@ -20,10 +20,11 @@ export interface FormField {
   label: string;
   type: 'text' | 'number' | 'textarea' | 'select' | 'searchable-select' | 'file' | 'multiple-files';
   placeholder?: string;
-  options?: { value: string | number; label: string }[];
-  required?: boolean;
+  options?: { value: string | number; label: string }[] | ((formData: any) => { value: string | number; label: string }[]);
+  required?: boolean | ((formData: any) => boolean);
   readOnly?: boolean;
   hidden?: boolean;
+  show?: (formData: any) => boolean;
   helperText?: string;
   imageUrl?: string;
   preview?: string;
@@ -34,8 +35,8 @@ export interface FormField {
   onSearch?: (value: string) => void;
   showCreateButton?: boolean;
   onCreateClick?: () => void;
-  defaultValue?: any;
-  onChange?: (value: any) => void;
+  // defaultValue?: any;
+  onChange?: (value: any, formData: any, setValue: (field: string, value: any) => void) => void;
   nestedField?: React.ReactNode;
 }
 
@@ -128,12 +129,14 @@ export function ResourceForm<T extends Record<string, any>>({
                             className={field.readOnly ? 'bg-gray-100' : ''}
                           />
                         ) : field.type === 'select' ? (
-                          <>
+                          <div>
                             <Select
                               onValueChange={(value) => {
                                 formField.onChange(value);
                                 if (field.onChange) {
-                                  field.onChange(value);
+                                  field.onChange(value, form.getValues(), (fieldName: string, value: any) => {
+                                    form.setValue(fieldName as any, value);
+                                  });
                                 }
                               }}
                               value={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
@@ -143,7 +146,10 @@ export function ResourceForm<T extends Record<string, any>>({
                                 <SelectValue placeholder={field.placeholder || t('placeholders.select')} />
                               </SelectTrigger>
                               <SelectContent>
-                                {field.options?.map((option: { value: string | number; label: string }) => (
+                                {(typeof field.options === 'function' 
+                                  ? field.options(form.getValues())
+                                  : field.options
+                                )?.map((option: { value: string | number; label: string }) => (
                                   <SelectItem key={option.value} value={option.value.toString()}>
                                     {option.label}
                                   </SelectItem>
@@ -155,7 +161,7 @@ export function ResourceForm<T extends Record<string, any>>({
                                 {field.nestedField}
                               </div>
                             )}
-                          </>
+                          </div>
                         ) : field.type === 'searchable-select' ? (
                           <Select
                             onValueChange={(value) => {

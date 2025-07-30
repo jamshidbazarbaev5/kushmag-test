@@ -1,4 +1,30 @@
 {
+  "tables": {
+    "client_name": "Klient atı",
+    "client_phone": "Klient telefoni",
+    "address": "Mánjil",
+    "status": "Status",
+    "created_at": "Dúziliw waqtı",
+    "actions": "Háreket"
+  },
+  "common": {
+    "yes": "Awa",
+    "no": "Yaq",
+    "save": "Saqlap qoyıw",
+    "cancel": "Biykar etiw",
+    "delete": "Óshiriw",
+    "edit": "Óńdew",
+    "create": "Jasaw",
+    "submit": "Jiberiw",
+    "sending": "Jiberilmekte..."
+  },
+  "roles": {
+    "admin": "Administrator",
+    "prodavec": "Satıwshı",
+    "zamershik": "Ólshewshi",
+    "operator": "Operator",
+    "sotrudnik": "Xızmetker"
+  },
   "navigation": {
     "beadings": "Bidingter",
     "colors": "Túsler",
@@ -10,7 +36,27 @@
     "create_material": "Material jasaw",
     "create_material_type": "Material túrin jasaw",
     "create_patina_color": "Patina túsin jasaw",
-    "settings":"Sazlawlar"
+    "settings": "Sazlawlar",
+    "users": "Paydalanıwshılar",
+    "create_user": "Paydalanıwshı jasaw",
+    "staff_member": "Xızmetker",
+    "measures": "Ólshemler",
+    "create_measure": "Ólshem jasaw"
+  },
+  "status": {
+    "new": "Jańa",
+    "completed": "Tamamlanǵan",
+    "cancelled": "Biykar etilgen"
+  },
+  "options": {
+    "right": "Oń",
+    "left": "Shep",
+    "outward": "Sırtqa",
+    "inward": "Ishke",
+    "yes": "Bar",
+    "no": "Joq",
+    "p_shaped": "P tárizli",
+    "g_shaped": "G tárizli"
   },
   "forms": {
     "beading_name": "Biding atawı",
@@ -20,7 +66,45 @@
     "color_name": "Tús atawı",
     "material_name": "Material atawı",
     "material_type_name": "Material túriniń atawı",
-    "patina_color_name": "Patina túsiniń atawı"
+    "patina_color_name": "Patina túsiniń atawı",
+    "username": "Paydalanıwshı atı",
+    "password": "Parol",
+    "full_name": "Tolıq atı",
+    "phone_number": "Telefon nomeri",
+    "role": "Lawazımı",
+    "api_login": "API login",
+    "client_name": "Klient atı",
+    "client_phone": "Klient telefoni",
+    "address": "Mánjil",
+    "status": "Status",
+    "comment": "Pikir",
+    "room_name": "Bólme atı",
+    "glass_type": "Áynek túri",
+    "width": "Keńligi",
+    "height": "Uzınlıǵı",
+    "quantity": "Sanı",
+    "opening_side": "Ashıw tárepi",
+    "swing_direction": "Ashıw baǵdarı",
+    "construction_side": "Konstrukciya tárepi",
+    "promog": "Promoǵ",
+    "threshold": "Bosaga",
+    "casing_zamer": "Qutı ólshemi",
+    "extensions": "Doborlar",
+    "crowns": "Koronalar",
+    "doors": "Esikler",
+    "api_password": "API parol",
+    "fixed_salary": "Belgilengen máyish",
+    "door": "Esik",
+    "opening_side_onga": "Oń tárep",
+    "opening_side_shepke": "Shep tárep",
+    "swing_direction_sirtka": "Sırtqa",
+    "swing_direction_ishke": "Ishke",
+    "construction_side_sirtka": "Sırtqa",
+    "construction_side_ishke": "Ishke",
+    "promog_bar": "Bar",
+    "promog_joq": "Joq",
+    "casing_zamer_p": "P tárizli",
+    "casing_zamer_g": "G tárizli"
   },
   "messages": {
     "success": {
@@ -36,12 +120,32 @@
     "edit": "Óńdew",
     "create": "Jasaw"
   },
+  "titles": {
+    "create_measure": "Ólshem jasaw",
+    "edit_measure": "Ólshemdi óńdew",
+    "doors": "Esikler",
+    "add_door": "Esik qosıw"
+  },
+  "actions": {
+    "add_door": "Esik qosıw",
+    "save_all_changes": "Barlıq ózgerislerdi saqlap qoyıw",
+    "saving": "Saqlanbaqta..."
+  },
+ 
   "placeholders": {
     "enter_name": "Atawın engizińiz",
     "search_beading": "Bidingti izdew",
     "search_color": "Tústi izdew",
     "search_material": "Materialdı izdew",
     "search_material_type": "Material túrin izdew",
-    "search_patina_color": "Patina túsin izdew"
+    "search_patina_color": "Patina túsin izdew",
+    "search_user": "Paydalanıwshını izdew",
+    "enter_username": "Paydalanıwshı atın kiritiń",
+    "enter_password": "Paroldi kiritiń",
+    "enter_full_name": "Tolıq atın kiritiń",
+    "enter_phone_number": "Telefon nomerin kiritiń",
+    "enter_api_login": "API logindi kiritiń",
+    "enter_api_password": "API paroldi kiritiń",
+    "enter_fixed_salary": "Belgilengen máyishti kiritiń"
   }
 }

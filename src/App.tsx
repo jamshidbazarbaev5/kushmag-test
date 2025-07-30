@@ -19,6 +19,12 @@ import GlassTypesPage from "./core/pages/glass-type";
 import CreateGlassTypePage from "./core/pages/create-glass-type";
 import ThresholdsPage from "./core/pages/threshold";
 import CreateThresholdPage from "./core/pages/create-threshold";
+// import { Users } from "lucide-react";
+import UsersPage from "./core/pages/users";
+import CreateUserPage from "./core/pages/create-user";
+import CreateMeasurePage from "./core/pages/create-measure";
+import MeasuresPage from "./core/pages/measures";
+import EditMeasurePage from "./core/pages/edit-measure";
 
 const queryClient = new QueryClient();
 function App() {
@@ -54,7 +60,16 @@ function App() {
                  
                  <Route path="/thresholds" element={<ThresholdsPage />} />
                  <Route path="/create-threshold" element={<CreateThresholdPage />} />
-             </Route>
+
+                  <Route path="/users" element={<UsersPage />} />
+                 <Route path="/create-user" element={<CreateUserPage />} />
+                  
+                  {/* Measures routes */}
+                  <Route path="/measures" element={<MeasuresPage />} />
+                  <Route path="/measures/create" element={<CreateMeasurePage />} />
+                  <Route path="/measures/:id/edit" element={<EditMeasurePage />} />
+
+               </Route>
         </Routes>
       </AuthProvider>
     </QueryClientProvider>
