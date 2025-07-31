@@ -16,6 +16,7 @@ import {
   ChevronDown,
   type LucideIcon,
 } from "lucide-react";
+import { useGetMeasures } from "../api/measure";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -46,7 +47,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [newMeasuresCount, setNewMeasuresCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: measuresData } = useGetMeasures();
+
+  useEffect(() => {
+    if (measuresData) {
+      const measures = Array.isArray(measuresData) ? measuresData : measuresData?.results || [];
+      const newCount = measures.filter(m => m.zamer_status === 'new').length;
+      setNewMeasuresCount(newCount);
+    }
+  }, [measuresData]);
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -134,9 +145,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [location.pathname]);
 
   const navItems:any = (() => {
-    // Base navigation items that all users can see
-    const baseItems: any = [
-      {
+    const role = currentUser?.role;
+    
+    // Admin has access to everything
+    if (role === "ADMIN") {
+      return [{
         icon: Package,
         label: t("navigation.settings"),
         id: "settings",
@@ -191,11 +204,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             label: t("navigation.measures"),
             href: "/measures",
           }
-
-          
         ],
-      },
-    ];
+      }];
+    }
+
+    // All other roles only see measures
+    return [{
+      icon: Package,
+      label: t("navigation.settings"),
+      id: "settings",
+      submenu: [
+        {
+          icon: Package,
+          label: t("navigation.measures"),
+          href: "/measures",
+        }
+      ],
+    }];
 
     // // Add money to budget - only for superuser
     // if (currentUser?.is_superuser) {
@@ -279,7 +304,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     //   });
     // }
 
-    return baseItems;
   })();
 
   return (
@@ -301,8 +325,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               }}
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                <User size={18} className="text-emerald-600" />
+              <div className="relative">
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <User size={18} className="text-emerald-600" />
+                </div>
+                {newMeasuresCount > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {newMeasuresCount}
+                  </div>
+                )}
               </div>
             </button>
 
@@ -327,7 +358,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           </div>
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800 text-lg">
-                              {currentUser.name}
+                              {currentUser.username}
                             </div>
                             <div className="text-sm text-gray-500">
                               {currentUser.phone_number}
@@ -337,22 +368,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             </div>
                           </div>
                         </div>
-                        {currentUser.store_read && (
-                          <div className="mt-3 p-2 bg-gray-50 rounded-lg">
-                            <div className="text-xs font-medium text-gray-600 mb-1">
-                              Store Information
-                            </div>
-                            <div className="text-sm font-medium text-gray-800">
-                              {currentUser.store_read.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {currentUser.store_read.address}
-                            </div>
-                          </div>
-                        )}
+                        
                       </div>
                       <div className="py-1">
-                        <button
+                        {/* <button
                           onMouseDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -368,7 +387,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         >
                           <User size={16} className="text-gray-500" />
                           {t("common.profile")}
-                        </button>
+                        </button> */}
                         <button
                           onMouseDown={(e) => {
                             e.preventDefault();
@@ -628,8 +647,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <User size={18} className="text-emerald-600" />
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <User size={18} className="text-emerald-600" />
+                    </div>
+                    {newMeasuresCount > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {newMeasuresCount}
+                      </div>
+                    )}
                   </div>
                   <ChevronDown
                     size={16}
@@ -653,7 +679,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             </div>
                             <div className="flex-1">
                               <div className="font-semibold text-gray-800 text-lg">
-                                {currentUser.name}
+                                {currentUser.username}
                               </div>
                               <div className="text-sm text-gray-500">
                                 {currentUser.phone_number}
@@ -665,7 +691,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           </div>
                         </div>
                         <div className="py-1">
-                          <button
+                          {/* <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setDropdownOpen(false);
@@ -677,7 +703,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             <span className="font-medium">
                               {t("common.profile")}
                             </span>
-                          </button>
+                          </button> */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

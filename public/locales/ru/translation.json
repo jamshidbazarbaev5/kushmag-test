@@ -10,6 +10,8 @@
   "common":{
     "yes": "Да",
     "no": "Нет",
+    "logout": "Выйти",
+    
     "save": "Сохранить",
     "cancel": "Отмена",
     "delete": "Удалить",
@@ -53,6 +55,8 @@
     "create_measure": "Создать замер"
   },
   "forms": {
+    "client_information": "Информация о клиенте",
+    "door_details": "Детали двери",
     "beading_name": "Название бидинга",
     "beading_type": "Тип бидинга",
     "beading_type_main": "Основной",
@@ -167,12 +171,17 @@
     "create_measure": "Создать замер",
     "edit_measure": "Редактировать замер",
     "doors": "Двери",
-    "add_door": "Добавить дверь"
+    "add_door": "Добавить дверь",
+    "measures":"Замеры"
   },
   "actions": {
     "add_door": "Добавить дверь",
     "save_all_changes": "Сохранить все изменения",
-    "saving": "Сохранение..."
+    "saving": "Сохранение...",
+    "edit":"Редактировать",
+    "create":"Создать",
+    "add_extension":"Добавить добор",
+    "add_crown":"Добавить корону"
   }
 
   

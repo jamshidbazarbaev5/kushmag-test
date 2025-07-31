@@ -3,13 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { useGetMeasures } from '../api/measure';
 import { ResourceTable } from '../helpers/ResourceTable';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 // import { format } from 'date-fns';
 
 export default function MeasuresPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: measuresData, isLoading } = useGetMeasures();
+  const [page, setPage] = useState(1);
+  const { data: measuresData, isLoading } = useGetMeasures({
+    params: {
+      page,
+      page_size: 30
+    }
+  });
   const measures = Array.isArray(measuresData) ? measuresData : measuresData?.results || [];
+  const totalCount = Array.isArray(measuresData) 
+    ? measuresData.length 
+    : (measuresData as { count: number })?.count || 0;
   const columns: any = [
     {
       header: t('tables.client_name'),
@@ -66,6 +76,10 @@ export default function MeasuresPage() {
       </div>
       <ResourceTable
         data={measures || []}
+        totalCount={totalCount}
+        pageSize={30}
+        currentPage={page}
+        onPageChange={(newPage) => setPage(newPage)}
         columns={columns}
         isLoading={isLoading}
       />
