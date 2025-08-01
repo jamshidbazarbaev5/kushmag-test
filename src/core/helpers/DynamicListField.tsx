@@ -60,21 +60,78 @@ function DynamicListItem({ field, form, subField, index }: { field: any, form: a
                     />
                   );
                 case 'select':
-                  // This now handles our price_type dropdown
-                  const options = itemData?.model?.salePrices?.map((p: any) => ({
-                    value: p.priceType.id,
-                    label: p.priceType.name
-                  })) || [];
+                  // Handle different types of select fields
+                  let options: any[] = [];
+                  let onChangeHandler = (value: string) => {
+                    subFormField.onChange(value);
+                  };
+
+                  if (subField.name === 'price_type') {
+                    // Price type dropdown
+                    options = itemData?.model?.salePrices?.map((p: any) => ({
+                      value: p.priceType.id,
+                      label: p.priceType.name
+                    })) || [];
+                    
+                    onChangeHandler = (value: string) => {
+                      subFormField.onChange(value);
+                      const selectedPrice = itemData?.model?.salePrices.find((p: any) => p.priceType.id === value);
+                      if (selectedPrice) {
+                        form.setValue(`${field.name}.${index}.price`, selectedPrice.value / 100);
+                      }
+                    };
+                  } else if (subField.name === 'casing_type') {
+                    // Casing type dropdown
+                    options = [
+                      { value: "боковой", label: t("forms.casing_type_side") || "Side" },
+                      { value: "прямой", label: t("forms.casing_type_straight") || "Straight" }
+                    ];
+                    
+                    onChangeHandler = (value: string) => {
+                      subFormField.onChange(value);
+                      // Trigger height recalculation after casing type changes
+                      setTimeout(() => {
+                        form.trigger(`${field.name}.${index}.height`);
+                      }, 0);
+                    };
+                  } else if (subField.name === 'casing_formula') {
+                    // Casing formula dropdown
+                    options = [
+                      { value: "formula1", label: t("forms.formula_1") || "Formula 1" },
+                      { value: "formula2", label: t("forms.formula_2") || "Formula 2" }
+                    ];
+                    
+                    onChangeHandler = (value: string) => {
+                      subFormField.onChange(value);
+                      // Clear casing range when formula changes
+                      if (value === "formula1") {
+                        form.setValue(`${field.name}.${index}.casing_range`, '');
+                      }
+                      // Trigger height recalculation after formula changes
+                      setTimeout(() => {
+                        form.trigger(`${field.name}.${index}.height`);
+                      }, 0);
+                    };
+                  } else if (subField.name === 'casing_range') {
+                    // Casing range dropdown - use the options from subField
+                    options = subField.options || [];
+                    console.log("Casing range options in DynamicListField:", options); // Debug log
+                    
+                    onChangeHandler = (value: string) => {
+                      subFormField.onChange(value);
+                      // Trigger height recalculation after range selection changes
+                      setTimeout(() => {
+                        form.trigger(`${field.name}.${index}.height`);
+                      }, 0);
+                    };
+                  } else {
+                    // Default: use options from subField if available
+                    options = subField.options || [];
+                  }
 
                   return (
                     <Select
-                      onValueChange={(value) => {
-                        subFormField.onChange(value); // Update price_type field
-                        const selectedPrice = itemData?.model?.salePrices.find((p: any) => p.priceType.id === value);
-                        if (selectedPrice) {
-                          form.setValue(`${field.name}.${index}.price`, selectedPrice.value / 100);
-                        }
-                      }}
+                      onValueChange={onChangeHandler}
                       value={subFormField.value}
                       required={subField.required}
                     >
@@ -94,11 +151,11 @@ function DynamicListItem({ field, form, subField, index }: { field: any, form: a
                   const isReadOnly = subField.readOnly && subField.readOnly(itemData);
                   const isDisabled = subField.disabled;
                   
-                  // For crown width fields, calculate and set the value automatically
+                  // For crown width and casing height fields, calculate and set the value automatically
                   React.useEffect(() => {
-                    if (subField.name === 'width' && subField.disabled && subField.calculateValue) {
-                      const calculatedValue = subField.calculateValue();
-                      if (calculatedValue !== subFormField.value) {
+                    if (subField.disabled && subField.calculateValue) {
+                      const calculatedValue = subField.calculateValue(itemData);
+                      if (calculatedValue !== subFormField.value && calculatedValue !== "") {
                         subFormField.onChange(calculatedValue);
                       }
                     }

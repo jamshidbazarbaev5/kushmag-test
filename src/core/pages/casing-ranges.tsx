@@ -5,7 +5,7 @@ import { ResourceTable } from '../helpers/ResourceTable';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
-import { useGetCasingRanges, useUpdateCasingRange, useDeleteCasingRange } from '../api/casingRange';
+import { useGetCasingRanges, useUpdateCasingRange, useDeleteCasingRange } from '../api/casingRange'
 import type { CasingRange } from '../api/types';
 
 const casingRangeFields = (t: any) => [

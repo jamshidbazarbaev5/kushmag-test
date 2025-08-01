@@ -22,6 +22,7 @@ import { useGetPatinaColors } from "../api/patinaColor";
 import { useGetBeadings } from "../api/beading";
 import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
+import { useGetCasingRanges } from "../api/casingRange";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
@@ -69,7 +70,16 @@ const createProductItemFields = (
   modelLabel: string,
   modelPlaceholder: string,
   withDimensions = false,
-  options: { isCrown?: boolean; getDoorWidth?: () => number; crownSize?: number; disabled?: boolean } = {}
+  options: { 
+    isCrown?: boolean; 
+    getDoorWidth?: () => number; 
+    crownSize?: number; 
+    disabled?: boolean;
+    isCasing?: boolean;
+    getDoorHeight?: () => number;
+    casingSize?: number;
+    casingRangeOptions?: any[];
+  } = {}
 ) => {
   const itemFields = [
     {
@@ -98,6 +108,46 @@ const createProductItemFields = (
     },
   ];
 
+  // Add casing type selection for casings
+  if (options.isCasing) {
+    console.log("Creating casing fields with options:", options.casingRangeOptions); // Debug log
+    itemFields.push(
+      {
+        name: "casing_type",
+        label: t("forms.casing_type"),
+        type: "select",
+        placeholder: t("placeholders.select_casing_type"),
+        required: true,
+        options: [
+          { value: "боковой", label: t("forms.casing_type_side") },
+          { value: "прямой", label: t("forms.casing_type_straight") },
+        ],
+        show: () => true,
+      } as any,
+      {
+        name: "casing_formula",
+        label: t("forms.casing_formula"),
+        type: "select",
+        placeholder: t("placeholders.select_casing_formula"),
+        required: true,
+        options: [
+          { value: "formula1", label: t("forms.formula_1") },
+          { value: "formula2", label: t("forms.formula_2") },
+        ],
+        show: () => true,
+      } as any,
+      {
+        name: "casing_range",
+        label: t("forms.casing_range"),
+        type: "select",
+        placeholder: t("placeholders.select_casing_range"),
+        required: true,
+        options: options.casingRangeOptions || [],
+        show: (itemData: any) => itemData?.casing_formula === "formula2",
+      } as any
+    );
+  }
+
   if (withDimensions) {
     itemFields.push(
       {
@@ -107,6 +157,40 @@ const createProductItemFields = (
         required: true,
         placeholder: t("placeholders.enter_height"),
         show: () => true,
+        ...(options.isCasing && {
+          disabled: true,
+          calculateValue: typeof options.getDoorHeight === "function"
+            ? (itemData: any) => {
+                const doorHeight = (options.getDoorHeight && options.getDoorHeight()) || 0;
+                const casingType = itemData?.casing_type;
+                const casingFormula = itemData?.casing_formula;
+                const casingRange = itemData?.casing_range;
+                
+                // Formula 2: Use selected casing range's casing_size
+                if (casingFormula === "formula2" && casingRange) {
+                  // Find the selected casing range object to get its casing_size
+                  const selectedRange = options.casingRangeOptions?.find(
+                    (range: any) => range.value === String(casingRange) // Convert to string for comparison
+                  );
+                  if (selectedRange && selectedRange.casing_size !== undefined) {
+                    return selectedRange.casing_size;
+                  }
+                }
+                
+                // Formula 1: Original logic
+                if (casingFormula === "formula1" || !casingFormula) {
+                  const casingSize = options.casingSize || 0;
+                  if (casingType === "боковой") {
+                    return doorHeight + casingSize;
+                  } else if (casingType === "прямой") {
+                    return doorHeight + (2 * casingSize);
+                  }
+                }
+                
+                return doorHeight;
+              }
+            : undefined,
+        }),
       },
       {
         name: "width",
@@ -165,9 +249,10 @@ const createProductItemFields = (
   return itemFields;
 };
 
-const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number) => {
+const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, casingSize?: number) => {
   const watchDoorData = form.watch(); // Watch all fields in the current door form
   const getDoorWidth = () => parseFloat(watchDoorData.width || 0);
+  const getDoorHeight = () => parseFloat(watchDoorData.height || 0);
 
   return [
     {
@@ -239,7 +324,13 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number) =>
         t,
         t("forms.casing_model"),
         t("placeholders.search_casing_model"),
-        true
+        true,
+        {
+          isCasing: true,
+          getDoorHeight,
+          casingSize,
+          casingRangeOptions: fieldOptions.casingRangeOptions,
+        }
       ),
       addButtonLabel: t("forms.add_casing"),
     },
@@ -448,6 +539,7 @@ export default function CreateOrderPage() {
   const { data: glassTypes } = useGetGlassTypes();
   const { data: products } = useGetProducts();
   const { data: thresholds } = useGetThresholds();
+  const { data: casingRanges } = useGetCasingRanges();
   const productsList = useMemo(
     () => (Array.isArray(products) ? products : products?.results || []),
     [products]
@@ -483,7 +575,16 @@ export default function CreateOrderPage() {
     ),
     glassTypeOptions: formatReferenceOptions(glassTypes),
     thresholdOptions: formatReferenceOptions(thresholds),
+    casingRangeOptions: (Array.isArray(casingRanges) ? casingRanges : casingRanges?.results || []).map(range => ({
+      value: String(range.id), // Convert to string for Select component
+      label: `$ ${range.id} (${range.min_size}-${range.max_size}, ${t("forms.casing_size")}: ${range.casing_size})`,
+      ...range,
+    })),
   };
+
+  // Debug log to check if casingRanges data is being received
+  console.log("Casing Ranges Data:", casingRanges);
+  console.log("Formatted Casing Range Options:", fieldOptions.casingRangeOptions);
 
   const orderFields = [
     {
@@ -953,6 +1054,25 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
 function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment }: any) {
   const { t } = useTranslation();
 
+  // Calculate detailed subtotals
+  const priceBreakdown = doors.reduce(
+    (acc: any, door: any) => {
+      const qty = parseInt(door.quantity || 1);
+      const doorPrice = parseFloat(door.price || 0) * qty;
+      acc.doors += doorPrice;
+
+      const sumItems = (items: any[]) =>
+        items?.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0) || 0;
+
+      acc.extensions += sumItems(door.extensions);
+      acc.casings += sumItems(door.casings);
+      acc.crowns += sumItems(door.crowns);
+      acc.accessories += sumItems(door.accessories);
+      return acc;
+    },
+    { doors: 0, extensions: 0, casings: 0, crowns: 0, accessories: 0 }
+  );
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
@@ -977,14 +1097,48 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                 <div>
                   <p className="text-sm text-gray-600">{t("forms.total_items")}</p>
                   <p className="font-semibold">
-                    {doors.reduce((total: number, door: any) => 
-                      total + 1 + 
-                      (door.extensions?.length || 0) + 
-                      (door.casings?.length || 0) + 
-                      (door.crowns?.length || 0) + 
+                    {doors.reduce((total: number, door: any) =>
+                      total + 1 +
+                      (door.extensions?.length || 0) +
+                      (door.casings?.length || 0) +
+                      (door.crowns?.length || 0) +
                       (door.accessories?.length || 0), 0
                     )}
                   </p>
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-blue-600" />
+                  {t("forms.price_breakdown")}
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>{t("forms.doors_subtotal")}</span>
+                    <span className="font-semibold">{priceBreakdown.doors.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.extensions_subtotal")}</span>
+                    <span>{priceBreakdown.extensions.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.casings_subtotal")}</span>
+                    <span>{priceBreakdown.casings.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.crowns_subtotal")}</span>
+                    <span>{priceBreakdown.crowns.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.accessories_subtotal")}</span>
+                    <span>{priceBreakdown.accessories.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2 mt-2">
+                    <span className="font-bold">{t("forms.subtotal")}</span>
+                    <span className="font-bold">{totals.totalAmount.toFixed(2)} сум</span>
+                  </div>
                 </div>
               </div>
 
@@ -1042,14 +1196,14 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
-                  {isLoading ? `${t("common.creating")}...` : t("common.create_order")}
+                  {isLoading ? `${t("common.creating")}...` : t("common.create_order")}
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={onBack}
                   className="w-full"
                 >
-                  ← {t("common.back_to_doors")}
+                   {t("common.back_to_doors")}
                 </Button>
               </div>
             </CardContent>
@@ -1205,25 +1359,42 @@ function DoorForm({
   const { t } = useTranslation();
   const form = useForm();
   const [crownSize, setCrownSize] = useState<number | null>(null);
+  const [casingSize, setCasingSize] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const fetchedCrownSize = useRef(false);
+  const fetchedAttributeSettings = useRef(false);
 
-  // Fetch crown_size from attribute settings API once
+  // Fetch crown_size and casing_size from attribute settings API once
   useEffect(() => {
-    if (fetchedCrownSize.current) return;
-    fetchedCrownSize.current = true;
+    if (fetchedAttributeSettings.current) return;
+    fetchedAttributeSettings.current = true;
     api
       .get("attribute-settings/")
       .then((res) => {
         const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
-        const found = data.find((item: any) => item.crown_size !== undefined);
-        if (found && typeof found.crown_size === "number") {
-          setCrownSize(found.crown_size);
-        } else if (found && typeof found.crown_size === "string") {
-          setCrownSize(parseFloat(found.crown_size));
+        const found = data.find((item: any) => 
+          item.crown_size !== undefined || item.casing_size !== undefined
+        );
+        
+        if (found) {
+          if (found.crown_size !== undefined) {
+            const size = typeof found.crown_size === "number" 
+              ? found.crown_size 
+              : parseFloat(found.crown_size);
+            setCrownSize(isNaN(size) ? null : size);
+          }
+          
+          if (found.casing_size !== undefined) {
+            const size = typeof found.casing_size === "number" 
+              ? found.casing_size 
+              : parseFloat(found.casing_size);
+            setCasingSize(isNaN(size) ? null : size);
+          }
         }
       })
-      .catch(() => setCrownSize(null));
+      .catch(() => {
+        setCrownSize(null);
+        setCasingSize(null);
+      });
   }, []);
 
   // Group fields by category for better organization
@@ -1236,7 +1407,10 @@ function DoorForm({
     "beading_main", "beading_additional", "glass_type", "threshold"
   ];
 
-  const fields = doorFields(t, fieldOptions, form, crownSize === null ? undefined : crownSize);
+  const fields = doorFields(t, fieldOptions, form, 
+    crownSize === null ? undefined : crownSize,
+    casingSize === null ? undefined : casingSize
+  );
   
   const basicFieldsData = fields.filter(f => basicFields.includes(f.name));
   const materialFieldsData = fields.filter(f => materialFields.includes(f.name));
@@ -1276,8 +1450,35 @@ function DoorForm({
       newData.crowns = newData.crowns.map(normalizeModelField);
     }
 
-    // Normalize all accessory arrays
-    ["extensions", "casings", "accessories"].forEach((key) => {
+    // Handle casing height calculation based on type
+    if (Array.isArray(newData.casings) && casingSize != null) {
+      const doorHeight = parseFloat(newData.height || 0);
+      newData.casings = newData.casings.map((casing: any) => {
+        const normalizedCasing = normalizeModelField(casing);
+        
+        // Calculate height based on casing type
+        if (casing.casing_type === "боковой") {
+          normalizedCasing.height = doorHeight + casingSize;
+        } else if (casing.casing_type === "прямой") {
+          normalizedCasing.height = doorHeight + (2 * casingSize);
+        } else {
+          // Default case or if type is not set, use original height
+          normalizedCasing.height = parseFloat(casing.height || 0);
+        }
+        
+        // Ensure other numeric fields are properly converted
+        normalizedCasing.price = parseFloat(casing.price || 0);
+        normalizedCasing.quantity = parseInt(casing.quantity || 1);
+        normalizedCasing.width = parseFloat(casing.width || 0);
+        
+        return normalizedCasing;
+      });
+    } else if (Array.isArray(newData.casings)) {
+      newData.casings = newData.casings.map(normalizeModelField);
+    }
+
+    // Normalize other accessory arrays
+    ["extensions", "accessories"].forEach((key) => {
       if (Array.isArray(newData[key])) {
         newData[key] = newData[key].map(normalizeModelField);
       }
@@ -1371,7 +1572,10 @@ function DoorForm({
           onClick={form.handleSubmit(handleSubmit)}
           className="flex-1 h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
           size="lg"
-          disabled={crownSize === null && fields.some(f => f.name === "crowns")}
+          disabled={
+            (crownSize === null && fields.some(f => f.name === "crowns")) ||
+            (casingSize === null && fields.some(f => f.name === "casings"))
+          }
         >
           <Plus className="h-5 w-5 mr-2" />
           {t("forms.add_door")}
@@ -1390,10 +1594,11 @@ function DoorForm({
         </Button>
       </div>
       
-      {fields.some(f => f.name === "crowns") && crownSize === null && (
+      {((fields.some(f => f.name === "crowns") && crownSize === null) ||
+        (fields.some(f => f.name === "casings") && casingSize === null)) && (
         <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-200">
           <p className="text-amber-700 font-medium">
-            {t("forms.loading_crown_size")}
+            {t("forms.loading_attribute_settings")}
           </p>
         </div>
       )}
