@@ -75,6 +75,7 @@
     "beading": "Бидинг"
   },
   "forms": {
+    "recover_draft_data": "Восстановить данные черновика",
     "currency": "Валюта",
     "price_breakdown": "Разбивка цены",
     "casings_subtotal": "Сумма наличников",
