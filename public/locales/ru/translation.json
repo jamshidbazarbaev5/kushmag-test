@@ -66,6 +66,14 @@
     "measures": "Замеры",
     "create_measure": "Создать замер"
   },
+  "accessory_types":{
+    "cube": "Куб",
+    "leg": "Нога",
+    "glass": "Стекло",
+    "lock": "Замок",
+    "topsa": "Топса",
+    "beading": "Бидинг"
+  },
   "forms": {
     "currency": "Валюта",
     "price_breakdown": "Разбивка цены",

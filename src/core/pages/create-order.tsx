@@ -355,11 +355,27 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       name: "accessories",
       label: t("forms.accessories"),
       type: "dynamic-list",
-      itemFields: createProductItemFields(
-        t,
-        t("forms.accessory_model"),
-        t("placeholders.search_accessory_model")
-      ),
+      itemFields: [
+        ...createProductItemFields(
+          t,
+          t("forms.accessory_model"),
+          t("placeholders.search_accessory_model")
+        ),
+        {
+          name: "accessory_type",
+          label: t("forms.accessory_type"),
+          type: "select",
+          options: [
+            { value: "cube", label: t("accessory_types.cube") },
+            { value: "leg", label: t("accessory_types.leg") },
+            { value: "glass", label: t("accessory_types.glass") },
+            { value: "lock", label: t("accessory_types.lock") },
+            { value: "topsa", label: t("accessory_types.topsa") },
+            { value: "beading", label: t("accessory_types.beading") },
+          ],
+          required: true,
+        },
+      ],
       addButtonLabel: t("forms.add_accessory"),
     },
     // Other Fields...
