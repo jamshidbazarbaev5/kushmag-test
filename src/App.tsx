@@ -25,6 +25,11 @@ import CreateUserPage from "./core/pages/create-user";
 import CreateMeasurePage from "./core/pages/create-measure";
 import MeasuresPage from "./core/pages/measures";
 import EditMeasurePage from "./core/pages/edit-measure";
+import AttributeSettingsPage from "./core/pages/attribute-settings";
+import CreateCasingRangePage from "./core/pages/create-casing-range";
+import CasingRangesPage from "./core/pages/casing-ranges";
+import OrdersPage from "./core/pages/orders";
+import CreateOrderPage from "./core/pages/create-order";
 
 const queryClient = new QueryClient();
 function App() {
@@ -45,6 +50,9 @@ function App() {
                  
                  <Route path="/massifs" element={<MassifsPage />} />
                  <Route path="/create-massif" element={<CreateMassifPage />} />
+                 
+                 <Route path="/orders" element={<OrdersPage />} />
+                 <Route path="/orders/create" element={<CreateOrderPage />} />
                  
                  <Route path="/colors" element={<ColorsPage />} />
                  <Route path="/create-color" element={<CreateColorPage />} />
@@ -68,6 +76,11 @@ function App() {
                   <Route path="/measures" element={<MeasuresPage />} />
                   <Route path="/measures/create" element={<CreateMeasurePage />} />
                   <Route path="/measures/:id/edit" element={<EditMeasurePage />} />
+                  
+                  <Route path="/attribute-settings" element={<AttributeSettingsPage />} />
+
+                  <Route path="/casing-ranges" element={<CasingRangesPage />} />
+                  <Route path="/create-casing-range" element={<CreateCasingRangePage />} /> 
 
                </Route>
         </Routes>

@@ -11,18 +11,22 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { PlusCircle } from 'lucide-react';
+
 import { t } from 'i18next';
+import { DynamicListField } from './DynamicListField';
+import { AsyncSearchableSelect } from './AsyncSearchableSelect';
+import { searchProducts } from '../api/api';
 
 // Update the FormField interface to be more specific about the field types
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'textarea' | 'select' | 'searchable-select' | 'file' | 'multiple-files';
+  type: 'text' | 'number' | 'textarea' | 'select' | 'searchable-select' | 'async-searchable-select' | 'accessory-select' | 'file' | 'multiple-files';
   placeholder?: string;
   options?: { value: string | number; label: string }[] | ((formData: any) => { value: string | number; label: string }[]);
   required?: boolean | ((formData: any) => boolean);
   readOnly?: boolean;
+  disabled?: boolean;
   hidden?: boolean;
   show?: (formData: any) => boolean;
   helperText?: string;
@@ -50,17 +54,19 @@ interface ResourceFormProps<T extends Record<string, any>> {
   hideSubmitButton?: boolean;
   children?: React.ReactNode;
   form?: ReturnType<typeof useForm<T>>;
+  gridClassName?: string; // New prop for custom grid layout
 }
 
 export function ResourceForm<T extends Record<string, any>>({
-  fields,
-  onSubmit,
-  defaultValues = {},
-  isSubmitting = false,
-  title,
-  hideSubmitButton = false,
-  children,
-  form: providedForm,
+fields,
+onSubmit,
+defaultValues = {},
+isSubmitting = false,
+title,
+hideSubmitButton = false,
+children,
+form: providedForm,
+gridClassName,
 }: ResourceFormProps<T>) {
   // Transform defaultValues to handle nested fields
   const transformedDefaultValues = fields.reduce((acc, field) => {
@@ -99,54 +105,85 @@ export function ResourceForm<T extends Record<string, any>>({
       }
       return acc;
     }, {} as Record<string, any>);
-
     onSubmit(transformedData as T);
   };
 
-  const { setValue } = form;
 
   return (
     <div className="space-y-6">
       {title && <h2 className="text-xl font-bold">{title}</h2>}
-      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 ${gridClassName}`}>
             {fields.map((field) => !field.hidden && (
               <div key={field.name} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name={field.name}
-                  render={({ field: formField }) => (
-                    <FormItem>
-                      <FormLabel>{field.label}</FormLabel>
-                      <FormControl>
-                        {field.type === 'textarea' ? (
-                          <Textarea
-                            placeholder={field.placeholder}
-                            {...formField}
-                            readOnly={field.readOnly}
-                            className={field.readOnly ? 'bg-gray-100' : ''}
-                          />
-                        ) : field.type === 'select' ? (
-                          <div>
+                {field.type === 'dynamic-list' ? (
+                  <DynamicListField field={field} form={form} />
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name={field.name}
+                    render={({ field: formField }) => (
+                      <FormItem>
+                        <FormLabel>{field.label}</FormLabel>
+                        <FormControl>
+                          {field.type === 'textarea' ? (
+                            <Textarea
+                              placeholder={field.placeholder}
+                              {...formField}
+                              readOnly={field.readOnly}
+                              className={field.readOnly ? 'bg-gray-100' : ''}
+                            />
+                          ) : field.type === 'select' ? (
+                            <div>
+                              <Select
+                                onValueChange={(value) => {
+                                  formField.onChange(value);
+                                  if (field.onChange) {
+                                    field.onChange(value, form.getValues(), (fieldName: string, value: any) => {
+                                      form.setValue(fieldName as any, value);
+                                    });
+                                  }
+                                }}
+                                value={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
+                                defaultValue={field.defaultValue !== undefined ? field.defaultValue.toString() : undefined}
+                              >
+                                <SelectTrigger className={field.readOnly ? 'bg-gray-100' : ''}>
+                                  <SelectValue placeholder={field.placeholder || t('placeholders.select')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(typeof field.options === 'function' 
+                                    ? field.options(form.getValues())
+                                    : field.options
+                                  )?.map((option: { value: string | number; label: string }) => (
+                                    <SelectItem key={option.value} value={option.value.toString()}>
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {field.nestedField && formField.value === 'true' && (
+                                <div className="mt-4">
+                                  {field.nestedField}
+                                </div>
+                              )}
+                            </div>
+                          ) : field.type === 'searchable-select' ? (
                             <Select
                               onValueChange={(value) => {
                                 formField.onChange(value);
                                 if (field.onChange) {
-                                  field.onChange(value, form.getValues(), (fieldName: string, value: any) => {
-                                    form.setValue(fieldName as any, value);
-                                  });
+                                  field.onChange(value);
                                 }
                               }}
                               value={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
-                              defaultValue={field.defaultValue !== undefined ? field.defaultValue.toString() : undefined}
+                              defaultValue={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
                             >
-                              <SelectTrigger className={field.readOnly ? 'bg-gray-100' : ''}>
-                                <SelectValue placeholder={field.placeholder || t('placeholders.select')} />
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder={field.placeholder} />
                               </SelectTrigger>
                               <SelectContent>
-                                {(typeof field.options === 'function' 
+                                {(typeof field.options === 'function'
                                   ? field.options(form.getValues())
                                   : field.options
                                 )?.map((option: { value: string | number; label: string }) => (
@@ -156,186 +193,44 @@ export function ResourceForm<T extends Record<string, any>>({
                                 ))}
                               </SelectContent>
                             </Select>
-                            {field.nestedField && formField.value === 'true' && (
-                              <div className="mt-4">
-                                {field.nestedField}
-                              </div>
-                            )}
-                          </div>
-                        ) : field.type === 'searchable-select' ? (
-                          <Select
-                            onValueChange={(value) => {
-                              formField.onChange(value);
-                              if (field.onChange) {
-                                field.onChange(value);
-                              }
-                            }}
-                            value={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
-                            defaultValue={formField.value !== undefined && formField.value !== null ? formField.value.toString() : undefined}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder={field.placeholder} />
-                            </SelectTrigger>
-                            <SelectContent onPointerDownOutside={(e) => {
-                              // Prevent dropdown from closing when clicking inside it
-                              const target = e.target as Node;
-                              const selectContent = document.querySelector('.select-content-wrapper');
-                              if (selectContent && selectContent.contains(target)) {
-                                e.preventDefault();
-                              }
-                            }}>
-                              <div className="p-2 sticky top-0 bg-white z-10 border-b select-content-wrapper">
-                                <Input
-                                  type="text"
-                                  placeholder={`Search ${field.label.toLowerCase()}...`}
-                                  value={field.searchTerm || ''}
-                                  onChange={(e) => {
-                                    // Prevent closing dropdown when typing
-                                    e.stopPropagation();
-                                    field.onSearch && field.onSearch(e.target.value);
-                                  }}
-                                  onPointerDown={(e) => e.stopPropagation()}
-                                  onClick={(e) => e.stopPropagation()}
-                                  onKeyDown={(e) => e.stopPropagation()}
-                                  className="flex-1"
-                                  autoFocus
-                                />
-                              </div>
-                              <div className="max-h-[200px] overflow-y-auto">
-                                {field.options && field.options.length > 0 ? (
-                                  field.options.map((option: { value: string | number; label: string }) => (
-                                    <SelectItem key={option.value} value={option.value.toString()}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))
-                                ) : (
-                                  <div className="p-2 text-center text-gray-500 text-sm">
-                                    No results found
-                                  </div>
-                                )}
-                              </div>
-                              {field.showCreateButton && (
-                                <div className="p-2 border-t sticky bottom-0 bg-white z-10">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      field.onCreateClick && field.onCreateClick();
-                                    }}
-                                    className="w-full flex items-center justify-center gap-2"
-                                  >
-                                    <PlusCircle size={16} />
-                                    Create New {field.label}
-                                  </Button>
-                                </div>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        ) : field.type === 'file' ? (
-                          <div className="space-y-2">
-                            {(field.preview || field.existingImage) && (
-                              <div className="mb-2">
-                                <img 
-                                  src={field.preview || field.existingImage} 
-                                  alt={field.label} 
-                                  className="h-20 w-20 object-cover rounded-md"
-                                />
-                              </div>
-                            )}
-                            <Input
-                              type="file"
-                              onChange={(e:any) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  setValue(field.name, file);
-                                }
-                              }}
-                              required={field.required && !field.existingImage}
-                              accept="image/*"
+                          ) : field.type === 'async-searchable-select' ? (
+                            <AsyncSearchableSelect
+                              value={formField.value}
+                              onChange={formField.onChange}
+                              placeholder={field.placeholder}
+                              searchProducts={field.searchProducts || searchProducts}
+                              required={field.required}
                             />
-                          </div>
-                        ) : field.type === 'multiple-files' ? (
-                          <div className="space-y-2">
-                            {/* Show existing images */}
-                            {field.existingImages && field.existingImages.length > 0 && (
-                              <div className="flex flex-wrap gap-4 mb-4">
-                                {field.existingImages.map((img:any, idx:any) => (
-                                  <div key={img.id || idx} className="relative">
-                                    <img 
-                                      src={img.url} 
-                                      alt={`Image ${idx + 1}`} 
-                                      className="h-20 w-20 object-cover rounded-md"
-                                    />
-                                    {field.onDeleteImage && (
-                                      <button
-                                        type="button"
-                                        onClick={() => field.onDeleteImage(img.id)}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
-                                        aria-label="Delete image"
-                                      >
-                                        ×
-                                      </button>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {/* Multiple file input */}
+                          ) : field.type === 'number' ? (
                             <Input
-                              type="file"
-                              onChange={(e:any) => {
-                                const files = Array.from(e.target.files || []);
-                                const currentValues = form.getValues(field.name) || [];
-                                form.setValue(field.name, [...currentValues, ...files] as any);
-                              }}
-                              multiple
-                              accept="image/*"
+                              type="number"
+                              placeholder={field.placeholder}
+                              {...formField}
+                              readOnly={field.readOnly}
+                              className={field.readOnly ? 'bg-gray-100' : ''}
                             />
-                          </div>
-                        ) : field.type === 'number' ? (
-                          <Input
-                            type="number"
-                            placeholder={field.placeholder}
-                            {...formField}
-                            readOnly={field.readOnly}
-                            className={field.readOnly ? 'bg-gray-100' : ''}
-                          />
-                        ) : (
-                          <Input
-                            type={field.type}
-                            placeholder={field.placeholder}
-                            {...formField}
-                            readOnly={field.readOnly}
-                            className={field.readOnly ? 'bg-gray-100' : ''}
-                            onChange={field.onChange
-                              ? (e) => {
-                                  const formatted = field.onChange!(e.target.value);
-                                  formField.onChange({
-                                    target: { value: formatted }
-                                  } as any);
-                                }
-                              : formField.onChange}
-                            maxLength={field.maxLength}
-                            inputMode={field.inputMode}
-                            autoComplete={field.autoComplete}
-                          />
+                          ) : (
+                            <Input
+                              type={field.type}
+                              placeholder={field.placeholder}
+                              {...formField}
+                              readOnly={field.readOnly}
+                              className={field.readOnly ? 'bg-gray-100' : ''}
+                            />
+                          )}
+                        </FormControl>
+                        {field.helperText && (
+                          <p className="text-sm text-muted-foreground mt-1">{field.helperText}</p>
                         )}
-                      </FormControl>
-                      {field.helperText && (
-                        <p className="text-sm text-muted-foreground mt-1">{field.helperText}</p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             ))}
           </div>
-          
           {children}
-          
           <div className="col-span-full mt-6">
             {!hideSubmitButton && (
               <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">

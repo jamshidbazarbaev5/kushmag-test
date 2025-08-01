@@ -149,11 +149,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     
     // Admin has access to everything
     if (role === "ADMIN") {
-      return [{
-        icon: Package,
-        label: t("navigation.settings"),
-        id: "settings",
-        submenu: [
+      return [
+        {
+          icon: Package,
+          label: t("navigation.orders"),
+          href: "/orders",
+        },
+        {
+          icon: Package,
+          label: t("navigation.settings"),
+          id: "settings",
+          submenu: [
           {
             icon: Package,
             label: t("navigation.material"),
@@ -203,6 +209,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             icon: Package,
             label: t("navigation.measures"),
             href: "/measures",
+          },
+          {
+            icon: Package,
+            label: t("navigation.attribute_settings"),
+            href: "/attribute-settings",
+          },
+          {
+            icon: Package,
+            label: t("navigation.casing_ranges"),
+            href: "/casing-ranges",
           }
         ],
       }];

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/api';
 
 interface BaseResource {
-  id?: number;
+  id?: string | number;
 }
 
 export function createResourceApiHooks<T extends BaseResource, R = T[] | { results: T[], count: number }>(baseUrl: string, queryKey: string) {
@@ -16,7 +16,7 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
     });
   };
 
-  const useGetResource = (id: number) => {
+  const useGetResource = (id: string | number) => {
     return useQuery({
       queryKey: [queryKey, id],
       queryFn: async () => {
@@ -48,7 +48,7 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
     const queryClient = useQueryClient();
     
     return useMutation({
-      mutationFn: async (payload: { formData: FormData; id: number } | T) => {
+      mutationFn: async (payload: { formData: FormData; id: string | number } | T) => {
         if ('formData' in payload && payload.id) {
           const response = await api.put<T>(
             `${baseUrl}${payload.id}/`,
@@ -85,7 +85,7 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
     const queryClient = useQueryClient();
     
     return useMutation({
-      mutationFn: async (id: number) => {
+      mutationFn: async (id: string | number) => {
         await api.delete(`${baseUrl}${id}/`);
         return id;
       },

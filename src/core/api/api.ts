@@ -84,4 +84,20 @@ api.interceptors.response.use(
   }
 );
 
+
+export async function searchProducts(query: string): Promise<any[]> {
+  try {
+    const response = await api.get(`/products`, {
+      params: { search: query },
+    });
+    // Support both array and paginated response
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    return response.data.results || [];
+  } catch (error) {
+    return [];
+  }
+}
+
 export default api;

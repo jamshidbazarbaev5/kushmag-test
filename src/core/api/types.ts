@@ -1,3 +1,28 @@
+export interface Product {
+  id: string;
+  accountId: string;
+  name: string;
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+  };
+}
+
+export type AccessoryType = 'cube' | 'leg' | 'glass' | 'lock' | 'topsa' | 'beading';
+
+export interface Accessory {
+  id: string;
+  accountId: string;
+  name: string;
+  type: AccessoryType;
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+  };
+}
+
 export interface MaterialType {
   id: number;
   name: string;
@@ -6,6 +31,12 @@ export interface MaterialType {
 export interface Massif {
   id: number;
   name: string;
+}
+
+export interface AttributeSettings {
+  id: number;
+  casing_size: number;
+  crown_size: number;
 }
 
 export interface Color {
@@ -32,4 +63,11 @@ export interface GlassType {
 export interface Threshold {
   id: number;
   name: string;
+}
+
+export interface CasingRange {
+  id?: number;
+  min_size: number;
+  max_size: number;
+  casing_size: number;
 }
