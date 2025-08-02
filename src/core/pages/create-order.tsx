@@ -77,7 +77,7 @@ const createProductItemFields = (
     disabled?: boolean;
     isCasing?: boolean;
     getDoorHeight?: () => number;
-    casingSize?: number;
+  casingSize?: number;
     casingRangeOptions?: any[];
   } = {}
 ) => {
@@ -494,6 +494,7 @@ export default function CreateOrderPage() {
   const [hasCheckedForDraft, setHasCheckedForDraft] = useState(false);
   const recoveryProcessed = useRef(false);
   const orderForm = useForm();
+  const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
 
   // Auto-save functionality
   const { getOrderDraft, clearAllDrafts, hasDraftData, STORAGE_KEYS } = useOrderDraftRecovery();
@@ -702,20 +703,6 @@ export default function CreateOrderPage() {
       required: true,
     },
     {
-      name: "discount_percentage",
-      label: t("forms.discount_percentage"),
-      type: "number",
-      step: "0.1",
-      required: false,
-    },
-    {
-      name: "advance_payment",
-      label: t("forms.advance_payment"),
-      type: "number",
-      step: "0.01",
-      required: false,
-    },
-    {
       name: "description",
       label: t("forms.description"),
       type: "textarea",
@@ -747,7 +734,8 @@ export default function CreateOrderPage() {
       const discount = parseFloat(discount_percentage || 0);
       const advance = parseFloat(advance_payment || 0);
 
-      const discountAmount = (totalAmount * discount) / 100;
+      // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
+      const discountAmount = discountAmountInput > 0 ? discountAmountInput : (totalAmount * discount) / 100;
       const finalAmount = totalAmount - discountAmount;
       const remainingBalance = finalAmount - advance;
 
@@ -759,7 +747,7 @@ export default function CreateOrderPage() {
     };
 
     calculateTotals();
-  }, [doors, discount_percentage, advance_payment]);
+  }, [doors, discount_percentage, advance_payment, discountAmountInput]);
 
   const onSubmit = async (data: any) => {
     const { totalAmount, discountAmount, remainingBalance } = totals;
@@ -899,6 +887,8 @@ export default function CreateOrderPage() {
             onBack={() => setCurrentStep(2)}
             discount_percentage={discount_percentage}
             advance_payment={advance_payment}
+            discountAmountInput={discountAmountInput}
+            setDiscountAmountInput={setDiscountAmountInput}
           />
         )}
       </div>
@@ -1073,7 +1063,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
   );
 }
 
-function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment }: any) {
+function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment, discountAmountInput, setDiscountAmountInput }: any) {
   const { t } = useTranslation();
 
   // Calculate detailed subtotals
@@ -1191,6 +1181,71 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
               <CardTitle className="text-xl">{t("forms.pricing_summary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Discount and Payment Fields */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-800">{t("forms.discount")} & {t("forms.advance_payment")}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t("forms.discount")}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="0"
+                          value={discountAmountInput || ''}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => {
+                            const amount = parseFloat(e.target.value) || 0;
+                            setDiscountAmountInput(amount);
+                            // Update percentage for display purposes
+                            const percentage = totals.totalAmount > 0 ? (amount / totals.totalAmount * 100) : 0;
+                            orderForm.setValue("discount_percentage", percentage.toFixed(2));
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block">{t("forms.discount_amount")}</span>
+                      </div>
+                      <div className="w-20">
+                        <input
+                          type="number"
+                          step="0.1"
+                          placeholder="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                          {...orderForm.register("discount_percentage", {
+                            onChange: (e: any) => {
+                              const percentage = parseFloat(e.target.value) || 0;
+                              const amount = totals.totalAmount * (percentage / 100);
+                              setDiscountAmountInput(amount);
+                            }
+                          })}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block text-center">%</span>
+                      </div>
+                    </div>
+                    {(discount_percentage > 0 || discountAmountInput > 0) && (
+                      <p className="text-sm text-green-600">
+                        {t("forms.discount_amount")}: {discountAmountInput > 0 ? discountAmountInput.toFixed(0) : (totals.totalAmount * (discount_percentage / 100)).toFixed(0)} сум 
+                        {discount_percentage > 0 && ` (${discount_percentage}%)`}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("forms.advance_payment")}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...orderForm.register("advance_payment")}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
