@@ -54,14 +54,22 @@ export default function MeasuresPage() {
       header: t('tables.actions'),
       id: 'actions',
       cell: (row: any) => (
-      
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(`/measures/${row?.id}/edit`)}
-        >
-          {t('actions.edit')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/measures/${row?.id}/edit`)}
+          >
+            {t('actions.edit')}
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => navigate(`/orders/create-from-measure/${row?.id}`)}
+          >
+            {t('actions.create_order')}
+          </Button>
+        </div>
       ),
     },
   ];

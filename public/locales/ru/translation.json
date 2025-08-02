@@ -22,6 +22,7 @@
     "reset": "Сбросить",
 
     "back_to_orders": "Вернуться к заказам",
+    "back_to_measures": "Вернуться к замерам",
 
     "save": "Сохранить",
     "cancel": "Отмена",
@@ -35,7 +36,11 @@
     "not_found": "{{item}} не найден",
     "width": "Ширина",
     "height": "Высота",
-    "quantity": "Количество"
+    "quantity": "Количество",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "details": "Детали",
+    "items": "позиций"
   },
   "roles": {
     "admin": "Администратор",
@@ -46,6 +51,9 @@
   },
   "navigation": {
     "orders": "Заказы",
+    "attribute_settings": "Настройки атрибутов",
+    "casing_ranges": "Диапазоны наличников",
+    
     "beadings": "Бидинги",
     "colors": "Цвета",
     "materials": "Материалы",
@@ -74,7 +82,17 @@
     "topsa": "Топса",
     "beading": "Бидинг"
   },
+  "buttons":{
+    "edit": "Редактировать"
+  },
+  
   "forms": {
+    "model": "Модель",
+    "type": "Тип",
+    "crown_size": "Размер короны",
+    "min_size": "Минимальный размер",
+    "max_size": "Максимальный размер",
+    "name": "Название",
     "recover_draft_data": "Восстановить данные черновика",
     "currency": "Валюта",
     "price_breakdown": "Разбивка цены",
@@ -118,6 +136,7 @@
     "order_information": "Информация о заказе",
     "create_order_description": "Создание заказа",
     "description": "Описание",
+    "organization_info": "Информация об организации",
 
     "project": "Проект",
     "counterparty": "Контрагент",
@@ -175,6 +194,16 @@
     "address": "Адрес",
     "status": "Статус",
     "comment": "Комментарий",
+    "measure_information": "Информация о замере",
+    "create_order_from_measure_description": "Создание заказа на основе данных замера",
+    "measure_data_loaded": "Данные замера загружены",
+    "doors_from_measure": "Двери из замера",
+    "product_selected": "Продукт выбран",
+    "select_product": "Выберите продукт",
+    "price_not_set": "Цена не установлена",
+    "needs_product_selection": "Нужно выбрать продукт",
+    "needs_pricing": "Нужно установить цену",
+    "ready_for_order": "Готово для заказа",
     "room_name": "Название комнаты",
     "glass_type": "Тип стекла",
     "width": "Ширина",
@@ -197,7 +226,6 @@
     "full_name": "Полное имя",
     "phone_number": "Номер телефона",
     "role": "Роль",
-
     "api_login": "API логин",
     "api_password": "API пароль",
     "fixed_salary": "Фиксированная зарплата",
@@ -219,7 +247,12 @@
     "promog_bar": "Есть",
     "promog_joq": "Нет",
     "casing_zamer_p": "П-образный",
-    "casing_zamer_g": "Г-образный"
+    "casing_zamer_g": "Г-образный",
+    "update_door": "Обновить дверь",
+    "measure_data": "Данные замера",
+    "prefilled": "предварительно заполнено",
+    "door_added_successfully": "Дверь успешно добавлена",
+    "error_adding_door": "Ошибка при добавлении двери"
   },
   "status": {
     "new": "Новый",
@@ -265,7 +298,10 @@
   "placeholders": {
     "search_model": "Поиск модели",
     "select_price_type": "Выберите тип цены",
-
+    "search_casing_range": "Поиск диапазонов наличников",
+    "enter_min_size": "Введите минимальный размер",
+    "enter_max_size": "Введите максимальный размер",
+    "enter_casing_size": "Введите размер наличника",
     "enter_price": "Введите цену",
     "enter_description": "Введите описание",
     "enter_order_information": "Введите информацию о заказе",
@@ -338,12 +374,29 @@
     "saving": "Сохранение...",
     "edit": "Редактировать",
     "create": "Создать",
+    "create_order": "Создать заказ",
     "add_extension": "Добавить добор",
     "add_crown": "Добавить корону"
   },
 
   "pages": {
     "orders": "Заказы",
-    "create_order": "Создать заказ"
+    "create_order": "Создать заказ",
+    "create_order_from_measure": "Создать заказ из замера"
+  },
+  "measure": {
+    "from_measure": "из замера",
+    "doors_from_measure": "дверей из замера",
+    "door_dimensions_prefilled": "Размеры двери и характеристики предварительно заполнены из данных замера",
+    "configure_doors_from_measure": "Настройка дверей с использованием предварительно заполненных данных из замера. Заполните недостающие детали продукта и материала.",
+    "next_measure_door_found": "Найдена следующая дверь из замера с ключами",
+    "room": "Комната",
+    "not_specified": "Не указано",
+    "add_door_from_measure": "Добавить дверь {{number}} из замера",
+    "data_loaded": "Данные замера загружены: {{count}} дверей доступно для настройки"
+  },
+  "debug": {
+    "info": "Отладочная информация",
+    "measure_door_data": "Данные двери из замера"
   }
 }

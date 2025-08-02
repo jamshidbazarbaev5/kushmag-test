@@ -16,7 +16,8 @@
     "edit": "Óńdew",
     "create": "Jasaw",
     "submit": "Jiberiw",
-    "sending": "Jiberilmekte..."
+    "sending": "Jiberilmekte...",
+    "items": "daneler"
   },
   "roles": {
     "admin": "Administrator",
@@ -166,7 +167,10 @@
   "actions": {
     "add_door": "Esik qosıw",
     "save_all_changes": "Barlıq ózgerislerdi saqlap qoyıw",
-    "saving": "Saqlanbaqta..."
+    "saving": "Saqlanbaqta...",
+    "edit": "Óńdew",
+    "create": "Jasaw",
+    "create_order": "Buyırtpa jasaw"
   },
  
   "placeholders": {
@@ -208,6 +212,31 @@
     "enter_phone_number": "Telefon nomerin kiritiń",
     "enter_api_login": "API logindi kiritiń",
     "enter_api_password": "API paroldi kiritiń",
-    "enter_fixed_salary": "Belgilengen máyishti kiritiń"
+    "enter_fixed_salary": "Belgilengen máyishti kiritiń",
+    "update_door": "Esikti jańartıw",
+    "measure_data": "Ólshem maǵlıwmatları",
+    "prefilled": "aldın ala tolıqlanǧan",
+    "door_added_successfully": "Esik sátti qosıldı",
+    "error_adding_door": "Esikti qosıwda qáte"
+  },
+  "pages": {
+    "orders": "Buyırtpalar",
+    "create_order": "Buyırtpa jasaw",
+    "create_order_from_measure": "Ólshemnen buyırtpa jasaw"
+  },
+  "measure": {
+    "from_measure": "ólshemnen",
+    "doors_from_measure": "ólshemden esikler",
+    "door_dimensions_prefilled": "Esik ólshemleri hám sıpatlama ólshem maǵlıwmatlarınan aldın ala tolıqlanǧan",
+    "configure_doors_from_measure": "Ólshem maǵlıwmatlarınan aldın ala tolıqlanǧan maǵlıwmatlar penen esiklerdi konfiguratsiyalaw. Jetispegen mahsulat hám material tapsılıqların tolıqtırıń.",
+    "next_measure_door_found": "Keyler menen kelesi ólshem esigi tabildi",
+    "room": "Bólme",
+    "not_specified": "Belgilengen joq",
+    "add_door_from_measure": "Ólshemnen {{number}} esikti qosıw",
+    "data_loaded": "Ólshem maǵlıwmatları júklendi: {{count}} esik konfiguratsiya ushın qoljetimli"
+  },
+  "debug": {
+    "info": "Otladıw informatsiyası",
+    "measure_door_data": "Ólshem esiginiń maǵlıwmatları"
   }
 }

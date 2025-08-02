@@ -30,6 +30,7 @@ import CreateCasingRangePage from "./core/pages/create-casing-range";
 import CasingRangesPage from "./core/pages/casing-ranges";
 import OrdersPage from "./core/pages/orders";
 import CreateOrderPage from "./core/pages/create-order";
+import EditOrderPage from "./core/pages/edit-order";
 
 const queryClient = new QueryClient();
 function App() {
@@ -53,6 +54,7 @@ function App() {
                  
                  <Route path="/orders" element={<OrdersPage />} />
                  <Route path="/orders/create" element={<CreateOrderPage />} />
+                 <Route path="/orders/create-from-measure/:measureId" element={<EditOrderPage />} />
                  
                  <Route path="/colors" element={<ColorsPage />} />
                  <Route path="/create-color" element={<CreateColorPage />} />
