@@ -55,12 +55,12 @@
     "attribute_settings": "Настройки атрибутов",
     "casing_ranges": "Диапазоны наличников",
     
-    "beadings": "Бидинги",
+    "beadings": "Штапик",
     "colors": "Цвета",
     "materials": "Материалы",
     "material_types": "Типы материалов",
     "patina_colors": "Цвета патины",
-    "create_beading": "Создать бидинг",
+    "create_beading": "Создать штапик",
     "create_color": "Создать цвет",
     "create_material": "Создать материал",
     "create_material_type": "Создать тип материала",
@@ -81,7 +81,7 @@
     "glass": "Стекло",
     "lock": "Замок",
     "topsa": "Топса",
-    "beading": "Бидинг"
+    "beading": "Штапик"
   },
   "buttons":{
     "edit": "Редактировать"
@@ -179,13 +179,13 @@
     "massif": "Массив",
     "color": "Цвет",
     "patina_color": "Цвет патины",
-    "beading_main": "Основной бидинг",
-    "beading_additional": "Дополнительный бидинг",
+    "beading_main": "Основной штапик",
+    "beading_additional": "Дополнительный штапик",
     "price": "Цена",
     "client_information": "Информация о клиенте",
     "door_details": "Детали двери",
-    "beading_name": "Название бидинга",
-    "beading_type": "Тип бидинга",
+    "beading_name": "Название штапика",
+    "beading_type": "Тип штапика",
     "beading_type_main": "Основной",
     "beading_type_additional": "Дополнительный",
     "color_name": "Название цвета",
@@ -286,7 +286,7 @@
     "glass": "Стекло",
     "lock": "Замок",
     "topsa": "Топса",
-    "beading": "Бидинг"
+    "beading": "Штапик"
   },
   "messages": {
     "success": {
@@ -337,12 +337,12 @@
     "select_massif": "Выберите массив",
     "select_color": "Выберите цвет",
     "select_patina_color": "Выберите цвет патины",
-    "select_beading_main": "Выберите основной бидинг",
-    "select_beading_additional": "Выберите дополнительный бидинг",
+    "select_beading_main": "Выберите основной штапик",
+    "select_beading_additional": "Выберите дополнительный штапик",
     "select_glass_type": "Выберите тип стекла",
     "select_threshold": "Выберите порог",
     "enter_name": "Введите название",
-    "search_beading": "Поиск бидинга",
+    "search_beading": "Поиск штапика",
     "search_color": "Поиск цвета",
     "search_material": "Поиск материала",
     "search_material_type": "Поиск типа материала",
