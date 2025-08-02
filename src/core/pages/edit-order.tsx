@@ -199,6 +199,10 @@ const createProductItemFields = (
         required: true,
         placeholder: t("placeholders.enter_width"),
         show: () => true,
+        ...(options.isCasing && {
+          defaultValue: options.casingSize || 0,
+          calculateValue: () => options.casingSize || 0,
+        }),
       }
     );
   } else if (
@@ -328,6 +332,7 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
         {
           isCasing: true,
           getDoorHeight,
+          getDoorWidth,
           casingSize,
           casingRangeOptions: fieldOptions.casingRangeOptions,
         }
@@ -1633,23 +1638,44 @@ function DoorForm({
     // Handle casing height calculation based on type
     if (Array.isArray(newData.casings) && casingSize != null) {
       const doorHeight = parseFloat(newData.height || 0);
+      const doorWidth = parseFloat(newData.width || 0);
       newData.casings = newData.casings.map((casing: any) => {
         const normalizedCasing = normalizeModelField(casing);
         
-        // Calculate height based on casing type
-        if (casing.casing_type === "боковой") {
-          normalizedCasing.height = doorHeight + casingSize;
-        } else if (casing.casing_type === "прямой") {
-          normalizedCasing.height = doorHeight + (2 * casingSize);
+        // Calculate height based on casing type and formula
+        const casingType = casing.casing_type;
+        const casingFormula = casing.casing_formula;
+        const casingRange = casing.casing_range;
+        
+        if (casingFormula === "formula2" && casingRange) {
+          // Find the selected casing range object to get its casing_size
+          const selectedRange = fieldOptions.casingRangeOptions?.find(
+            (range: any) => range.value === String(casingRange)
+          );
+          if (selectedRange && selectedRange.casing_size !== undefined) {
+            normalizedCasing.height = selectedRange.casing_size;
+          }
+        } else if (casingFormula === "formula1" || !casingFormula) {
+          // Original logic
+          if (casingType === "боковой") {
+            normalizedCasing.height = doorHeight + casingSize;
+          } else if (casingType === "прямой") {
+            normalizedCasing.height = doorWidth + (2 * casingSize);
+          } else {
+            normalizedCasing.height = parseFloat(casing.height || 0);
+          }
+        }
+        
+        // Set width to casing_size if not already set
+        if (!casing.width || casing.width === 0) {
+          normalizedCasing.width = casingSize;
         } else {
-          // Default case or if type is not set, use original height
-          normalizedCasing.height = parseFloat(casing.height || 0);
+          normalizedCasing.width = parseFloat(casing.width || casingSize);
         }
         
         // Ensure other numeric fields are properly converted
         normalizedCasing.price = parseFloat(casing.price || 0);
         normalizedCasing.quantity = parseInt(casing.quantity || 1);
-        normalizedCasing.width = parseFloat(casing.width || 0);
         
         return normalizedCasing;
       });
