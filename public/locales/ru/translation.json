@@ -28,6 +28,7 @@
     "cancel": "Отмена",
     "delete": "Удалить",
     "edit": "Редактировать",
+    "edit_advanced": "Расширенное редактирование",
     "create": "Создать",
     "submit": "Отправить",
     "sending": "Отправка...",
@@ -135,6 +136,8 @@
     "select_price_type": "Выберите тип цены",
     "order_information": "Информация о заказе",
     "create_order_description": "Создание заказа",
+    "edit_order": "Редактировать заказ",
+    "edit_order_description": "Редактирование существующего заказа",
     "description": "Описание",
     "organization_info": "Информация об организации",
 
@@ -252,7 +255,11 @@
     "measure_data": "Данные замера",
     "prefilled": "предварительно заполнено",
     "door_added_successfully": "Дверь успешно добавлена",
-    "error_adding_door": "Ошибка при добавлении двери"
+    "door_updated_successfully": "Дверь успешно обновлена",
+    "error_adding_door": "Ошибка при добавлении двери",
+    "error_updating_door": "Ошибка при обновлении двери",
+    "edit_door": "Редактировать дверь",
+    "modify_door_specifications": "Изменить спецификации двери"
   },
   "status": {
     "new": "Новый",

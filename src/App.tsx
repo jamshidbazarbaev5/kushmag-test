@@ -31,6 +31,7 @@ import CasingRangesPage from "./core/pages/casing-ranges";
 import OrdersPage from "./core/pages/orders";
 import CreateOrderPage from "./core/pages/create-order";
 import EditOrderPage from "./core/pages/edit-order";
+import EditOrder2Page from "./core/pages/edit-order-2";
 
 const queryClient = new QueryClient();
 function App() {
@@ -54,6 +55,7 @@ function App() {
                  
                  <Route path="/orders" element={<OrdersPage />} />
                  <Route path="/orders/create" element={<CreateOrderPage />} />
+                 <Route path="/orders/edit/:id" element={<EditOrder2Page />} />
                  <Route path="/orders/create-from-measure/:measureId" element={<EditOrderPage />} />
                  
                  <Route path="/colors" element={<ColorsPage />} />

@@ -14,6 +14,7 @@
     "cancel": "Biykar etiw",
     "delete": "Óshiriw",
     "edit": "Óńdew",
+    "edit_advanced": "Keńeytilgen óńdew",
     "create": "Jasaw",
     "submit": "Jiberiw",
     "sending": "Jiberilmekte...",
@@ -233,7 +234,10 @@
     "room": "Bólme",
     "not_specified": "Belgilengen joq",
     "add_door_from_measure": "Ólshemnen {{number}} esikti qosıw",
-    "data_loaded": "Ólshem maǵlıwmatları júklendi: {{count}} esik konfiguratsiya ushın qoljetimli"
+    "data_loaded": "Ólshem maǵlıwmatları júklendi: {{count}} esik konfiguratsiya ushın qoljetimli",
+    "create_order_description": "Buyırtpa jasaw",
+    "edit_order": "Buyırtpanı óńdew",
+    "edit_order_description": "Bar bolǵan buyırtpanı óńdew"
   },
   "debug": {
     "info": "Otladıw informatsiyası",

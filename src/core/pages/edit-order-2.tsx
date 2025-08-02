@@ -1,8 +1,8 @@
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useCreateOrder } from "../api/order";
+import { useGetOrder, useUpdateOrder } from "../api/order";
 import {
   useGetCurrencies,
   useGetStores,
@@ -23,7 +23,6 @@ import { useGetBeadings } from "../api/beading";
 import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
-import { useGetMeasure } from "../api/measure";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
@@ -36,8 +35,16 @@ import {
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
-import { Plus, Trash2, DoorOpen, Package, Calculator } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  DoorOpen,
+  Package,
+  Calculator,
+  Edit3,
+} from "lucide-react";
 import api from "../api/api";
+import { useAutoSave } from "../hooks/useAutoSave";
 
 // Helper function to get the full object for a selected ID
 const getMetaById = (list: any, id: any) => {
@@ -49,18 +56,21 @@ const getMetaById = (list: any, id: any) => {
 // Returns a full product object from the list by its ID
 const getProductById = (productsList: any[], id: string | any) => {
   if (!productsList || !id) return null;
-  
+
   // If id is an object, try to extract the actual ID
   let actualId = id;
-  if (typeof id === 'object') {
+  if (typeof id === "object") {
     actualId = id.value || id.id || id;
   }
-  
+
   // Ensure we have a valid ID to search with
-  if (!actualId || (typeof actualId !== 'string' && typeof actualId !== 'number')) {
+  if (
+    !actualId ||
+    (typeof actualId !== "string" && typeof actualId !== "number")
+  ) {
     return { id: actualId };
   }
-  
+
   const product = productsList.find((p) => p.id === actualId);
   return product || { id: actualId };
 };
@@ -70,10 +80,10 @@ const createProductItemFields = (
   modelLabel: string,
   modelPlaceholder: string,
   withDimensions = false,
-  options: { 
-    isCrown?: boolean; 
-    getDoorWidth?: () => number; 
-    crownSize?: number; 
+  options: {
+    isCrown?: boolean;
+    getDoorWidth?: () => number;
+    crownSize?: number;
     disabled?: boolean;
     isCasing?: boolean;
     getDoorHeight?: () => number;
@@ -110,7 +120,10 @@ const createProductItemFields = (
 
   // Add casing type selection for casings
   if (options.isCasing) {
-    console.log("Creating casing fields with options:", options.casingRangeOptions); // Debug log
+    console.log(
+      "Creating casing fields with options:",
+      options.casingRangeOptions
+    ); // Debug log
     itemFields.push(
       {
         name: "casing_type",
@@ -159,37 +172,42 @@ const createProductItemFields = (
         show: () => true,
         ...(options.isCasing && {
           disabled: true,
-          calculateValue: typeof options.getDoorHeight === "function"
-            ? (itemData: any) => {
-                const doorHeight = (options.getDoorHeight && options.getDoorHeight()) || 0;
-                const casingType = itemData?.casing_type;
-                const casingFormula = itemData?.casing_formula;
-                const casingRange = itemData?.casing_range;
-                
-                // Formula 2: Use selected casing range's casing_size
-                if (casingFormula === "formula2" && casingRange) {
-                  // Find the selected casing range object to get its casing_size
-                  const selectedRange = options.casingRangeOptions?.find(
-                    (range: any) => range.value === String(casingRange) // Convert to string for comparison
-                  );
-                  if (selectedRange && selectedRange.casing_size !== undefined) {
-                    return selectedRange.casing_size;
+          calculateValue:
+            typeof options.getDoorHeight === "function"
+              ? (itemData: any) => {
+                  const doorHeight =
+                    (options.getDoorHeight && options.getDoorHeight()) || 0;
+                  const casingType = itemData?.casing_type;
+                  const casingFormula = itemData?.casing_formula;
+                  const casingRange = itemData?.casing_range;
+
+                  // Formula 2: Use selected casing range's casing_size
+                  if (casingFormula === "formula2" && casingRange) {
+                    // Find the selected casing range object to get its casing_size
+                    const selectedRange = options.casingRangeOptions?.find(
+                      (range: any) => range.value === String(casingRange) // Convert to string for comparison
+                    );
+                    if (
+                      selectedRange &&
+                      selectedRange.casing_size !== undefined
+                    ) {
+                      return selectedRange.casing_size;
+                    }
                   }
-                }
-                
-                // Formula 1: Original logic
-                if (casingFormula === "formula1" || !casingFormula) {
-                  const casingSize = options.casingSize || 0;
-                  if (casingType === "боковой") {
-                    return doorHeight + casingSize;
-                  } else if (casingType === "прямой") {
-                    return doorHeight + (2 * casingSize);
+
+                  // Formula 1: Original logic
+                  if (casingFormula === "formula1" || !casingFormula) {
+                    const casingSize = options.casingSize || 0;
+                    if (casingType === "боковой") {
+                      return doorHeight + casingSize;
+                    } else if (casingType === "прямой") {
+                      return doorHeight + 2 * casingSize;
+                    }
                   }
+
+                  return doorHeight;
                 }
-                
-                return doorHeight;
-              }
-            : undefined,
+              : undefined,
         }),
       },
       {
@@ -219,7 +237,8 @@ const createProductItemFields = (
         typeof options.getDoorWidth === "function" &&
         typeof options.crownSize === "number"
           ? () => {
-              const doorWidth = (options.getDoorWidth && options.getDoorWidth()) || 0;
+              const doorWidth =
+                (options.getDoorWidth && options.getDoorWidth()) || 0;
               const crownSize = options.crownSize || 0;
               const totalWidth = doorWidth + crownSize;
               return isNaN(totalWidth) ? "" : totalWidth;
@@ -249,7 +268,13 @@ const createProductItemFields = (
   return itemFields;
 };
 
-const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, casingSize?: number, measureDoor?: any) => {
+const doorFields = (
+  t: any,
+  fieldOptions: any,
+  form: any,
+  crownSize?: number,
+  casingSize?: number
+) => {
   const watchDoorData = form.watch(); // Watch all fields in the current door form
   const getDoorWidth = () => parseFloat(watchDoorData.width || 0);
   const getDoorHeight = () => parseFloat(watchDoorData.height || 0);
@@ -263,6 +288,15 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       searchParam: "search",
       placeholder: t("placeholders.search_model"),
       required: true,
+      searchProducts: async (query: string) => {
+        const res = await api(`products?search=${encodeURIComponent(query)}`);
+        const products = res ? await res.data : [];
+        return products.map((product: any) => ({
+          value: product.id,
+          label: product.name,
+          ...product,
+        }));
+      },
       onChange: (option: any) => {
         if (option && option.salePrices) {
           if (option.salePrices.length === 1) {
@@ -442,7 +476,6 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       options: fieldOptions.glassTypeOptions,
       placeholder: t("placeholders.select_glass_type"),
       required: true,
-      disabled: !!measureDoor, // Disable if from measure
     },
     {
       name: "threshold",
@@ -451,7 +484,6 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       options: fieldOptions.thresholdOptions,
       placeholder: t("placeholders.select_threshold"),
       required: true,
-      disabled: !!measureDoor, // Disable if from measure
     },
     {
       name: "height",
@@ -459,7 +491,6 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       type: "number",
       step: "0.1",
       required: true,
-      disabled: !!measureDoor, // Disable if from measure
     },
     {
       name: "width",
@@ -467,33 +498,24 @@ const doorFields = (t: any, fieldOptions: any, form: any, crownSize?: number, ca
       type: "number",
       step: "0.1",
       required: true,
-      disabled: !!measureDoor, // Disable if from measure
     },
     {
       name: "quantity",
       label: t("forms.quantity"),
       type: "number",
       required: true,
-      disabled: !!measureDoor, // Disable if from measure
     },
   ];
 };
 
-export default function CreateOrderPage() {
+export default function EditOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = useParams();
-  const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
-  
-  // Extract measure ID from URL params or query params
-  // Supports both: /orders/create-from-measure/:measureId and /orders/create?measure_id=123
-  const searchParams = new URLSearchParams(location.search);
-  const measureId = params.measureId || searchParams.get('measure_id');
-  
-  // Fetch measure data if measure ID is provided
-  const { data: measureData } = useGetMeasure(measureId || '');
-  
+  const { id } = useParams<{ id: string }>();
+
+  const { data: orderData, isLoading: isLoadingOrder } = useGetOrder(id!);
+  const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
+
   const [doors, setDoors] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [totals, setTotals] = useState({
@@ -501,23 +523,14 @@ export default function CreateOrderPage() {
     discountAmount: 0,
     remainingBalance: 0,
   });
-  const [measureProcessed, setMeasureProcessed] = useState(false);
   const orderForm = useForm();
 
-  // Pre-populate from measure data if available
-  useEffect(() => {
-    if (measureData && !measureProcessed) {
-      setMeasureProcessed(true);
-      
-      // Don't pre-populate doors automatically, let user add them one by one
-      // Also pre-fill client information in order form
-      orderForm.setValue('address', measureData.address || '');
-      
-      toast.success(t("measure.data_loaded", { count: measureData.doors.length }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [measureData, measureProcessed]);
+  // Auto-save functionality
+  const orderFormData = orderForm.watch();
+  useAutoSave(orderFormData, `edit-order-${id}-draft`);
+  useAutoSave(doors, `edit-order-${id}-doors-draft`);
 
+  // Initialize steps data
   const steps = [
     { id: 1, title: t("forms.basic_info"), icon: Package },
     { id: 2, title: t("forms.doors"), icon: DoorOpen },
@@ -550,6 +563,121 @@ export default function CreateOrderPage() {
     [products]
   );
 
+  // Initialize form with order data - wait for reference data to load
+  useEffect(() => {
+    if (
+      orderData &&
+      currencies &&
+      stores &&
+      projects &&
+      counterparties &&
+      organizations &&
+      salesChannels &&
+      sellers &&
+      operators
+    ) {
+      // Helper function to format date for datetime-local input
+      const formatDateForInput = (dateString: string) => {
+        if (!dateString) return "";
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return "";
+          // Format as YYYY-MM-DDTHH:MM (datetime-local format)
+          return date.toISOString().slice(0, 16);
+        } catch {
+          return "";
+        }
+      };
+
+      // Convert API data to form format with all possible fields
+      const formData = {
+        rate: orderData.rate?.id || orderData.rate,
+        store: orderData.store?.id || orderData.store,
+        project: orderData.project?.id || orderData.project,
+        agent: orderData.agent?.id || orderData.agent,
+        organization: orderData.organization?.id || orderData.organization,
+        salesChannel: orderData.salesChannel?.id || orderData.salesChannel,
+        seller: orderData.seller?.id || orderData.seller,
+        operator: orderData.operator?.id || orderData.operator,
+        address: orderData.address || "",
+        order_code: orderData.order_code || "",
+        order_date: formatDateForInput(orderData.order_date),
+        deadline_date: formatDateForInput(orderData.deadline_date),
+        discount_percentage: orderData.discount_percentage || 0,
+        advance_payment: orderData.advance_payment || 0,
+        description: orderData.description || "",
+      };
+
+      console.log("Form data being set:", formData); // Debug log
+      console.log("Original order data:", orderData); // Debug log
+
+      // Use setTimeout to ensure the form components are rendered before setting values
+      setTimeout(() => {
+        // Use reset method for better form initialization
+        orderForm.reset(formData);
+        console.log("Form reset with formData:", formData);
+        // Trigger validation to ensure all fields are properly updated
+        orderForm.trigger();
+      }, 200);
+
+      // Set doors data if available - normalize the nested items for editing
+      if (orderData.doors && Array.isArray(orderData.doors)) {
+        const normalizedDoors = orderData.doors.map((door: any) => {
+          const normalizeItems = (items: any[]) => {
+            if (!Array.isArray(items)) return [];
+            return items.map((item: any) => ({
+              ...item,
+              // Convert model object to the format expected by form components
+              model: item.model?.id
+                ? {
+                    value: item.model.id,
+                    label: item.model.name || `Product ${item.model.id}`,
+                    id: item.model.id,
+                    name: item.model.name,
+                    ...item.model,
+                  }
+                : item.model,
+            }));
+          };
+
+          return {
+            ...door,
+            // Convert main door model to form format - ensure all required properties
+            model: door.model?.id
+              ? {
+                  id: door.model.id,
+                  name: door.model.name || door.model.title || `Product ${door.model.id}`,
+                  value: door.model.id,
+                  label: door.model.name || door.model.title || `Product ${door.model.id}`,
+                  // Include all original properties to preserve salePrices, etc.
+                  ...door.model,
+                }
+              : door.model,
+            // Normalize nested items
+            extensions: normalizeItems(door.extensions),
+            casings: normalizeItems(door.casings),
+            crowns: normalizeItems(door.crowns),
+            accessories: normalizeItems(door.accessories),
+          };
+        });
+
+        console.log("Normalized doors for editing:", normalizedDoors); // Debug log
+        setDoors(normalizedDoors);
+      }
+    }
+  }, [
+    orderData,
+    orderForm,
+    currencies,
+    stores,
+    projects,
+    counterparties,
+    organizations,
+    salesChannels,
+    sellers,
+    operators,
+  ]);
+
   // --- Format Options for Selects ---
   const fieldOptions = {
     rateOptions: formatReferenceOptions(currencies),
@@ -580,16 +708,24 @@ export default function CreateOrderPage() {
     ),
     glassTypeOptions: formatReferenceOptions(glassTypes),
     thresholdOptions: formatReferenceOptions(thresholds),
-    casingRangeOptions: (Array.isArray(casingRanges) ? casingRanges : casingRanges?.results || []).map(range => ({
+    casingRangeOptions: (Array.isArray(casingRanges)
+      ? casingRanges
+      : casingRanges?.results || []
+    ).map((range) => ({
       value: String(range.id), // Convert to string for Select component
-      label: `$ ${range.id} (${range.min_size}-${range.max_size}, ${t("forms.casing_size")}: ${range.casing_size})`,
+      label: `$ ${range.id} (${range.min_size}-${range.max_size}, ${t(
+        "forms.casing_size"
+      )}: ${range.casing_size})`,
       ...range,
     })),
   };
 
   // Debug log to check if casingRanges data is being received
   console.log("Casing Ranges Data:", casingRanges);
-  console.log("Formatted Casing Range Options:", fieldOptions.casingRangeOptions);
+  console.log(
+    "Formatted Casing Range Options:",
+    fieldOptions.casingRangeOptions
+  );
 
   const orderFields = [
     {
@@ -747,8 +883,9 @@ export default function CreateOrderPage() {
   const onSubmit = async (data: any) => {
     const { totalAmount, discountAmount, remainingBalance } = totals;
 
-    const orderData = {
+    const orderUpdateData = {
       ...data,
+      id: orderData?.id,
       // Map IDs to full meta objects for the API
       rate: getMetaById(currencies, data.rate),
       store: getMetaById(stores, data.store),
@@ -785,30 +922,28 @@ export default function CreateOrderPage() {
       remaining_balance: remainingBalance.toFixed(2),
     };
 
-    // If measureId is available, make a request to the specific endpoint
-    if (measureId) {
-      try {
-        await api.put(`orders/${measureId}/`, orderData);
-        toast.success(t("messages.created"));
+    updateOrder(orderUpdateData, {
+      onSuccess: () => {
+        toast.success(t("messages.updated"));
         navigate("/orders");
-      } catch (error: any) {
-        console.error("Error creating order from measure:", error.response?.data);
+      },
+      onError: (e: any) => {
+        console.error("Error updating order:", e.response?.data);
         toast.error(t("messages.error"));
-      }
-    } else {
-      // Use the default createOrder mutation for regular order creation
-      createOrder(orderData, {
-        onSuccess: () => {
-          toast.success(t("messages.created"));
-          navigate("/orders");
-        },
-        onError: (e: any) => {
-          console.error("Error creating order:", e.response?.data);
-          toast.error(t("messages.error"));
-        },
-      });
-    }
+      },
+    });
   };
+
+  if (isLoadingOrder) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">{t("common.loading")}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -818,12 +953,14 @@ export default function CreateOrderPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {t("pages.create_order")}
+                {t("forms.edit_order")} #{orderData?.order_code}
               </h1>
-              <p className="text-gray-600">{t("forms.create_order_description")}</p>
+              <p className="text-gray-600">
+                {t("forms.edit_order_description")}
+              </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate("/orders")}
               className="flex items-center gap-2"
             >
@@ -835,28 +972,32 @@ export default function CreateOrderPage() {
           <div className="flex items-center justify-center mb-8">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div 
+                <div
                   className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-200 ${
-                    currentStep === step.id 
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
+                    currentStep === step.id
+                      ? "bg-blue-600 border-blue-600 text-white shadow-lg"
                       : currentStep > step.id
-                      ? 'bg-green-500 border-green-500 text-white'
-                      : 'bg-gray-100 border-gray-300 text-gray-500'
+                      ? "bg-green-500 border-green-500 text-white"
+                      : "bg-gray-100 border-gray-300 text-gray-500"
                   }`}
                 >
                   <step.icon className="h-5 w-5" />
                 </div>
                 <div className="ml-3 hidden sm:block">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.id ? 'text-gray-900' : 'text-gray-500'
-                  }`}>
+                  <p
+                    className={`text-sm font-medium ${
+                      currentStep >= step.id ? "text-gray-900" : "text-gray-500"
+                    }`}
+                  >
                     {step.title}
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`h-0.5 w-16 mx-4 ${
-                    currentStep > step.id ? 'bg-green-500' : 'bg-gray-200'
-                  }`} />
+                  <div
+                    className={`h-0.5 w-16 mx-4 ${
+                      currentStep > step.id ? "bg-green-500" : "bg-gray-200"
+                    }`}
+                  />
                 )}
               </div>
             ))}
@@ -865,32 +1006,31 @@ export default function CreateOrderPage() {
 
         {/* Dynamic Content Based on Step */}
         {currentStep === 1 && (
-          <StepOne 
-            orderForm={orderForm} 
-            orderFields={orderFields} 
-            isLoading={isLoading}
+          <StepOne
+            orderForm={orderForm}
+            orderFields={orderFields}
+            isLoading={isUpdating}
             onNext={() => setCurrentStep(2)}
           />
         )}
-        
+
         {currentStep === 2 && (
-          <StepTwo 
+          <StepTwo
             doors={doors}
             setDoors={setDoors}
             fieldOptions={fieldOptions}
             productsList={productsList}
-            measureData={measureData}
             onNext={() => setCurrentStep(3)}
             onBack={() => setCurrentStep(1)}
           />
         )}
-        
+
         {currentStep === 3 && (
-          <StepThree 
+          <StepThree
             orderForm={orderForm}
             doors={doors}
             totals={totals}
-            isLoading={isLoading}
+            isLoading={isUpdating}
             onSubmit={onSubmit}
             onBack={() => setCurrentStep(2)}
             discount_percentage={discount_percentage}
@@ -905,7 +1045,7 @@ export default function CreateOrderPage() {
 // Step Components
 function StepOne({ orderForm, orderFields, isLoading, onNext }: any) {
   const { t } = useTranslation();
-  
+
   const handleNext = () => {
     onNext();
   };
@@ -934,7 +1074,7 @@ function StepOne({ orderForm, orderFields, isLoading, onNext }: any) {
             gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
           />
           <div className="flex justify-end pt-6">
-            <Button 
+            <Button
               onClick={handleNext}
               className="px-8 py-3 text-lg font-medium"
               size="lg"
@@ -948,16 +1088,24 @@ function StepOne({ orderForm, orderFields, isLoading, onNext }: any) {
   );
 }
 
-function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, measureData }: any) {
+function StepTwo({
+  doors,
+  setDoors,
+  fieldOptions,
+  productsList,
+  onNext,
+  onBack,
+}: any) {
   const { t } = useTranslation();
-  
+  const [editingDoorIndex, setEditingDoorIndex] = useState<number | null>(null);
+
   const handleAddDoor = (doorData: any) => {
     console.log("Adding door data:", doorData); // Debug log
-    
+
     // Ensure all required fields are present and properly typed
     const safeDoorData = {
       ...doorData,
-      model: doorData.model || '',
+      model: doorData.model || "",
       price: parseFloat(doorData.price || 0),
       quantity: parseInt(doorData.quantity || 1),
       height: parseFloat(doorData.height || 0),
@@ -967,15 +1115,48 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
       crowns: doorData.crowns || [],
       accessories: doorData.accessories || [],
     };
-    
+
     console.log("Safe door data:", safeDoorData); // Debug log
     setDoors([...doors, safeDoorData]);
   };
-  
-  const handleRemoveDoor = (index: number) => setDoors(doors.filter((_: any, i: number) => i !== index));
 
-  // Get next measure door to pre-populate (if any)
-  const nextMeasureDoor = measureData?.doors?.[doors.length] || null;
+  const handleEditDoor = (doorData: any, index: number) => {
+    console.log("Editing door data:", doorData, "at index:", index); // Debug log
+
+    // Ensure all required fields are present and properly typed
+    const safeDoorData = {
+      ...doorData,
+      model: doorData.model || "",
+      price: parseFloat(doorData.price || 0),
+      quantity: parseInt(doorData.quantity || 1),
+      height: parseFloat(doorData.height || 0),
+      width: parseFloat(doorData.width || 0),
+      extensions: doorData.extensions || [],
+      casings: doorData.casings || [],
+      crowns: doorData.crowns || [],
+      accessories: doorData.accessories || [],
+    };
+
+    const updatedDoors = [...doors];
+    updatedDoors[index] = safeDoorData;
+    setDoors(updatedDoors);
+    setEditingDoorIndex(null); // Reset editing state
+  };
+
+  const handleRemoveDoor = (index: number) => {
+    setDoors(doors.filter((_: any, i: number) => i !== index));
+    if (editingDoorIndex === index) {
+      setEditingDoorIndex(null); // Reset editing state if removing the door being edited
+    }
+  };
+
+  const handleStartEdit = (index: number) => {
+    setEditingDoorIndex(index);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingDoorIndex(null);
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -991,23 +1172,10 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
                 <Badge variant="secondary" className="ml-3 px-3 py-1">
                   {doors.length} {t("forms.doors_added")}
                 </Badge>
-                {measureData && (
-                  <Badge variant="outline" className="ml-2 px-3 py-1 bg-blue-50 text-blue-700 border-blue-200">
-                    {measureData.doors.length} {t("measure.doors_from_measure")}
-                  </Badge>
-                )}
               </CardTitle>
               <p className="text-gray-600 mt-2">
-                {measureData 
-                  ? t("measure.configure_doors_from_measure")
-                  : t("forms.add_doors_description")
-                }
+                {t("forms.add_doors_description")}
               </p>
-              {/* {nextMeasureDoor && (
-                <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-700">
-                  <strong>{t("debug.info")}:</strong> {t("measure.next_measure_door_found")}: {Object.keys(nextMeasureDoor).join(', ')}
-                </div>
-              )} */}
             </div>
           </div>
         </CardHeader>
@@ -1021,15 +1189,43 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
               </h3>
               <div className="grid gap-4 md:grid-cols-2">
                 {doors.map((door: any, index: number) => (
-                  <DoorCard 
+                  <DoorCard
                     key={index}
                     door={door}
                     index={index}
                     productsList={productsList}
                     onRemove={() => handleRemoveDoor(index)}
+                    onEdit={() => handleStartEdit(index)}
+                    isEditing={editingDoorIndex === index}
                   />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Edit Door Form - Show when editing */}
+          {editingDoorIndex !== null && (
+            <div className="border-2 border-orange-200 rounded-xl p-8 bg-orange-50/30">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-3">
+                  <Edit3 className="h-8 w-8 text-orange-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {t("forms.edit_door")} {editingDoorIndex + 1}
+                </h3>
+                <p className="text-gray-600">
+                  {t("forms.modify_door_specifications")}
+                </p>
+              </div>
+              <DoorForm
+                onSubmit={(doorData: any) =>
+                  handleEditDoor(doorData, editingDoorIndex)
+                }
+                fieldOptions={fieldOptions}
+                initialData={doors[editingDoorIndex]}
+                isEditing={true}
+                onCancel={handleCancelEdit}
+              />
             </div>
           )}
 
@@ -1040,52 +1236,18 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
                 <Plus className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {nextMeasureDoor 
-                  ? t("measure.add_door_from_measure", { number: doors.length + 1 })
-                  : t("forms.add_new_door")
-                }
+                {t("forms.add_new_door")}
               </h3>
               <p className="text-gray-600">
-                {nextMeasureDoor 
-                  ? t("measure.door_dimensions_prefilled") + ` (${t("forms.door")} ${doors.length + 1}/${measureData?.doors?.length || 0})`
-                  : t("forms.configure_door_specifications")
-                }
+                {t("forms.configure_door_specifications")}
               </p>
-              {/* {nextMeasureDoor && (
-                <div className="mt-3 p-3 bg-blue-100 rounded-lg text-sm text-blue-800">
-                  <p><strong>{t("measure.door_number")}:</strong> {doors.length + 1} / {measureData?.doors?.length || 0}</p>
-                  <p><strong>{t("measure.room")}:</strong> {nextMeasureDoor.room_name || t("measure.not_specified")}</p>
-                  <p><strong>{t("forms.dimensions")}:</strong> {nextMeasureDoor.width}W x {nextMeasureDoor.height}H</p>
-                  <p><strong>{t("forms.quantity")}:</strong> {nextMeasureDoor.quantity}</p>
-                  {nextMeasureDoor.extensions?.length > 0 && (
-                    <p><strong>{t("forms.extensions")}:</strong> {nextMeasureDoor.extensions.length} {t("common.items")}</p>
-                  )}
-                  {nextMeasureDoor.crowns?.length > 0 && (
-                    <p><strong>{t("forms.crowns")}:</strong> {nextMeasureDoor.crowns.length} {t("common.items")}</p>
-                  )}
-                </div>
-              )} */}
             </div>
-            <DoorForm
-              key={`door-form-${doors.length}`} // Force re-render when doors count changes
-              onSubmit={handleAddDoor}
-              fieldOptions={fieldOptions}
-              measureDoor={nextMeasureDoor}
-            />
-            {/* Debug info */}
-            {/* {nextMeasureDoor && (
-              <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200 text-xs">
-                <p><strong>{t("debug.info")} - {t("debug.measure_door_data")}:</strong></p>
-                <pre className="mt-2 overflow-auto max-h-32">
-                  {JSON.stringify(nextMeasureDoor, null, 2)}
-                </pre>
-              </div>
-            )} */}
+            <DoorForm onSubmit={handleAddDoor} fieldOptions={fieldOptions} />
           </div>
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">
-            <Button 
+            <Button
               variant="outline"
               onClick={onBack}
               className="px-8 py-3 text-lg font-medium"
@@ -1093,7 +1255,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
             >
               ← {t("common.back")}
             </Button>
-            <Button 
+            <Button
               onClick={onNext}
               disabled={doors.length === 0}
               className="px-8 py-3 text-lg font-medium"
@@ -1102,7 +1264,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
               {t("common.review_order")} →
             </Button>
           </div>
-          
+
           {doors.length === 0 && (
             <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-200">
               <p className="text-amber-700 font-medium">
@@ -1116,7 +1278,16 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack, 
   );
 }
 
-function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment }: any) {
+function StepThree({
+  orderForm,
+  doors,
+  totals,
+  isLoading,
+  onSubmit,
+  onBack,
+  discount_percentage,
+  advance_payment,
+}: any) {
   const { t } = useTranslation();
 
   // Calculate detailed subtotals
@@ -1127,7 +1298,11 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
       acc.doors += doorPrice;
 
       const sumItems = (items: any[]) =>
-        items?.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0) || 0;
+        items?.reduce(
+          (sum, item) =>
+            sum + parseFloat(item.price || 0) * (item.quantity || 1),
+          0
+        ) || 0;
 
       acc.extensions += sumItems(door.extensions);
       acc.casings += sumItems(door.casings);
@@ -1156,18 +1331,25 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
               {/* Order Details Summary */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="text-sm text-gray-600">{t("forms.doors_count")}</p>
+                  <p className="text-sm text-gray-600">
+                    {t("forms.doors_count")}
+                  </p>
                   <p className="font-semibold">{doors.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">{t("forms.total_items")}</p>
+                  <p className="text-sm text-gray-600">
+                    {t("forms.total_items")}
+                  </p>
                   <p className="font-semibold">
-                    {doors.reduce((total: number, door: any) =>
-                      total + 1 +
-                      (door.extensions?.length || 0) +
-                      (door.casings?.length || 0) +
-                      (door.crowns?.length || 0) +
-                      (door.accessories?.length || 0), 0
+                    {doors.reduce(
+                      (total: number, door: any) =>
+                        total +
+                        1 +
+                        (door.extensions?.length || 0) +
+                        (door.casings?.length || 0) +
+                        (door.crowns?.length || 0) +
+                        (door.accessories?.length || 0),
+                      0
                     )}
                   </p>
                 </div>
@@ -1182,7 +1364,9 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
-                    <span className="font-semibold">{priceBreakdown.doors.toFixed(2)} сум</span>
+                    <span className="font-semibold">
+                      {priceBreakdown.doors.toFixed(2)} сум
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
@@ -1202,23 +1386,35 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
-                    <span className="font-bold">{totals.totalAmount.toFixed(2)} сум</span>
+                    <span className="font-bold">
+                      {totals.totalAmount.toFixed(2)} сум
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Door Details */}
               <div className="space-y-4">
-                <h4 className="font-semibold text-gray-800">{t("forms.door_details")}</h4>
+                <h4 className="font-semibold text-gray-800">
+                  {t("forms.door_details")}
+                </h4>
                 {doors.map((door: any, index: number) => (
                   <div key={index} className="p-4 border rounded-lg bg-white">
                     <h5 className="font-medium mb-2">
                       {t("forms.door")} {index + 1}
                     </h5>
                     <div className="text-sm text-gray-600 space-y-1">
-                      <p>{t("forms.dimensions")}: {parseFloat(door.width || 0)} x {parseFloat(door.height || 0)}</p>
-                      <p>{t("forms.quantity")}: {parseInt(door.quantity || 1)}</p>
-                      <p>{t("forms.price")}: {parseFloat(door.price || 0).toFixed(2)} сум</p>
+                      <p>
+                        {t("forms.dimensions")}: {parseFloat(door.width || 0)} x{" "}
+                        {parseFloat(door.height || 0)}
+                      </p>
+                      <p>
+                        {t("forms.quantity")}: {parseInt(door.quantity || 1)}
+                      </p>
+                      <p>
+                        {t("forms.price")}:{" "}
+                        {parseFloat(door.price || 0).toFixed(2)} сум
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -1231,21 +1427,29 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
         <div className="space-y-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
             <CardHeader>
-              <CardTitle className="text-xl">{t("forms.pricing_summary")}</CardTitle>
+              <CardTitle className="text-xl">
+                {t("forms.pricing_summary")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
-                  <span className="font-semibold">{totals.totalAmount.toFixed(0)} сум</span>
+                  <span className="font-semibold">
+                    {totals.totalAmount.toFixed(0)} сум
+                  </span>
                 </div>
                 <div className="flex justify-between text-green-600">
-                  <span>{t("forms.discount")} ({discount_percentage || 0}%)</span>
+                  <span>
+                    {t("forms.discount")} ({discount_percentage || 0}%)
+                  </span>
                   <span>-{totals.discountAmount.toFixed(0)} сум</span>
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span>-{parseFloat(advance_payment || 0).toFixed(0)} сум</span>
+                  <span>
+                    -{parseFloat(advance_payment || 0).toFixed(0)} сум
+                  </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
@@ -1253,7 +1457,7 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                   <span>{totals.remainingBalance.toFixed(0)} сум</span>
                 </div>
               </div>
-              
+
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
@@ -1261,13 +1465,11 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
-                  {isLoading ? `${t("common.creating")}...` : t("common.create_order")}
+                  {isLoading
+                    ? `${t("common.creating")}...`
+                    : t("common.create_order")}
                 </Button>
-                <Button 
-                  variant="outline"
-                  onClick={onBack}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={onBack} className="w-full">
                    {t("common.back_to_doors")}
                 </Button>
               </div>
@@ -1280,12 +1482,19 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
 }
 
 // Enhanced Door Card Component
-function DoorCard({ door, index, productsList, onRemove }: any) {
+function DoorCard({
+  door,
+  index,
+  productsList,
+  onRemove,
+  onEdit,
+  isEditing,
+}: any) {
   const { t } = useTranslation();
-  
+
   const getProductName = (modelId: string | any) => {
     // Handle if modelId is an object
-    if (typeof modelId === 'object' && modelId !== null) {
+    if (typeof modelId === "object" && modelId !== null) {
       if (modelId.name) return modelId.name;
       if (modelId.label) return modelId.label;
       if (modelId.value) {
@@ -1298,13 +1507,13 @@ function DoorCard({ door, index, productsList, onRemove }: any) {
         return t("forms.unknown_product");
       }
     }
-    
+
     // Now modelId should be a string or number
     const model = getProductById(productsList, modelId);
-    if (model && typeof model === 'object' && model.name) {
+    if (model && typeof model === "object" && model.name) {
       return model.name;
     }
-    if (typeof modelId === 'string' || typeof modelId === 'number') {
+    if (typeof modelId === "string" || typeof modelId === "number") {
       return String(modelId);
     }
     return t("forms.unknown_product");
@@ -1312,39 +1521,40 @@ function DoorCard({ door, index, productsList, onRemove }: any) {
 
   const calculateDoorTotal = () => {
     let total = parseFloat(door.price || 0) * (door.quantity || 1);
-    
-    const addItemsTotal = (items: any[]) => 
-      items?.reduce((sum, item) => 
-        sum + parseFloat(item.price || 0) * (item.quantity || 1), 0
+
+    const addItemsTotal = (items: any[]) =>
+      items?.reduce(
+        (sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1),
+        0
       ) || 0;
 
     total += addItemsTotal(door.extensions);
     total += addItemsTotal(door.casings);
     total += addItemsTotal(door.crowns);
     total += addItemsTotal(door.accessories);
-    
+
     return total;
   };
 
   // Safely get door dimensions
   const getDoorWidth = () => {
     const width = door.width;
-    if (typeof width === 'number') return width;
-    if (typeof width === 'string') return parseFloat(width) || 0;
+    if (typeof width === "number") return width;
+    if (typeof width === "string") return parseFloat(width) || 0;
     return 0;
   };
 
   const getDoorHeight = () => {
     const height = door.height;
-    if (typeof height === 'number') return height;
-    if (typeof height === 'string') return parseFloat(height) || 0;
+    if (typeof height === "number") return height;
+    if (typeof height === "string") return parseFloat(height) || 0;
     return 0;
   };
 
   const getDoorQuantity = () => {
     const quantity = door.quantity;
-    if (typeof quantity === 'number') return quantity;
-    if (typeof quantity === 'string') return parseFloat(quantity) || 1;
+    if (typeof quantity === "number") return quantity;
+    if (typeof quantity === "string") return parseFloat(quantity) || 1;
     return 1;
   };
 
@@ -1360,20 +1570,32 @@ function DoorCard({ door, index, productsList, onRemove }: any) {
               {t("forms.door")} {index + 1}
             </Badge>
             <p className="text-sm text-gray-500 mt-1">
-              {getDoorWidth()} x {getDoorHeight()} • {t("forms.qty_short")}: {getDoorQuantity()}
+              {getDoorWidth()} x {getDoorHeight()} • {t("forms.qty_short")}:{" "}
+              {getDoorQuantity()}
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRemove}
-          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onEdit}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2"
+            disabled={isEditing}
+          >
+            <Edit3 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-      
+
       <div className="space-y-3">
         <div>
           <p className="text-sm font-medium text-gray-700 truncate">
@@ -1383,7 +1605,7 @@ function DoorCard({ door, index, productsList, onRemove }: any) {
             ${calculateDoorTotal().toFixed(2)}
           </p>
         </div>
-        
+
         {/* Show accessories count */}
         <div className="flex gap-2 text-xs text-gray-500">
           {door.extensions?.length > 0 && (
@@ -1417,101 +1639,82 @@ function DoorCard({ door, index, productsList, onRemove }: any) {
 function DoorForm({
   onSubmit,
   fieldOptions,
-  measureDoor,
+  initialData = null,
+  isEditing = false,
+  onCancel = null,
 }: {
   onSubmit: (data: any) => void;
   fieldOptions: any;
-  measureDoor?: any;
+  initialData?: any;
+  isEditing?: boolean;
+  onCancel?: (() => void) | null;
 }) {
   const { t } = useTranslation();
-  
-  // Create default values from measure data
-  const defaultValues = measureDoor ? {
-    height: measureDoor.height || '',
-    width: measureDoor.width || '',
-    quantity: measureDoor.quantity || 1,
-    glass_type: measureDoor.glass_type || '',
-    threshold: measureDoor.threshold || '',
-    extensions: measureDoor.extensions?.map((ext: any) => ({
-      height: ext.height || '',
-      width: ext.width || '',
-      quantity: ext.quantity || 1,
-      model: '',
-      price_type: '',
-      price: '',
-    })) || [],
-    crowns: measureDoor.crowns?.map((crown: any) => ({
-      quantity: crown.quantity || 1,
-      model: '',
-      price_type: '',
-      price: '',
-    })) || [],
-  } : {};
-  
-  console.log("🔍 DEBUG: Default values for form:", defaultValues);
-  console.log("🔍 DEBUG: Measure door data received:", measureDoor);
-  
-  const form = useForm({
-    defaultValues,
-  });
-  
-  // Update form values when measureDoor changes (for next door in sequence)
-  useEffect(() => {
-    if (measureDoor) {
-      console.log("🔍 DEBUG: Measure door changed, updating form with:", measureDoor);
-      
-      const newDefaultValues = {
-        height: measureDoor.height || '',
-        width: measureDoor.width || '',
-        quantity: measureDoor.quantity || 1,
-        glass_type: measureDoor.glass_type || '',
-        threshold: measureDoor.threshold || '',
-        extensions: measureDoor.extensions?.map((ext: any) => ({
-          height: ext.height || '',
-          width: ext.width || '',
-          quantity: ext.quantity || 1,
-          model: '',
-          price_type: '',
-          price: '',
-        })) || [],
-        crowns: measureDoor.crowns?.map((crown: any) => ({
-          quantity: crown.quantity || 1,
-          model: '',
-          price_type: '',
-          price: '',
-        })) || [],
-        // Reset other fields that need user input
-        model: '',
-        price_type: '',
-        price: '',
-        material: '',
-        material_type: '',
-        massif: '',
-        color: '',
-        patina_color: '',
-        beading_main: '',
-        beading_additional: '',
-        casings: [],
-        accessories: [],
-      };
-      
-      form.reset(newDefaultValues);
-    } else {
-      // If no measure door, reset to empty form
-      form.reset({});
-    }
-  }, [measureDoor, form]);
-  
-  // Debug: Watch form values
-  const watchedValues = form.watch();
-  useEffect(() => {
-    console.log("🔍 DEBUG: Form values changed:", watchedValues);
-  }, [watchedValues]);
-  
+  const form = useForm();
   const [crownSize, setCrownSize] = useState<number | null>(null);
   const [casingSize, setCasingSize] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const fetchedAttributeSettings = useRef(false);
+
+  // Initialize form with existing data when editing
+  useEffect(() => {
+    if (initialData && isEditing) {
+      console.log("🚀 Initializing DoorForm with data:", initialData); // Debug log
+      console.log("🚪 Initial model data:", initialData.model);
+      
+      // Multiple initialization attempts to ensure reliability
+      const initializeForm = () => {
+        try {
+          form.reset(initialData);
+          console.log("✅ Door form reset with initial data:", initialData);
+          
+          // Force set the model field specifically if it exists
+          if (initialData.model && typeof initialData.model === 'object' && initialData.model.id) {
+            console.log("🎯 Setting model field explicitly:", initialData.model);
+            form.setValue('model', initialData.model);
+            
+            // Verify the value was set
+            const currentValue = form.getValues('model');
+            console.log("✅ Model value after setValue:", currentValue);
+          }
+          
+          // Trigger validation
+          form.trigger();
+        } catch (error) {
+          console.error("❌ Error initializing door form:", error);
+        }
+      };
+
+      // Initial attempt
+      setTimeout(initializeForm, 50);
+      
+      // Backup attempt in case the first fails
+      setTimeout(initializeForm, 200);
+      
+      // Final attempt for stubborn cases
+      setTimeout(initializeForm, 500);
+
+      // Set expanded state if there's material data
+      const hasMaterialData = [
+        "material",
+        "material_type",
+        "massif",
+        "color",
+        "patina_color",
+        "beading_main",
+        "beading_additional",
+        "glass_type",
+        "threshold",
+      ].some((field) => initialData[field]);
+      setIsExpanded(hasMaterialData);
+    }
+  }, [initialData, isEditing, form]);
+
+  // Debug effect to monitor form model value changes
+  const formModelValue = form.watch('model');
+  useEffect(() => {
+    console.log("DoorForm model value changed:", formModelValue);
+  }, [formModelValue]);
 
   // Fetch crown_size and casing_size from attribute settings API once
   useEffect(() => {
@@ -1520,23 +1723,28 @@ function DoorForm({
     api
       .get("attribute-settings/")
       .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
-        const found = data.find((item: any) => 
-          item.crown_size !== undefined || item.casing_size !== undefined
+        const data = Array.isArray(res.data)
+          ? res.data
+          : res.data?.results || [];
+        const found = data.find(
+          (item: any) =>
+            item.crown_size !== undefined || item.casing_size !== undefined
         );
-        
+
         if (found) {
           if (found.crown_size !== undefined) {
-            const size = typeof found.crown_size === "number" 
-              ? found.crown_size 
-              : parseFloat(found.crown_size);
+            const size =
+              typeof found.crown_size === "number"
+                ? found.crown_size
+                : parseFloat(found.crown_size);
             setCrownSize(isNaN(size) ? null : size);
           }
-          
+
           if (found.casing_size !== undefined) {
-            const size = typeof found.casing_size === "number" 
-              ? found.casing_size 
-              : parseFloat(found.casing_size);
+            const size =
+              typeof found.casing_size === "number"
+                ? found.casing_size
+                : parseFloat(found.casing_size);
             setCasingSize(isNaN(size) ? null : size);
           }
         }
@@ -1549,65 +1757,60 @@ function DoorForm({
 
   // Group fields by category for better organization
   const basicFields = [
-    "model", "price_type", "price", "height", "width", "quantity"
-  ];
-  
-  const materialFields = [
-    "material", "material_type", "massif", "color", "patina_color", 
-    "beading_main", "beading_additional", "glass_type", "threshold"
+    "model",
+    "price_type",
+    "price",
+    "height",
+    "width",
+    "quantity",
   ];
 
-  const fields = doorFields(t, fieldOptions, form, 
+  const materialFields = [
+    "material",
+    "material_type",
+    "massif",
+    "color",
+    "patina_color",
+    "beading_main",
+    "beading_additional",
+    "glass_type",
+    "threshold",
+  ];
+
+  const fields = doorFields(
+    t,
+    fieldOptions,
+    form,
     crownSize === null ? undefined : crownSize,
-    casingSize === null ? undefined : casingSize,
-    measureDoor
+    casingSize === null ? undefined : casingSize
   );
-  
-  const basicFieldsData = fields.filter(f => basicFields.includes(f.name)).map(field => {
-    // Add default values from measure data if available
-    if (measureDoor) {
-      switch (field.name) {
-        case 'height':
-          return { ...field, defaultValue: measureDoor.height || '' };
-        case 'width':
-          return { ...field, defaultValue: measureDoor.width || '' };
-        case 'quantity':
-          return { ...field, defaultValue: measureDoor.quantity || 1 };
-        default:
-          return field;
-      }
-    }
-    return field;
-  });
-  
-  const materialFieldsData = fields.filter(f => materialFields.includes(f.name)).map(field => {
-    // Add default values from measure data if available
-    if (measureDoor) {
-      switch (field.name) {
-        case 'glass_type':
-          return { ...field, defaultValue: measureDoor.glass_type || '' };
-        case 'threshold':
-          return { ...field, defaultValue: measureDoor.threshold || '' };
-        default:
-          return field;
-      }
-    }
-    return field;
-  });
-  const dynamicFieldsData = fields.filter(f => !basicFields.includes(f.name) && !materialFields.includes(f.name));
+
+  const basicFieldsData = fields.filter((f) => basicFields.includes(f.name));
+  const materialFieldsData = fields.filter((f) =>
+    materialFields.includes(f.name)
+  );
+  const dynamicFieldsData = fields.filter(
+    (f) => !basicFields.includes(f.name) && !materialFields.includes(f.name)
+  );
 
   // Normalize data before submitting
   const normalizeDoorData = (data: any) => {
+    console.log('🔄 Normalizing door data:', data);
+    console.log('🚪 Door model before normalization:', data.model);
+    
     const normalizeModelField = (item: any) => {
       if (item.model && typeof item.model === "object") {
         // Extract the ID from the model object
-        return { ...item, model: item.model.value || item.model.id || item.model };
+        return {
+          ...item,
+          model: item.model.value || item.model.id || item.model,
+        };
       }
       return item;
     };
 
     let newData = { ...data };
-    
+
     // Normalize the main door model
     if (newData.model && typeof newData.model === "object") {
       newData.model = newData.model.value || newData.model.id || newData.model;
@@ -1624,7 +1827,9 @@ function DoorForm({
       const doorWidth = parseFloat(newData.width || 0);
       newData.crowns = newData.crowns.map((crown: any) => ({
         ...normalizeModelField(crown),
-        width: (doorWidth && !isNaN(doorWidth) ? doorWidth : 0) + (crownSize && !isNaN(crownSize) ? crownSize : 0),
+        width:
+          (doorWidth && !isNaN(doorWidth) ? doorWidth : 0) +
+          (crownSize && !isNaN(crownSize) ? crownSize : 0),
       }));
     } else if (Array.isArray(newData.crowns)) {
       newData.crowns = newData.crowns.map(normalizeModelField);
@@ -1635,22 +1840,22 @@ function DoorForm({
       const doorHeight = parseFloat(newData.height || 0);
       newData.casings = newData.casings.map((casing: any) => {
         const normalizedCasing = normalizeModelField(casing);
-        
+
         // Calculate height based on casing type
         if (casing.casing_type === "боковой") {
           normalizedCasing.height = doorHeight + casingSize;
         } else if (casing.casing_type === "прямой") {
-          normalizedCasing.height = doorHeight + (2 * casingSize);
+          normalizedCasing.height = doorHeight + 2 * casingSize;
         } else {
           // Default case or if type is not set, use original height
           normalizedCasing.height = parseFloat(casing.height || 0);
         }
-        
+
         // Ensure other numeric fields are properly converted
         normalizedCasing.price = parseFloat(casing.price || 0);
         normalizedCasing.quantity = parseInt(casing.quantity || 1);
         normalizedCasing.width = parseFloat(casing.width || 0);
-        
+
         return normalizedCasing;
       });
     } else if (Array.isArray(newData.casings)) {
@@ -1663,6 +1868,9 @@ function DoorForm({
         newData[key] = newData[key].map(normalizeModelField);
       }
     });
+
+    console.log('🚪 Door model after normalization:', newData.model);
+    console.log('✅ Final normalized door data:', newData);
     
     return newData;
   };
@@ -1672,13 +1880,23 @@ function DoorForm({
       const normalizedData = normalizeDoorData(data);
       console.log("Normalized door data:", normalizedData); // Debug log
       onSubmit(normalizedData);
-      
-      // The form will be reset and repopulated by the useEffect when measureDoor changes
-      setIsExpanded(false);
-      toast.success(t("forms.door_added_successfully"));
+
+      if (!isEditing) {
+        // Only reset and show success for new doors
+        form.reset();
+        setIsExpanded(false);
+        toast.success(t("forms.door_added_successfully"));
+      } else {
+        // For editing, show update success
+        toast.success(t("forms.door_updated_successfully"));
+      }
     } catch (error) {
       console.error("Error normalizing door data:", error);
-      toast.error(t("forms.error_adding_door"));
+      toast.error(
+        isEditing
+          ? t("forms.error_updating_door")
+          : t("forms.error_adding_door")
+      );
     }
   };
 
@@ -1689,39 +1907,16 @@ function DoorForm({
         <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <DoorOpen className="h-5 w-5 text-blue-600" />
           {t("forms.basic_door_info")}
-          {/* {measureDoor && (
-            <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">
-              From Measure
-            </Badge>
-          )} */}
         </h4>
-        {/* {measureDoor && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-700">
-              <strong>Note:</strong> Blue fields are pre-filled from measure data and cannot be edited. Fill in the remaining fields.
-            </p>
-          </div>
-        )} */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
           <ResourceForm
             fields={basicFieldsData}
             onSubmit={handleSubmit}
             form={form}
-            defaultValues={defaultValues}
             hideSubmitButton={true}
             gridClassName="contents"
           />
         </div>
-        
-        {/* Debug: Show current form values */}
-        {/* {measureDoor && (
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg border text-xs">
-            <p><strong>DEBUG - Current Form Values:</strong></p>
-            <pre className="mt-2 overflow-auto max-h-32">
-              {JSON.stringify(form.watch(), null, 2)}
-            </pre>
-          </div>
-        )} */}
       </div>
 
       {/* Material Specifications */}
@@ -1735,18 +1930,21 @@ function DoorForm({
             <Package className="h-5 w-5" />
             {t("forms.material_specifications")}
           </span>
-          <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+          <span
+            className={`transform transition-transform ${
+              isExpanded ? "rotate-180" : ""
+            }`}
+          >
             ↓
           </span>
         </button>
-        
+
         {isExpanded && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
             <ResourceForm
               fields={materialFieldsData}
               onSubmit={handleSubmit}
               form={form}
-              defaultValues={defaultValues}
               hideSubmitButton={true}
               gridClassName="contents"
             />
@@ -1765,7 +1963,6 @@ function DoorForm({
             fields={dynamicFieldsData}
             onSubmit={handleSubmit}
             form={form}
-            defaultValues={defaultValues}
             hideSubmitButton={true}
             gridClassName="md:grid-cols-1 lg:grid-cols-1 gap-4"
           />
@@ -1779,29 +1976,40 @@ function DoorForm({
           className="flex-1 h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
           size="lg"
           disabled={
-            (crownSize === null && fields.some(f => f.name === "crowns")) ||
-            (casingSize === null && fields.some(f => f.name === "casings"))
+            (crownSize === null && fields.some((f) => f.name === "crowns")) ||
+            (casingSize === null && fields.some((f) => f.name === "casings"))
           }
         >
           <Plus className="h-5 w-5 mr-2" />
-          {t("forms.add_door")}
+          {isEditing ? t("forms.update_door") : t("forms.add_door")}
         </Button>
-        
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            form.reset();
-            setIsExpanded(false);
-          }}
-          className="px-6"
-        >
-          {t("common.reset")}
-        </Button>
+
+        {isEditing && onCancel ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="px-6"
+          >
+            {t("common.cancel")}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              form.reset();
+              setIsExpanded(false);
+            }}
+            className="px-6"
+          >
+            {t("common.reset")}
+          </Button>
+        )}
       </div>
-      
-      {((fields.some(f => f.name === "crowns") && crownSize === null) ||
-        (fields.some(f => f.name === "casings") && casingSize === null)) && (
+
+      {((fields.some((f) => f.name === "crowns") && crownSize === null) ||
+        (fields.some((f) => f.name === "casings") && casingSize === null)) && (
         <div className="text-center p-4 bg-amber-50 rounded-lg border border-amber-200">
           <p className="text-amber-700 font-medium">
             {t("forms.loading_attribute_settings")}

@@ -275,6 +275,13 @@ export default function OrdersPage() {
                   <Button size="sm" onClick={() => handleEditClick(order)}>
                     {t('common.edit')}
                   </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigate(`/orders/edit/${order.id}`)}
+                  >
+                    {t('common.edit_advanced')}
+                  </Button>
                   <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(order)}>
                     {t('common.delete')}
                   </Button>

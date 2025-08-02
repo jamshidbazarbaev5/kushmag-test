@@ -28,6 +28,7 @@ export function AsyncSearchableSelect({ value, onChange, placeholder, searchProd
   const [search, setSearch] = useState<string>('');
   const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [initialized, setInitialized] = useState<boolean>(false);
 
   const fetchOptions = async (query: string) => {
     setLoading(true);
@@ -48,6 +49,36 @@ export function AsyncSearchableSelect({ value, onChange, placeholder, searchProd
     }
   }, [search]);
 
+  // Enhanced initialization effect for pre-selected values
+  React.useEffect(() => {
+    if (value && value.id && value.name && !initialized) {
+      console.log("Initializing AsyncSearchableSelect with value:", value);
+      // Always create an option for the pre-selected value
+      const initialOption = { value: value, label: value.name };
+      setOptions([initialOption]);
+      setInitialized(true);
+    }
+  }, [value, initialized]);
+
+  // Reset initialization when value changes to a different product
+  React.useEffect(() => {
+    if (value?.id) {
+      const currentValueInOptions = options.find(opt => opt.value.id === value.id);
+      if (!currentValueInOptions && value.name) {
+        console.log("Value changed, reinitializing options:", value);
+        const newOption = { value: value, label: value.name };
+        setOptions(() => {
+          // Replace existing options with the new value option
+          return [newOption];
+        });
+      }
+    } else if (!value) {
+      // Clear options when no value is selected
+      setOptions([]);
+      setInitialized(false);
+    }
+  }, [value?.id]);
+
   return (
     <div>
       <Input
@@ -61,12 +92,14 @@ export function AsyncSearchableSelect({ value, onChange, placeholder, searchProd
       <Select
         onValueChange={val => {
           const selected = options.find(opt => opt.value.id === val);
+          console.log("AsyncSearchableSelect onChange:", val, selected);
           onChange(selected ? selected.value : null);
         }}
         value={value?.id || ''}
+        key={value?.id || 'empty'} // Force re-render when value changes
       >
         <SelectTrigger>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={value?.name || placeholder} />
         </SelectTrigger>
         <SelectContent>
           {loading ? (
