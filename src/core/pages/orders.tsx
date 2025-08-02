@@ -137,10 +137,10 @@ export default function OrdersPage() {
     setExpandedRows(newExpanded);
   };
 
-  const handleEditClick = (order: Order) => {
-    setEditingOrder(order);
-    setIsEditDialogOpen(true);
-  };
+  // const handleEditClick = (order: Order) => {
+  //   setEditingOrder(order);
+  //   setIsEditDialogOpen(true);
+  // };
 
   const handleDeleteClick = (order: Order) => {
     if (!order.id) return;
@@ -272,9 +272,7 @@ export default function OrdersPage() {
                   {expandedRows.has(order.id) ? t('common.collapse') : t('common.expand')}
                 </Button>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => handleEditClick(order)}>
-                    {t('common.edit')}
-                  </Button>
+                
                   <Button 
                     size="sm" 
                     variant="outline"
