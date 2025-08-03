@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResourceForm } from '../helpers/ResourceForm';
-import { toast } from 'sonner';
-import { useGetOrders, useUpdateOrder, useDeleteOrder } from '../api/order';
-import type { Order } from '../api/order';
+import { ResourceForm } from "../helpers/ResourceForm";
+import { toast } from "sonner";
+import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
+import type { Order } from "../api/order";
 
 // import { format } from 'date-fns';
 
@@ -112,8 +112,6 @@ import type { Order } from '../api/order';
 //   </div>
 // );
 
-
-
 export default function OrdersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -131,30 +129,30 @@ export default function OrdersPage() {
   //   setIsEditDialogOpen(true);
   // };
 
-    const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+      return date.toLocaleDateString("ru-RU", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
-      return '-';
+      return "-";
     }
-  }
+  };
   const handleDeleteClick = (order: Order) => {
     if (!order.id) return;
 
-    if (window.confirm(t('messages.delete_confirm'))) {
+    if (window.confirm(t("messages.delete_confirm"))) {
       deleteOrder(order.id, {
         onSuccess: () => {
-          toast.success(t('messages.deleted'));
+          toast.success(t("messages.deleted"));
         },
         onError: () => {
-          toast.error(t('messages.error'));
+          toast.error(t("messages.error"));
         },
       });
     }
@@ -170,12 +168,12 @@ export default function OrdersPage() {
 
     updateOrder(orderData, {
       onSuccess: () => {
-        toast.success(t('messages.updated'));
+        toast.success(t("messages.updated"));
         setIsEditDialogOpen(false);
         setEditingOrder(null);
       },
       onError: () => {
-        toast.error(t('messages.error'));
+        toast.error(t("messages.error"));
       },
     });
   };
@@ -185,57 +183,119 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{t('pages.orders')}</h1>
-        <Button onClick={() => navigate('/orders/create')}>
-          {t('common.create')}
+        <h1 className="text-2xl font-bold">{t("pages.orders")}</h1>
+        <Button onClick={() => navigate("/orders/create")}>
+          {t("common.create")}
         </Button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full border rounded-lg bg-white">
+      <div className="overflow-x-auto shadow-sm rounded-lg">
+        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2 text-left">{t('forms.created_at')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.deadline')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.counterparty')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.organization')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.total_amount')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.advance_payment')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.remaining_balance')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.project')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.store')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.description')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.seller')}</th>
-              <th className="px-4 py-2 text-left">{t('forms.operator')}</th>
-              <th className="px-4 py-2 text-left">{t('common.actions')}</th>
+            <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.created_at")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.deadline")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.counterparty")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.organization")}</th>
+              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                {t("forms.total_amount")}
+              </th>
+              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                {t("forms.advance_payment")}
+              </th>
+              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                {t("forms.discount_amount")}
+              </th>
+              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                {t("forms.remaining_balance")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.project")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.store")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.description")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.seller")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.operator")}</th>
+              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("common.actions")}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {ordersData.map((order: any) => (
-              <tr key={order.id} className="border-b">
-                <td className="px-4 py-2">{formatDate(order.created_at) || ''}</td>
-                 <td className="px-4 py-2">{formatDate(order.deadline_date) || ''}</td>
-                <td className="px-4 py-2">{order.agent?.name || ''}</td>
-                <td className="px-4 py-2">{order.organization?.name || ''}</td>
-                <td className="px-4 py-2">{Number(order.total_amount).toFixed(0)}</td>
-                <td className="px-4 py-2">{Number(order.advance_payment).toFixed(0)}</td>
-                <td className="px-4 py-2">{Number(order.remaining_balance).toFixed(0)}</td>
-                <td className="px-4 py-2">{order.project?.name || ''}</td>
-                <td className="px-4 py-2">{order.store?.name || ''}</td>
-                <td className="px-4 py-2">{order?.description || ''}</td>
-                <td className="px-4 py-2">{order.seller?.name || ''}</td>
-                <td className="px-4 py-2">{order.operator?.name || ''}</td>
-                <td className="px-4 py-2">
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
+              <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150">
+                <td className="px-3 py-2 text-xs text-gray-600">
+                  <div className="truncate" title={formatDate(order.created_at)}>
+                    {formatDate(order.created_at)?.split(' ')[0] || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-xs text-gray-600">
+                  <div className="truncate" title={formatDate(order.deadline_date)}>
+                    {formatDate(order.deadline_date)?.split(' ')[0] || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate font-medium text-gray-900" title={order.agent?.name}>
+                    {order.agent?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.organization?.name}>
+                    {order.organization?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
+                  {order.total_amount ? Number(order.total_amount).toLocaleString() : '0'}
+                </td>
+                <td className="px-3 py-2 text-right text-sm text-blue-600">
+                  {order.advance_payment ? Number(order.advance_payment).toLocaleString() : '0'}
+                </td>
+                <td className="px-3 py-2 text-right text-sm text-orange-600">
+                  {order.discount_amount ? Number(order.discount_amount).toLocaleString() : '0'}
+                </td>
+                <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
+                  {order.remaining_balance ? Number(order.remaining_balance).toLocaleString() : '0'}
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.project?.name}>
+                    {order.project?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.store?.name}>
+                    {order.store?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-600" title={order?.description}>
+                    {order?.description || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.seller?.name}>
+                    {order.seller?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.operator?.name}>
+                    {order.operator?.name || '-'}
+                  </div>
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex gap-1 justify-center">
+                    <Button
+                      size="sm"
                       variant="outline"
+                      className="h-7 px-2 text-xs"
                       onClick={() => navigate(`/orders/edit/${order.id}`)}
+                      title={t("common.edit_advanced")}
                     >
-                      {t('common.edit_advanced')}
+                      ✏️
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(order)}>
-                      {t('common.delete')}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleDeleteClick(order)}
+                      title={t("common.delete")}
+                    >
+                      🗑️
                     </Button>
                   </div>
                 </td>
@@ -252,7 +312,7 @@ export default function OrdersPage() {
             onSubmit={handleUpdateSubmit}
             defaultValues={editingOrder || {}}
             isSubmitting={isUpdating}
-            title={t('messages.edit')}
+            title={t("messages.edit")}
           />
         </DialogContent>
       </Dialog>

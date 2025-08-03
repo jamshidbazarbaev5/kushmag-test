@@ -287,12 +287,24 @@ export default function CreateOrderPage() {
   useEffect(() => {
     const calculateTotals = () => {
       const totalAmount = doors.reduce((total, door) => {
-        let doorTotal = parseFloat(door.price || 0) * (door.quantity || 1);
+        // Helper function to convert values with comma to number
+        const convertToNumber = (value: any, defaultValue: number = 0) => {
+          if (typeof value === 'number') return value;
+          if (typeof value === 'string') {
+            const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+            if (normalized === '' || normalized === '.') return defaultValue;
+            const parsed = parseFloat(normalized);
+            return isNaN(parsed) ? defaultValue : parsed;
+          }
+          return defaultValue;
+        };
+
+        let doorTotal = convertToNumber(door.price, 0) * (door.quantity || 1);
 
         const sumItems = (items: any[]) =>
           items?.reduce(
             (sum, item) =>
-              sum + parseFloat(item.price || 0) * (item.quantity || 1),
+              sum + convertToNumber(item.price, 0) * (item.quantity || 1),
             0
           ) || 0;
 
@@ -304,8 +316,20 @@ export default function CreateOrderPage() {
         return total + doorTotal;
       }, 0);
 
-      const discount = parseFloat(discount_percentage || 0);
-      const advance = parseFloat(advance_payment || 0);
+      // Helper function to convert values with comma to number
+      const convertToNumber = (value: any, defaultValue: number = 0) => {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+          const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+          if (normalized === '' || normalized === '.') return defaultValue;
+          const parsed = parseFloat(normalized);
+          return isNaN(parsed) ? defaultValue : parsed;
+        }
+        return defaultValue;
+      };
+
+      const discount = convertToNumber(discount_percentage, 0);
+      const advance = convertToNumber(advance_payment, 0);
 
       // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
       const discountAmount = discountAmountInput > 0 ? discountAmountInput : (totalAmount * discount) / 100;
@@ -559,12 +583,26 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
   const handleSaveDoor = () => {
     if (editingIndex !== null && editingDoor) {
       const updatedDoors = [...doors];
+      
+      // Helper function to convert string with comma to number
+      const convertToNumber = (value: any, defaultValue: number = 0) => {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+          // Replace comma with dot and clean
+          const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+          if (normalized === '' || normalized === '.') return defaultValue;
+          const parsed = parseFloat(normalized);
+          return isNaN(parsed) ? defaultValue : parsed;
+        }
+        return defaultValue;
+      };
+      
       updatedDoors[editingIndex] = {
         ...editingDoor,
-        price: parseFloat(editingDoor.price || 0),
+        price: convertToNumber(editingDoor.price, 0),
         quantity: parseInt(editingDoor.quantity || 1),
-        height: parseFloat(editingDoor.height || 0),
-        width: parseFloat(editingDoor.width || 0),
+        height: convertToNumber(editingDoor.height, 0),
+        width: convertToNumber(editingDoor.width, 0),
       };
       setDoors(updatedDoors);
       setEditingIndex(null);
@@ -619,9 +657,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
       // Use functional update to avoid stale closure issues
       setEditingDoor((prevEditingDoor: any) => {
         if (!prevEditingDoor) return prevEditingDoor;
-        // Handle numeric fields
+        // Handle numeric fields - keep as strings during editing to preserve input like "0,5"
         if (field === 'price' || field === 'height' || field === 'width') {
-          let numericValue = value;
+          let processedValue = value;
           if (typeof value === 'string') {
             // Replace comma with dot for decimal separator and clean input
             let normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
@@ -632,16 +670,12 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
               normalized = parts[0] + '.' + parts.slice(1).join('');
             }
             
-            // Convert to number, handle empty string
-            numericValue = normalized === '' ? 0 : parseFloat(normalized);
-            // If parseFloat returns NaN, default to 0
-            if (isNaN(numericValue)) {
-              numericValue = 0;
-            }
+            // Keep as string to preserve partial input like "0." or "0"
+            processedValue = normalized;
           }
           const newEditingDoor = {
             ...prevEditingDoor,
-            [field]: numericValue
+            [field]: processedValue
           };
           console.log('Setting editingDoor for numeric field:', field, 'new editingDoor:', newEditingDoor);
           return newEditingDoor;
@@ -902,7 +936,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                         <Input
                           type="text"
                           inputMode="decimal"
-                          value={typeof editingDoor?.price === 'number' ? editingDoor.price : editingDoor?.price || ''}
+                          value={editingDoor?.price?.toString() || ''}
                           onChange={(e) => handleFieldChange('price', e.target.value)}
                           className="w-20"
                         />
@@ -931,7 +965,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                         <Input
                           type="text"
                           inputMode="decimal"
-                          value={editingDoor?.height || ''}
+                          value={editingDoor?.height?.toString() || ''}
                           onChange={(e) => handleFieldChange('height', e.target.value)}
                           className="w-20"
                         />
@@ -946,7 +980,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                         <Input
                           type="text"
                           inputMode="decimal"
-                          value={editingDoor?.width || ''}
+                          value={editingDoor?.width?.toString() || ''}
                           onChange={(e) => handleFieldChange('width', e.target.value)}
                           className="w-20"
                         />
@@ -1299,19 +1333,31 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                     <TableCell>
                       <span className="font-semibold text-blue-600">
                         {(() => {
-                          let total = parseFloat(door.price || 0) * parseInt(door.quantity || 1);
+                          // Helper function to convert values with comma to number
+                          const convertToNumber = (value: any, defaultValue: number = 0) => {
+                            if (typeof value === 'number') return value;
+                            if (typeof value === 'string') {
+                              const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+                              if (normalized === '' || normalized === '.') return defaultValue;
+                              const parsed = parseFloat(normalized);
+                              return isNaN(parsed) ? defaultValue : parsed;
+                            }
+                            return defaultValue;
+                          };
+
+                          let total = convertToNumber(door.price, 0) * parseInt(door.quantity || 1);
                           // Add extensions total
                           const extensionsTotal = (door.extensions || []).reduce((sum: number, item: any) => 
-                            sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1)), 0);
+                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
                           // Add casings total
                           const casingsTotal = (door.casings || []).reduce((sum: number, item: any) => 
-                            sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1)), 0);
+                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
                           // Add crowns total
                           const crownsTotal = (door.crowns || []).reduce((sum: number, item: any) => 
-                            sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1)), 0);
+                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
                           // Add accessories total
                           const accessoriesTotal = (door.accessories || []).reduce((sum: number, item: any) => 
-                            sum + (parseFloat(item.price || 0) * parseInt(item.quantity || 1)), 0);
+                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
                           total += extensionsTotal + casingsTotal + crownsTotal + accessoriesTotal;
                           return total.toFixed(2);
                         })()}
@@ -1552,6 +1598,18 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
   const [crownSize, setCrownSize] = useState<number>(0);
   const [casingSize, setCasingSize] = useState<number>(0);
 
+  // Helper function to convert values with comma to number
+  const convertToNumber = (value: any, defaultValue: number = 0) => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+      if (normalized === '' || normalized === '.') return defaultValue;
+      const parsed = parseFloat(normalized);
+      return isNaN(parsed) ? defaultValue : parsed;
+    }
+    return defaultValue;
+  };
+
   // Fetch crown_size and casing_size from attribute settings API
   useEffect(() => {
     api
@@ -1585,8 +1643,8 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
   }, []);
 
   const addItem = () => {
-    const doorWidth = parseFloat(doorData?.width || 0);
-    const doorHeight = parseFloat(doorData?.height || 0);
+    const doorWidth = convertToNumber(doorData?.width, 0);
+    const doorHeight = convertToNumber(doorData?.height, 0);
     
     const newItem = type === 'extension' 
       ? { model: '', price: 0, quantity: 1, height: 0, width: 0 }
@@ -1620,7 +1678,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
       console.trace('Stack trace for empty model value in AccessoryManager'); // Stack trace
     }
     
-    // Handle comma-separated decimal numbers for numeric fields
+    // Handle comma-separated decimal numbers for numeric fields - keep as strings during editing
     if (field === 'price' || field === 'height' || field === 'width') {
       if (typeof value === 'string') {
         // Clean the input - replace comma with dot and remove any non-numeric characters except dots
@@ -1632,9 +1690,8 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
           cleanedValue = parts[0] + '.' + parts.slice(1).join('');
         }
         
-        // Convert to number, handle empty string
-        const numericValue = cleanedValue === '' ? 0 : parseFloat(cleanedValue);
-        value = isNaN(numericValue) ? 0 : numericValue;
+        // Keep as string to preserve partial input like "0." or "0"
+        value = cleanedValue;
       }
     }
     
@@ -1667,8 +1724,8 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
     
     // Auto-calculate dimensions for casings based on type and formula
     if (type === 'casing' && doorData) {
-      const doorWidth = parseFloat(doorData.width || 0);
-      const doorHeight = parseFloat(doorData.height || 0);
+      const doorWidth = convertToNumber(doorData.width, 0);
+      const doorHeight = convertToNumber(doorData.height, 0);
       
       if (field === 'casing_type' || field === 'casing_formula' || field === 'casing_range') {
         if (item.casing_formula === 'formula2' && item.casing_range) {
@@ -1695,7 +1752,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
     
     // Auto-calculate crown width
     if (type === 'crown' && doorData && field !== 'width') {
-      const doorWidth = parseFloat(doorData.width || 0);
+      const doorWidth = convertToNumber(doorData.width, 0);
       item.width = doorWidth + crownSize;
     }
     
@@ -1812,7 +1869,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   <Input
                     type="text"
                     inputMode="decimal"
-                    value={typeof item.price === 'number' ? item.price : item.price || ''}
+                    value={item.price?.toString() || ''}
                     onChange={(e) => updateItem(index, 'price', e.target.value)}
                     placeholder="0.00"
                     readOnly={(() => {
@@ -1851,7 +1908,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                       <Input
                         type="text"
                         inputMode="decimal"
-                        value={typeof item.height === 'number' ? item.height : item.height || ''}
+                        value={item.height?.toString() || ''}
                         onChange={(e) => updateItem(index, 'height', e.target.value)}
                         disabled={type === 'casing'}
                         placeholder="0.0"
@@ -1865,7 +1922,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                       <Input
                         type="text"
                         inputMode="decimal"
-                        value={typeof item.width === 'number' ? item.width : item.width || ''}
+                        value={item.width?.toString() || ''}
                         onChange={(e) => updateItem(index, 'width', e.target.value)}
                         disabled={type === 'casing'}
                         placeholder="0.0"
@@ -1883,7 +1940,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                     <Input
                       type="text"
                       inputMode="decimal"
-                      value={typeof item.width === 'number' ? item.width : item.width || ''}
+                      value={item.width?.toString() || ''}
                       disabled
                       placeholder="0.0"
                       className="bg-gray-100"
@@ -1981,7 +2038,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">{t("forms.item_total")}:</span>
                     <span className="font-semibold text-blue-600">
-                      {((parseFloat(item.price || 0) * parseInt(item.quantity || 1)) || 0).toFixed(2)}
+                      {((convertToNumber(item.price, 0) * parseInt(item.quantity || 1)) || 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -2000,7 +2057,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
             </span>
             <span className="font-bold text-blue-600 text-lg">
               {items.reduce((total, item) => 
-                total + (parseFloat(item.price || 0) * parseInt(item.quantity || 1)), 0
+                total + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0
               ).toFixed(2)}
             </span>
           </div>
@@ -2013,15 +2070,29 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
 function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment, discountAmountInput, setDiscountAmountInput }: any) {
   const { t } = useTranslation();
 
+  // Helper function to convert values with comma to number
+  const convertToNumber = (value: any, defaultValue: number = 0) => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+      if (normalized === '' || normalized === '.') return defaultValue;
+      const parsed = parseFloat(normalized);
+      return isNaN(parsed) ? defaultValue : parsed;
+    }
+    return defaultValue;
+  };
+
+  const advance = convertToNumber(advance_payment, 0);
+
   // Calculate detailed subtotals
   const priceBreakdown = doors.reduce(
     (acc: any, door: any) => {
       const qty = parseInt(door.quantity || 1);
-      const doorPrice = parseFloat(door.price || 0) * qty;
+      const doorPrice = convertToNumber(door.price, 0) * qty;
       acc.doors += doorPrice;
 
       const sumItems = (items: any[]) =>
-        items?.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0) || 0;
+        items?.reduce((sum, item) => sum + convertToNumber(item.price, 0) * (item.quantity || 1), 0) || 0;
 
       acc.extensions += sumItems(door.extensions);
       acc.casings += sumItems(door.casings);
@@ -2237,7 +2308,7 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span>-{parseFloat(advance_payment || 0).toFixed(0)} сум</span>
+                  <span>-{advance.toFixed(0)} сум</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
