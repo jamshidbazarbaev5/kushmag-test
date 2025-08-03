@@ -5,8 +5,8 @@ import {
 //   Ruler,
   Package,
 //   ArrowLeftRight,
-  Menu,
-  X,
+  // Menu,
+  // X,
 //   UserCheck,
 //   Receipt,
 //   PlusCircle,
@@ -39,7 +39,7 @@ type NavItem = {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [currencyRate, setCurrencyRate] = useState("");
@@ -324,22 +324,119 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-x-hidden">
-      {/* Mobile Header */}
+      {/* Mobile Header (unchanged) */}
       <header className="md:hidden shadow-sm px-4 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="font-semibold text-foreground">Stock-control</div>
+        {/* ...existing code... */}
+      </header>
+
+      {/* Desktop Top Navigation Bar */}
+      <nav className="hidden md:flex items-center justify-between px-6 py-4 shadow-sm border-b border-sidebar-border fixed top-0 left-0 right-0 bg-background z-50">
+        <div className="flex items-center gap-4">
+          <div className="font-semibold text-sidebar-foreground">KUSHMAG</div>
+          {navItems.map((item:any, index:number) => (
+            <div key={index} className="relative">
+              {item.submenu ? (
+                <div>
+                  <button
+                    onClick={() => {
+                      if (item.id) {
+                        setActiveSubmenu(activeSubmenu === item.id ? null : item.id);
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${activeSubmenu === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
+                  >
+                    <item.icon size={20} className={activeSubmenu === item.id ? "text-emerald-500" : "text-gray-500"} />
+                    <span className="font-medium">{item.label}</span>
+                    <ChevronDown size={16} className={`ml-1 text-gray-500 transition-transform ${activeSubmenu === item.id ? "rotate-180" : ""}`} />
+                  </button>
+                  {activeSubmenu === item.id && (
+                    <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border py-2 min-w-[220px] z-50">
+                      {item.submenu.map((subItem:any, subIndex:number) => (
+                        <a
+                          key={subIndex}
+                          href={subItem.href}
+                          onClick={e => {
+                            e.preventDefault();
+                            setActiveSubmenu(null);
+                            if (subItem.href) navigate(subItem.href);
+                          }}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-colors ${location.pathname === subItem.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
+                        >
+                          <subItem.icon size={18} className={location.pathname === subItem.href ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{subItem.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <a
+                  href={item.href}
+                  onClick={e => {
+                    e.preventDefault();
+                    if (item.href) navigate(item.href);
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === item.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
+                >
+                  <item.icon size={20} className={location.pathname === item.href ? "text-emerald-500" : "text-gray-500"} />
+                  <span className="font-medium">{item.label}</span>
+                </a>
+              )}
+            </div>
+          ))}
         </div>
-        <div className="flex items-center gap-3">
-           <LanguageSwitcher />
-          {/* <ThemeToggle />  */}
-          {/* Mobile Profile Dropdown */}
+        <div className="flex items-center gap-4">
+          {currentUser?.is_superuser && (
+            <Dialog open={currencyModalOpen} onOpenChange={setCurrencyModalOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition mr-2"
+                  onClick={() => setCurrencyModalOpen(true)}
+                >
+                  {t("currency.set")}
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('currency.set')}</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleCurrencySubmit} className="space-y-4">
+                  <Input
+                    type="number"
+                    placeholder="12500"
+                    value={currencyRate}
+                    onChange={e => setCurrencyRate(e.target.value)}
+                    required
+                  />
+                  {error && <div className="text-red-500 text-sm">{error}</div>}
+                  {success && <div className="text-green-600 text-sm">{t("Success!")}</div>}
+                  <DialogFooter>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                      disabled={loading}
+                    >
+                      {loading ? t("common.saving") : t("common.save")}
+                    </button>
+                    <DialogClose asChild>
+                      <button type="button" className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                        {t("common.cancel")}
+                      </button>
+                    </DialogClose>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+          <LanguageSwitcher />
+          {/* Desktop Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 setDropdownOpen(!dropdownOpen);
               }}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors group"
             >
               <div className="relative">
                 <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -351,398 +448,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
               </div>
+              <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
             </button>
-
             {dropdownOpen && (
-              <>
-                {/* Backdrop */}
-                <div 
-                  className="fixed inset-0 z-[998]"
-                  onClick={() => setDropdownOpen(false)}
-                />
-                {/* Dropdown Content */}
-                <div 
-                  className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border py-3 z-[999]"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {currentUser && (
-                    <>
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                            <User size={24} className="text-emerald-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-800 text-lg">
-                              {currentUser.username}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {currentUser.phone_number}
-                            </div>
-                            <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">
-                              {currentUser.role}
-                            </div>
-                          </div>
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border py-3 z-[9999]" style={{ zIndex: 9999 }}>
+                {currentUser && (
+                  <>
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <User size={24} className="text-emerald-600" />
                         </div>
-                        
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-800 text-lg">{currentUser.username}</div>
+                          <div className="text-sm text-gray-500">{currentUser.phone_number}</div>
+                          <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">{currentUser.role}</div>
+                        </div>
                       </div>
-                      <div className="py-1">
-                        {/* <button
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDropdownOpen(false);
-                            navigate("/profile");
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer"
-                          style={{ pointerEvents: 'auto' }}
-                        >
-                          <User size={16} className="text-gray-500" />
-                          {t("common.profile")}
-                        </button> */}
-                        <button
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDropdownOpen(false);
-                            handleLogout();
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors cursor-pointer"
-                          style={{ pointerEvents: 'auto' }}
-                        >
-                          <LogOut size={16} className="text-red-500" />
-                          {t("common.logout")}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            {mobileMenuOpen ? (
-              <X size={24} className="text-gray-600" />
-            ) : (
-              <Menu size={24} className="text-gray-600" />
-            )}
-          </button>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col md:flex-row relative mt-14 md:mt-0">
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-        )}
-        {/* Sidebar - Desktop and Mobile */}
-        <aside
-          className={`
-          ${mobileMenuOpen ? "block" : "hidden"}
-          md:block
-          w-full shadow-lg
-          fixed md:sticky
-          top-[3.5rem] md:top-0
-          h-[calc(100vh-3.5rem)] md:h-screen
-          z-50
-          transition-all duration-300 ease-in-out
-          ${isCollapsed ? "md:w-20" : "md:w-72"}
-          flex-shrink-0
-          flex flex-col
-        `}
-        >
-          {/* Desktop Logo and Language Switcher */}
-          <div className="hidden md:block px-6 py-6 border-b border-sidebar-border ">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {!isCollapsed && (
-                  <div className="font-semibold text-sidebar-foreground">
-                    Stock-control
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors"
-              >
-                <Menu size={20} className="text-sidebar-accent-foreground" />
-              </button>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="px-3 py-4 flex flex-col  relative z-50 h-[calc(100vh-6rem)] overflow-y-auto">
-            {navItems.map((item:any, index:number) => (
-              <div key={index}>
-                {item.submenu ? (
-                  <div>
-                    <button
-                      onClick={() => {
-                        if (item.id) {
-                          setActiveSubmenu(
-                            activeSubmenu === item.id ? null : item.id
-                          );
-                        }
-                      }}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left mb-1 transition-colors
-                        ${
-                          activeSubmenu === item.id
-                            ? "-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground"
-                        }`}
-                    >
-                      <item.icon
-                        size={20}
-                        className={
-                          activeSubmenu === item.id
-                            ? "text-emerald-500"
-                            : "text-gray-500"
-                        }
-                      />
-                      {!isCollapsed && (
-                        <>
-                          <span className="font-medium">{item.label}</span>
-                          <svg
-                            className={`ml-auto h-5 w-5 transform transition-transform ${
-                              activeSubmenu === item.id ? "rotate-180" : ""
-                            }`}
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </>
-                      )}
-                    </button>
-                    {activeSubmenu === item.id && (
-                      <div
-                        className={`ml-2 ${
-                          isCollapsed
-                            ? "absolute left-full top-0 ml-2 bg-sidebar shadow-lg rounded-lg p-2 min-w-[200px] max-h-[80vh] overflow-y-auto"
-                            : ""
-                        }`}
+                    </div>
+                    <div className="py-1">
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          setDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
                       >
-                        {item.submenu.map((subItem:any, subIndex:number) => (
-                          <a
-                            key={subIndex}
-                            href={subItem.href}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setMobileMenuOpen(false);
-                              if (subItem.href) navigate(subItem.href);
-                            }}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left mb-1 transition-colors
-                              ${
-                                location.pathname === subItem.href
-                                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                  : "text-sidebar-foreground"
-                              }`}
-                          >
-                            <subItem.icon
-                              size={20}
-                              className={
-                                location.pathname === subItem.href
-                                  ? "text-emerald-500"
-                                  : "text-gray-500"
-                              }
-                            />
-                            <span className="font-medium">{subItem.label}</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <a
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileMenuOpen(false);
-                      if (item.href) navigate(item.href);
-                    }}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-left mb-1 transition-colors
-                      ${
-                        location.pathname === item.href
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground"
-                      }`}
-                  >
-                    <item.icon
-                      size={20}
-                      className={
-                        location.pathname === item.href
-                          ? "text-emerald-500"
-                          : "text-gray-500"
-                      }
-                    />
-                    {!isCollapsed && (
-                      <span className="font-medium">{item.label}</span>
-                    )}
-                  </a>
+                        <LogOut size={16} className="text-red-500" />
+                        <span className="font-medium">{t("common.logout")}</span>
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
-            ))}
-          </nav>
-        </aside>
+            )}
+          </div>
+        </div>
+      </nav>
 
-        {/* Main Content */}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col pt-0 md:pt-[72px]">
+        {/* Mobile menu overlay (unchanged) */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+        )}
         <main className="flex-1 min-w-0 transition-all duration-300 overflow-x-auto ">
           <div className="h-full flex flex-col min-w-[320px]">
-            <div className=" px-4 md:px-6 py-4 flex items-center justify-end gap-4 sticky top-0 z-30 border-b border-border">
-              {currentUser?.is_superuser && ( <Dialog open={currencyModalOpen} onOpenChange={setCurrencyModalOpen}>
-                  <DialogTrigger asChild>
-                    <button
-                      className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition mr-2"
-                      onClick={() => setCurrencyModalOpen(true)}
-                    >
-                      {t("currency.set")}
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{t('currency.set')}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleCurrencySubmit} className="space-y-4">
-                      <Input
-                        type="number"
-                        placeholder="12500"
-                        value={currencyRate}
-                        onChange={e => setCurrencyRate(e.target.value)}
-                        required
-                      />
-                      {error && <div className="text-red-500 text-sm">{error}</div>}
-                      {success && <div className="text-green-600 text-sm">{t("Success!")}</div>}
-                      <DialogFooter>
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                          disabled={loading}
-                        >
-                          {loading ? t("common.saving") : t("common.save")}
-                        </button>
-                        <DialogClose asChild>
-                          <button type="button" className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                            {t("common.cancel")}
-                          </button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>)}
-             
-               <div className="hidden md:flex items-center gap-2">
-                {/* <ThemeToggle /> */}
-                <LanguageSwitcher />
-              </div> 
-
-              {/* Desktop Profile Dropdown */}
-              <div className="relative hidden md:block" ref={dropdownRef}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDropdownOpen(!dropdownOpen);
-                  }}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors group"
-                >
-                  <div className="relative">
-                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                      <User size={18} className="text-emerald-600" />
-                    </div>
-                    {newMeasuresCount > 0 && (
-                      <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {newMeasuresCount}
-                      </div>
-                    )}
-                  </div>
-                  <ChevronDown
-                    size={16}
-                    className={`text-gray-500 transition-transform duration-200 ${
-                      dropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {dropdownOpen && (
-                  <div 
-                    className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border py-3 z-[9999]"
-                    style={{ zIndex: 9999 }}
-                  >
-                    {currentUser && (
-                      <>
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                              <User size={24} className="text-emerald-600" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold text-gray-800 text-lg">
-                                {currentUser.username}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {currentUser.phone_number}
-                              </div>
-                              <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">
-                                {currentUser.role}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="py-1">
-                          {/* <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDropdownOpen(false);
-                              navigate("/profile");
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
-                          >
-                            <User size={16} className="text-gray-500" />
-                            <span className="font-medium">
-                              {t("common.profile")}
-                            </span>
-                          </button> */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDropdownOpen(false);
-                              handleLogout();
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                          >
-                            <LogOut size={16} className="text-red-500" />
-                            <span className="font-medium">
-                              {t("common.logout")}
-                            </span>
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-              <div className="max-w-[1920px] mx-auto " style={{background:'l'}} >{children}</div>
+              <div className="max-w-[1920px] mx-auto">{children}</div>
             </div>
           </div>
         </main>

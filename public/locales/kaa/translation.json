@@ -167,6 +167,7 @@
   },
   "actions": {
     "add_door": "Esik qosıw",
+    "add_row": "Qatar qosıw",
     "save_all_changes": "Barlıq ózgerislerdi saqlap qoyıw",
     "saving": "Saqlanbaqta...",
     "edit": "Óńdew",
@@ -237,7 +238,19 @@
     "data_loaded": "Ólshem maǵlıwmatları júklendi: {{count}} esik konfiguratsiya ushın qoljetimli",
     "create_order_description": "Buyırtpa jasaw",
     "edit_order": "Buyırtpanı óńdew",
-    "edit_order_description": "Bar bolǵan buyırtpanı óńdew"
+    "edit_order_description": "Bar bolǵan buyırtpanı óńdew",
+    "no_doors_added": "Esikler qosılmadı",
+    "click_add_row_to_start": "'Qatar qosıw' túymesin basıp baslaw",
+    "select_model": "Modèldi tańlaw",
+    "unknown_product": "Belgisiz mahsulat",
+    "manage_extensions": "Doborları basqarıw",
+    "manage_casings": "Qutshalarını basqarıw",
+    "manage_crowns": "Koronalarını basqarıw", 
+    "manage_accessories": "Aksessuarlarını basqarıw",
+    "no_extensions_added": "Doborlar qosılmadı",
+    "no_casings_added": "Qutshalar qosılmadı",
+    "no_crowns_added": "Koronalar qosılmadı",
+    "no_accessories_added": "Aksessuarlar qosılmadı"
   },
   "debug": {
     "info": "Otladıw informatsiyası",

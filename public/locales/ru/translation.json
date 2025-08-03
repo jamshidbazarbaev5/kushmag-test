@@ -89,6 +89,8 @@
   
   "forms": {
     "model": "Модель",
+    "created_at": "Дата создания",
+    "deadline": "Срок исполнения",
     "type": "Тип",
     "crown_size": "Размер короны",
     "min_size": "Минимальный размер",
@@ -129,6 +131,19 @@
     "casings": "Наличник",
     "add_at_least_one_door": "Добавьте хотя бы одну дверь",
     "add_door": "Добавить дверь",
+    "add_row": "Добавить строку",
+    "no_doors_added": "Двери не добавлены",
+    "click_add_row_to_start": "Нажмите 'Добавить строку' чтобы начать",
+    "select_model": "Выбрать модель",
+    "unknown_product": "Неизвестный продукт",
+    "manage_extensions": "Управление доборами",
+    "manage_casings": "Управление наличниками", 
+    "manage_crowns": "Управление коронами",
+    "manage_accessories": "Управление аксессуарами",
+    "no_extensions_added": "Доборы не добавлены",
+    "no_casings_added": "Наличники не добавлены",
+    "no_crowns_added": "Короны не добавлены",
+    "no_accessories_added": "Аксессуары не добавлены",
     "total_amount": "Общая сумма",
     "discount_amount": "Сумма скидки",
     "remaining_balance": "Остаток",
@@ -303,6 +318,8 @@
     "create": "Создать"
   },
   "placeholders": {
+    "search_doors": "Поиск двери",
+    "select_door_model": "Выберите модель двери",
     "search_model": "Поиск модели",
     "select_price_type": "Выберите тип цены",
     "search_casing_range": "Поиск диапазонов наличников",
