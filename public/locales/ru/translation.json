@@ -9,6 +9,8 @@
   },
   "common": {
     "yes": "Да",
+    "add":"Добавить",
+
     "back_to_doors": "Вернуться к дверям",
     "no": "Нет",
     "logout": "Выйти",
@@ -91,6 +93,16 @@
   },
   
   "forms": {
+    "extension":"Добор",
+    "item_total": "Всего",
+    "manage_accessorys":"Управление аксессуарами",
+    "accessory":"Аксессуар",
+    "no_accessorys_added": "Аксессуары не добавлены",
+
+    "accessorys":"Аксессуары",
+
+    "casing":"Наличник",
+    "crown":"Корона",
     "model": "Модель",
     "order_date_after":"Дата заказа с",
     "order_date_before":"Дата заказа до",
@@ -330,6 +342,12 @@
   },
   "placeholders": {
     "search_doors": "Поиск двери",
+    "select_crown_model": "Выберите модель короны",
+    "select_casing_model": "Поиск модели наличника",
+
+    "select_accessory_model": "Выберите модель аксессуара",
+    "select_accessory_type": "Выберите тип аксессуара",
+    "select_extension_model": "Выберите модель добора",
     "select_door_model": "Выберите модель двери",
     "search_model": "Поиск модели",
     "select_price_type": "Выберите тип цены",

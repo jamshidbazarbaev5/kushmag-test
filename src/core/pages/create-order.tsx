@@ -404,7 +404,7 @@ export default function CreateOrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div>
         {/* Header with Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -727,7 +727,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div  >
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
@@ -1191,7 +1191,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
 
                     {/* Extensions */}
                     <TableCell>
-                      {editingIndex === index ? (
+                     <div > 
+                       {editingIndex === index ? (
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button
@@ -1203,7 +1204,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                               {editingDoor?.extensions?.length || 0}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-4xl w-[95vw]">
                             <DialogHeader>
                               <DialogTitle>{t("forms.manage_extensions")}</DialogTitle>
                             </DialogHeader>
@@ -1222,6 +1223,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                           {door.extensions?.length || 0} items
                         </span>
                       )}
+                     </div>
                     </TableCell>
 
                     {/* Casings */}
@@ -1238,7 +1240,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                               {editingDoor?.casings?.length || 0}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-4xl w-[95vw]">
                             <DialogHeader>
                               <DialogTitle>{t("forms.manage_casings")}</DialogTitle>
                             </DialogHeader>
@@ -1273,7 +1275,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                               {editingDoor?.crowns?.length || 0}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-4xl w-[95vw]">
                             <DialogHeader>
                               <DialogTitle>{t("forms.manage_crowns")}</DialogTitle>
                             </DialogHeader>
@@ -1308,7 +1310,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                               {editingDoor?.accessories?.length || 0}
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-4xl w-[95vw]">
                             <DialogHeader>
                               <DialogTitle>{t("forms.manage_accessories")}</DialogTitle>
                             </DialogHeader>
@@ -1765,7 +1767,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
   };
 
   return (
-    <div className="space-y-4 max-h-96 overflow-y-auto">
+    <div className="space-y-4 max-h-96 overflow-y-auto ">
       <div className="flex items-center justify-between sticky top-0 bg-white pb-2 border-b">
         <h4 className="font-medium text-lg">{t(`forms.manage_${type}s`)}</h4>
         <Button size="sm" onClick={addItem} className="bg-blue-600 hover:bg-blue-700">
@@ -1782,7 +1784,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
           <p className="text-gray-500">{t(`forms.no_${type}s_added`)}</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           {items.map((item, index) => (
             <div key={index} className="border rounded-lg p-4 bg-gray-50">
               <div className="flex items-center justify-between mb-3">

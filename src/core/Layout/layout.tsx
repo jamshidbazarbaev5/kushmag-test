@@ -5,16 +5,14 @@ import {
 //   Ruler,
   Package,
 //   ArrowLeftRight,
-  // Menu,
-  // X,
+  Menu,
+  X,
 //   UserCheck,
 //   Receipt,
 //   PlusCircle,
 //   BanknoteIcon,
   LogOut,
   User,
-  ChevronDown,
-  type LucideIcon,
 } from "lucide-react";
 import { useGetMeasures } from "../api/measure";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,19 +26,10 @@ import { Input } from "@/components/ui/input";
 import api from "../api/api";
 // import { ThemeToggle } from "../components/ThemeToggle";
 
-type NavItem = {
-  icon: LucideIcon;
-  label: string;
-  href?: string;
-  id?: string;
-  submenu?: NavItem[];
-};
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [currencyRate, setCurrencyRate] = useState("");
   const [currencyId, setCurrencyId] = useState<string | null>(null);
@@ -132,262 +121,347 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   // Set active submenu based on current path
   useEffect(() => {
-    const currentPath = location.pathname;
-    navItems.forEach((item: NavItem) => {
-      if (
-        item.id &&
-        item.submenu &&
-        item.submenu.some((subItem) => subItem.href === currentPath)
-      ) {
-        setActiveSubmenu(item.id);
-      }
-    });
+    // Navigation items are now in hamburger menu
   }, [location.pathname]);
 
-  const navItems:any = (() => {
-    const role = currentUser?.role;
-    
-    // Admin has access to everything
-    if (role === "ADMIN") {
-      return [
-        {
-          icon: Package,
-          label: t("navigation.orders"),
-          href: "/orders",
-        },
-        {
-          icon: Package,
-          label: t("navigation.settings"),
-          id: "settings",
-          submenu: [
-          {
-            icon: Package,
-            label: t("navigation.material"),
-            href: "/materials",
-          },
-          {
-            icon: Package,
-            label: t("navigation.material_types"),
-            href: "/material-types",
-          },
-          {
-            icon: Package,
-            label: t("navigation.massifs"),
-            href: "/massifs",
-          },
-          {
-            icon: Package,
-            label: t("navigation.colors"),
-            href: "/colors",
-          },
-          {
-            icon: Package,
-            label: t("navigation.patina_colors"),
-            href: "/patina-colors",
-          },
-          {
-            icon: Package,
-            label: t("navigation.beadings"),
-            href: "/beadings",
-          },
-          {
-            icon: Package,
-            label: t("navigation.glass_types"),
-            href: "/glass-types",
-          },
-          {
-            icon: Package,
-            label: t("navigation.thresholds"),
-            href: "/thresholds",
-          },
-          {
-            icon: User,
-            label: t("navigation.users"),
-            href: "/users",
-          },
-          {
-            icon: Package,
-            label: t("navigation.measures"),
-            href: "/measures",
-          },
-          {
-            icon: Package,
-            label: t("navigation.attribute_settings"),
-            href: "/attribute-settings",
-          },
-          {
-            icon: Package,
-            label: t("navigation.casing_ranges"),
-            href: "/casing-ranges",
-          }
-        ],
-      }];
-    }
-
-    // All other roles only see measures
-    return [{
-      icon: Package,
-      label: t("navigation.settings"),
-      id: "settings",
-      submenu: [
-        {
-          icon: Package,
-          label: t("navigation.measures"),
-          href: "/measures",
-        }
-      ],
-    }];
-
-    // // Add money to budget - only for superuser
-    // if (currentUser?.is_superuser) {
-    //   baseItems.push({
-    //     icon: PlusCircle,
-    //     label: t("navigation.add_money"),
-    //     href: "/finance",
-    //   });
-    // }
-
-    // // Settings section - not for "Администратор" and customized for "Продавец"
-    // if (currentUser?.role === "Продавец") {
-    //   return [
-    //     {
-    //       icon: Package,
-    //       label: t("navigation.dashobard"),
-    //       href: "/dashboard",
-    //     },
-    //     { icon: ShoppingBag, label: t("navigation.sale"), href: "/sales" },
-    //     {
-    //       icon: Package,
-    //       label: t("navigation.stock_balance"),
-    //       href: "/product-stock-balance",
-    //     },
-    //     { icon: UserCheck, label: t("navigation.clients"), href: "/clients" },
-    //     { icon: ShoppingBag, label: t("navigation.debt"), href: "/debts" },
-    //   ];
-    // }
-
-    // // Add settings section for all roles except "Администратор"
-    // if (currentUser?.role !== "Администратор") {
-    //   baseItems.push({
-    //     icon: Package,
-    //     label: t("navigation.settings"),
-    //     id: "settings",
-    //     submenu: [
-    //       {
-    //         icon: ShoppingBag,
-    //         label: t("navigation.stores"),
-    //         href: "/stores",
-    //       },
-    //       {
-    //         icon: ListView,
-    //         label: t("navigation.categories"),
-    //         href: "/categories",
-    //       },
-    //       {
-    //         icon: Ruler,
-    //         label: t("navigation.measurements"),
-    //         href: "/measurements",
-    //       },
-    //       {
-    //         icon: ShoppingBag,
-    //         label: t("navigation.products"),
-    //         href: "/products",
-    //       },
-          
-    //       {
-    //         icon: ListView,
-    //         label: t("navigation.suppliers"),
-    //         href: "/suppliers",
-    //       },
-    //       {
-    //         icon: Receipt,
-    //         label: t("navigation.cash_inflow_names"),
-    //         href: "/cash-inflow-names",
-    //       },
-    //       {
-    //         icon: Receipt,
-    //         label: t("navigation.expense_name"),
-    //         href: "/expense-name",
-    //       },
-    //       { icon: User2, label: t("navigation.users"), href: "/users" },
-    //       {
-    //         icon: User2,
-    //         label: t("navigation.sponsors"),
-    //         href: "/sponsors",
-    //       },
-         
-    //     ],
-    //   });
-    // }
-
-  })();
+  // navItems function removed as navigation is now in hamburger menu
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-x-hidden">
-      {/* Mobile Header (unchanged) */}
-      <header className="md:hidden shadow-sm px-4 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-50">
-        {/* ...existing code... */}
+      {/* Mobile Header */}
+      <header className="md:hidden shadow-sm px-4 py-2 flex items-center justify-between fixed top-0 left-0 right-0 z-50 bg-background border-b border-sidebar-border">
+        <div className="flex items-center gap-2">
+          <div className="font-semibold text-sidebar-foreground">KUSHMAG</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          {/* Mobile Profile Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setDropdownOpen(!dropdownOpen);
+              }}
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                <User size={18} className="text-emerald-600" />
+              </div>
+            </button>
+
+            {dropdownOpen && (
+              <>
+                {/* Backdrop */}
+                <div 
+                  className="fixed inset-0 z-[998]"
+                  onClick={() => setDropdownOpen(false)}
+                />
+                {/* Dropdown Content */}
+                <div 
+                  className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border py-3 z-[999]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {currentUser && (
+                    <>
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <User size={24} className="text-emerald-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-800 text-lg">
+                              {currentUser.username}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {currentUser.phone_number}
+                            </div>
+                            <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">
+                              {currentUser.role}
+                            </div>
+                          </div>
+                        </div>
+                        {newMeasuresCount > 0 && (
+                          <div className="mt-3 p-2 bg-red-50 rounded-lg">
+                            <div className="text-xs font-medium text-red-600 mb-1">
+                              New Measures
+                            </div>
+                            <div className="text-sm font-medium text-red-800">
+                              {newMeasuresCount} new measure{newMeasuresCount !== 1 ? 's' : ''} available
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="py-1">
+                        {currentUser?.is_superuser && (
+                          <button
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setDropdownOpen(false);
+                              setCurrencyModalOpen(true);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer"
+                            style={{ pointerEvents: 'auto' }}
+                          >
+                            <Package size={16} className="text-gray-500" />
+                            {t("currency.set")}
+                          </button>
+                        )}
+                        <button
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDropdownOpen(false);
+                            handleLogout();
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors cursor-pointer"
+                          style={{ pointerEvents: 'auto' }}
+                        >
+                          <LogOut size={16} className="text-red-500" />
+                          {t("common.logout")}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100"
+          >
+            {mobileMenuOpen ? (
+              <X size={24} className="text-gray-600" />
+            ) : (
+              <Menu size={24} className="text-gray-600" />
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Desktop Top Navigation Bar */}
       <nav className="hidden md:flex items-center justify-between px-6 py-4 shadow-sm border-b border-sidebar-border fixed top-0 left-0 right-0 bg-background z-50">
         <div className="flex items-center gap-4">
           <div className="font-semibold text-sidebar-foreground">KUSHMAG</div>
-          {navItems.map((item:any, index:number) => (
-            <div key={index} className="relative">
-              {item.submenu ? (
-                <div>
-                  <button
-                    onClick={() => {
-                      if (item.id) {
-                        setActiveSubmenu(activeSubmenu === item.id ? null : item.id);
-                        setDropdownOpen(false);
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${activeSubmenu === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
-                  >
-                    <item.icon size={20} className={activeSubmenu === item.id ? "text-emerald-500" : "text-gray-500"} />
-                    <span className="font-medium">{item.label}</span>
-                    <ChevronDown size={16} className={`ml-1 text-gray-500 transition-transform ${activeSubmenu === item.id ? "rotate-180" : ""}`} />
-                  </button>
-                  {activeSubmenu === item.id && (
-                    <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border py-2 min-w-[220px] z-50">
-                      {item.submenu.map((subItem:any, subIndex:number) => (
+          
+          {/* Desktop Hamburger Menu */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                setDropdownOpen(false);
+              }}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {mobileMenuOpen ? (
+                <X size={24} className="text-gray-600" />
+              ) : (
+                <Menu size={24} className="text-gray-600" />
+              )}
+            </button>
+            
+            {/* Desktop Navigation Dropdown */}
+            {mobileMenuOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-[998]"
+                  onClick={() => setMobileMenuOpen(false)}
+                />
+                <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border py-2 min-w-[280px] z-[999]">
+                  {/* Orders - only for ADMIN */}
+                  {currentUser?.role === "ADMIN" && (
+                    <a
+                      href="/orders"
+                      onClick={e => {
+                        e.preventDefault();
+                        setMobileMenuOpen(false);
+                        navigate("/orders");
+                      }}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === "/orders" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                    >
+                      <Package size={20} className={location.pathname === "/orders" ? "text-emerald-500" : "text-gray-500"} />
+                      <span className="font-medium">{t("navigation.orders")}</span>
+                    </a>
+                  )}
+
+                  {/* Settings with submenu */}
+                  <div className="border-t border-gray-100 pt-2 mt-2">
+                    <div className="px-4 py-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        {t("navigation.settings")}
+                      </div>
+                    </div>
+                    
+                    {currentUser?.role === "ADMIN" ? (
+                      <>
                         <a
-                          key={subIndex}
-                          href={subItem.href}
+                          href="/materials"
                           onClick={e => {
                             e.preventDefault();
-                            setActiveSubmenu(null);
-                            setDropdownOpen(false);
-                            if (subItem.href) navigate(subItem.href);
+                            setMobileMenuOpen(false);
+                            navigate("/materials");
                           }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-colors ${location.pathname === subItem.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/materials" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
                         >
-                          <subItem.icon size={18} className={location.pathname === subItem.href ? "text-emerald-500" : "text-gray-500"} />
-                          <span className="font-medium">{subItem.label}</span>
+                          <Package size={18} className={location.pathname === "/materials" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.material")}</span>
                         </a>
-                      ))}
-                    </div>
-                  )}
+                        <a
+                          href="/material-types"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/material-types");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/material-types" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/material-types" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.material_types")}</span>
+                        </a>
+                        <a
+                          href="/massifs"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/massifs");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/massifs" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/massifs" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.massifs")}</span>
+                        </a>
+                        <a
+                          href="/colors"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/colors");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/colors" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/colors" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.colors")}</span>
+                        </a>
+                        <a
+                          href="/patina-colors"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/patina-colors");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/patina-colors" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/patina-colors" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.patina_colors")}</span>
+                        </a>
+                        <a
+                          href="/beadings"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/beadings");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/beadings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/beadings" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.beadings")}</span>
+                        </a>
+                        <a
+                          href="/glass-types"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/glass-types");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/glass-types" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/glass-types" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.glass_types")}</span>
+                        </a>
+                        <a
+                          href="/thresholds"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/thresholds");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/thresholds" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/thresholds" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.thresholds")}</span>
+                        </a>
+                        <a
+                          href="/users"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/users");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/users" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <User size={18} className={location.pathname === "/users" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.users")}</span>
+                        </a>
+                        <a
+                          href="/attribute-settings"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/attribute-settings");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/attribute-settings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/attribute-settings" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.attribute_settings")}</span>
+                        </a>
+                        <a
+                          href="/casing-ranges"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/casing-ranges");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/casing-ranges" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/casing-ranges" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.casing_ranges")}</span>
+                        </a>
+                      </>
+                    ) : null}
+                    
+                    {/* Measures - available for all roles */}
+                    <a
+                      href="/measures"
+                      onClick={e => {
+                        e.preventDefault();
+                        setMobileMenuOpen(false);
+                        navigate("/measures");
+                      }}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/measures" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                    >
+                      <Package size={18} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} />
+                      <span className="font-medium">{t("navigation.measures")}</span>
+                      {newMeasuresCount > 0 && (
+                        <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
+                          {newMeasuresCount}
+                        </div>
+                      )}
+                    </a>
+                  </div>
                 </div>
-              ) : (
-                <a
-                  href={item.href}
-                  onClick={e => {
-                    e.preventDefault();
-                    setActiveSubmenu(null);
-                    setDropdownOpen(false);
-                    if (item.href) navigate(item.href);
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === item.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
-                >
-                  <item.icon size={20} className={location.pathname === item.href ? "text-emerald-500" : "text-gray-500"} />
-                  <span className="font-medium">{item.label}</span>
-                </a>
-              )}
-            </div>
-          ))}
+              </>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           {currentUser?.is_superuser && (
@@ -433,14 +507,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Dialog>
           )}
           <LanguageSwitcher />
-          {/* Desktop Profile Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Desktop Profile Icon - Hidden on mobile */}
+          <div className="relative hidden md:block" ref={dropdownRef}>
             <button
               onClick={e => {
                 e.stopPropagation();
+                setMobileMenuOpen(false);
                 setDropdownOpen(!dropdownOpen);
               }}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors group"
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <div className="relative">
                 <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -452,10 +527,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
               </div>
-              <ChevronDown size={16} className={`text-gray-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
             </button>
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border py-3 z-[9999]" style={{ zIndex: 9999 }}>
+              <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-xl border py-3 z-[9999]">
                 {currentUser && (
                   <>
                     <div className="px-4 py-3 border-b border-gray-100">
@@ -463,9 +537,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
                           <User size={24} className="text-emerald-600" />
                         </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-800 text-lg">{currentUser.username}</div>
-                          <div className="text-sm text-gray-500">{currentUser.phone_number}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-gray-800 text-lg truncate">{currentUser.username}</div>
+                          <div className="text-sm text-gray-500 truncate">{currentUser.phone_number}</div>
                           <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">{currentUser.role}</div>
                         </div>
                       </div>
@@ -493,11 +567,262 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col pt-0 md:pt-[72px]">
-        {/* Mobile menu overlay (unchanged) */}
+        {/* Mobile menu overlay and sidebar */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+          <>
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+            <div className="fixed top-0 left-0 h-full w-80 bg-background border-r border-sidebar-border z-50 md:hidden">
+              <div className="p-4 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="font-semibold text-sidebar-foreground text-lg">KUSHMAG</div>
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                
+                {/* Mobile Navigation Items */}
+                <nav className="flex-1 overflow-y-auto">
+                  <div className="space-y-2">
+                    {/* Orders - only for ADMIN */}
+                    {currentUser?.role === "ADMIN" && (
+                      <a
+                        href="/orders"
+                        onClick={e => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/orders");
+                        }}
+                        className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${location.pathname === "/orders" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                      >
+                        <Package size={20} className={location.pathname === "/orders" ? "text-emerald-500" : "text-gray-500"} />
+                        <span className="font-medium">{t("navigation.orders")}</span>
+                      </a>
+                    )}
+
+                    {/* Settings submenu items */}
+                    <div className="border-b border-gray-200 pb-2 mb-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                        {t("navigation.settings")}
+                      </div>
+                      {currentUser?.role === "ADMIN" ? (
+                        <>
+                          <a
+                            href="/materials"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/materials");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/materials" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/materials" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.material")}</span>
+                          </a>
+                          <a
+                            href="/material-types"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/material-types");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/material-types" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/material-types" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.material_types")}</span>
+                          </a>
+                          <a
+                            href="/massifs"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/massifs");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/massifs" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/massifs" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.massifs")}</span>
+                          </a>
+                          <a
+                            href="/colors"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/colors");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/colors" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/colors" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.colors")}</span>
+                          </a>
+                          <a
+                            href="/patina-colors"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/patina-colors");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/patina-colors" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/patina-colors" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.patina_colors")}</span>
+                          </a>
+                          <a
+                            href="/beadings"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/beadings");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/beadings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/beadings" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.beadings")}</span>
+                          </a>
+                          <a
+                            href="/glass-types"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/glass-types");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/glass-types" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/glass-types" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.glass_types")}</span>
+                          </a>
+                          <a
+                            href="/thresholds"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/thresholds");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/thresholds" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/thresholds" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.thresholds")}</span>
+                          </a>
+                          <a
+                            href="/users"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/users");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/users" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <User size={18} className={location.pathname === "/users" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.users")}</span>
+                          </a>
+                          <a
+                            href="/attribute-settings"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/attribute-settings");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/attribute-settings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/attribute-settings" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.attribute_settings")}</span>
+                          </a>
+                          <a
+                            href="/casing-ranges"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/casing-ranges");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/casing-ranges" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/casing-ranges" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.casing_ranges")}</span>
+                          </a>
+                        </>
+                      ) : null}
+                      
+                      {/* Measures - available for all roles */}
+                      <a
+                        href="/measures"
+                        onClick={e => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/measures");
+                        }}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/measures" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                      >
+                        <Package size={18} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} />
+                        <span className="font-medium">{t("navigation.measures")}</span>
+                        {newMeasuresCount > 0 && (
+                          <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
+                            {newMeasuresCount}
+                          </div>
+                        )}
+                      </a>
+                    </div>
+
+                    {/* Language Switcher */}
+                    <div className="px-3 py-2">
+                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        {t("common.language")}
+                      </div>
+                      <LanguageSwitcher />
+                    </div>
+
+                    {/* Profile Section */}
+                    {currentUser && (
+                      <div className="border-t border-gray-200 pt-2 mt-2">
+                        <div className="px-3 py-3">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                              <User size={20} className="text-emerald-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-gray-800 truncate">{currentUser.username}</div>
+                              <div className="text-xs text-gray-500 truncate">{currentUser.phone_number}</div>
+                              <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">
+                                {currentUser.role}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {currentUser?.is_superuser && (
+                            <button
+                              onClick={() => {
+                                setMobileMenuOpen(false);
+                                setCurrencyModalOpen(true);
+                              }}
+                              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors mb-2"
+                            >
+                              <Package size={16} className="text-gray-500" />
+                              <span>{t("currency.set")}</span>
+                            </button>
+                          )}
+                          
+                          <button
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              handleLogout();
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut size={16} className="text-red-500" />
+                            <span>{t("common.logout")}</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </nav>
+              </div>
+            </div>
+          </>
         )}
-        <main className="flex-1 min-w-0 transition-all duration-300 overflow-x-auto ">
+        
+        <main className="flex-1 min-w-0 transition-all duration-300 overflow-x-auto pt-16 md:pt-0">
           <div className="h-full flex flex-col min-w-[320px]">
             <div className="flex-1 p-4 md:p-6 overflow-y-auto">
               <div className="max-w-[1920px] mx-auto">{children}</div>
