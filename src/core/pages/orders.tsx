@@ -3,11 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
 import type { Order } from "../api/order";
+import { 
+  useGetProjects, 
+  useGetStores, 
+  useGetCounterparties, 
+  useGetOrganizations, 
+  useGetSalesChannels, 
+  useGetSellers, 
+  useGetOperators 
+} from "../api/references";
+import { useGetUsers } from "../api/user";
+import { Pencil, Trash, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 // import { format } from 'date-fns';
 
@@ -117,12 +131,89 @@ export default function OrdersPage() {
   const navigate = useNavigate();
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    project: '',
+    store: '',
+    agent: '',
+    organization: '',
+    salesChannel: '',
+    seller: '',
+    operator: '',
+    order_status: '',
+    order_date_after: '',
+    order_date_before: '',
+    deadline_date_after: '',
+    deadline_date_before: '',
+    zamershik: '',
+    admin: ''
+  });
 
-  const { data: orders } = useGetOrders();
+  // Fetch filter options
+  const { data: projects } = useGetProjects();
+  const { data: stores } = useGetStores();
+  const { data: agents } = useGetCounterparties();
+  const { data: organizations } = useGetOrganizations();
+  const { data: salesChannels } = useGetSalesChannels();
+  const { data: sellers } = useGetSellers();
+  const { data: operators } = useGetOperators();
+  const { data: users } = useGetUsers();
+
+  // Build query params for API call
+  const buildQueryParams = () => {
+    const params: Record<string, any> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        params[key] = value;
+      }
+    });
+    params.page = currentPage;
+    return params;
+  };
+
+  const { data: orders } = useGetOrders({ params: buildQueryParams() });
   const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
   const { mutate: deleteOrder } = useDeleteOrder();
 
   const ordersData = Array.isArray(orders) ? orders : orders?.results || [];
+  const totalPages = !Array.isArray(orders) && orders?.count ? Math.ceil(orders.count / 20) : 1;
+
+  const handleFilterChange = (key: string, value: string) => {
+    // Convert "all" back to empty string for API
+    const apiValue = value === 'all' ? '' : value;
+    setFilters(prev => ({ ...prev, [key]: apiValue }));
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      project: '',
+      store: '',
+      agent: '',
+      organization: '',
+      salesChannel: '',
+      seller: '',
+      operator: '',
+      order_status: '',
+      order_date_after: '',
+      order_date_before: '',
+      deadline_date_after: '',
+      deadline_date_before: '',
+      zamershik: '',
+      admin: ''
+    });
+    setCurrentPage(1);
+  };
+
+  // Get filtered users based on role
+  const zamershikUsers = !Array.isArray(users) && users?.results ? 
+    users.results.filter((user: any) => user.role === 'ZAMERSHIK') : 
+    (Array.isArray(users) ? users.filter((user: any) => user.role === 'ZAMERSHIK') : []);
+  
+  const adminUsers = !Array.isArray(users) && users?.results ? 
+    users.results.filter((user: any) => user.role === 'ADMIN') : 
+    (Array.isArray(users) ? users.filter((user: any) => user.role === 'ADMIN') : []);
 
   // const handleEditClick = (order: Order) => {
   //   setEditingOrder(order);
@@ -184,10 +275,259 @@ export default function OrdersPage() {
     <div className="space-y-4 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">{t("pages.orders")}</h1>
-        <Button onClick={() => navigate("/orders/create")}>
-          {t("common.create")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {t("common.filters")}
+          </Button>
+          <Button onClick={() => navigate("/orders/create")}>
+            {t("common.create")}
+          </Button>
+        </div>
       </div>
+
+      {showFilters && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("common.filters")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+              {/* Project Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.project")}</label>
+                <Select value={filters.project || 'all'} onValueChange={(value) => handleFilterChange('project', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_project")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(projects) ? projects : projects?.results || []).map((project: any) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Store Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.store")}</label>
+                <Select value={filters.store || 'all'} onValueChange={(value) => handleFilterChange('store', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_store")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(stores) ? stores : stores?.results || []).map((store: any) => (
+                      <SelectItem key={store.id} value={store.id}>
+                        {store.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Agent Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.agent")}</label>
+                <Select value={filters.agent || 'all'} onValueChange={(value) => handleFilterChange('agent', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_agent")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(agents) ? agents : agents?.results || []).map((agent: any) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Organization Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.organization")}</label>
+                <Select value={filters.organization || 'all'} onValueChange={(value) => handleFilterChange('organization', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_organization")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(organizations) ? organizations : organizations?.results || []).map((org: any) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sales Channel Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.sales_channel")}</label>
+                <Select value={filters.salesChannel || 'all'} onValueChange={(value) => handleFilterChange('salesChannel', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_sales_channel")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(salesChannels) ? salesChannels : salesChannels?.results || []).map((channel: any) => (
+                      <SelectItem key={channel.id} value={channel.id}>
+                        {channel.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Seller Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.seller")}</label>
+                <Select value={filters.seller || 'all'} onValueChange={(value) => handleFilterChange('seller', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_seller")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(sellers) ? sellers : sellers?.results || []).map((seller: any) => (
+                      <SelectItem key={seller.id} value={seller.id}>
+                        {seller.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Operator Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.operator")}</label>
+                <Select value={filters.operator || 'all'} onValueChange={(value) => handleFilterChange('operator', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_operator")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {(Array.isArray(operators) ? operators : operators?.results || []).map((operator: any) => (
+                      <SelectItem key={operator.id} value={operator.id}>
+                        {operator.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Order Status Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.order_status")}</label>
+                <Select value={filters.order_status || 'all'} onValueChange={(value) => handleFilterChange('order_status', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_status")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    <SelectItem value="draft">{t("order_status.draft")}</SelectItem>
+                    <SelectItem value="moy_sklad">{t("order_status.moy_sklad")}</SelectItem>
+                    <SelectItem value="cancelled">{t("order_status.cancelled")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Zamershik Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.zamershik")}</label>
+                <Select value={filters.zamershik || 'all'} onValueChange={(value) => handleFilterChange('zamershik', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_zamershik")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {zamershikUsers.map((user: any) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Admin Filter */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.admin")}</label>
+                <Select value={filters.admin || 'all'} onValueChange={(value) => handleFilterChange('admin', value)}>
+                  <SelectTrigger className="h-9 min-w-[200px]">
+                    <SelectValue placeholder={t("forms.select_admin")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("common.all")}</SelectItem>
+                    {adminUsers.map((user: any) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Order Date After */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.order_date_after")}</label>
+                <Input
+                  type="date"
+                  className="h-9 min-w-[140px]"
+                  value={filters.order_date_after}
+                  onChange={(e) => handleFilterChange('order_date_after', e.target.value)}
+                />
+              </div>
+
+              {/* Order Date Before */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.order_date_before")}</label>
+                <Input
+                  type="date"
+                  className="h-9 min-w-[140px]"
+                  value={filters.order_date_before}
+                  onChange={(e) => handleFilterChange('order_date_before', e.target.value)}
+                />
+              </div>
+
+              {/* Deadline Date After */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.deadline_date_after")}</label>
+                <Input
+                  type="date"
+                  className="h-9 min-w-[140px]"
+                  value={filters.deadline_date_after}
+                  onChange={(e) => handleFilterChange('deadline_date_after', e.target.value)}
+                />
+              </div>
+
+              {/* Deadline Date Before */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("forms.deadline_date_before")}</label>
+                <Input
+                  type="date"
+                  className="h-9 min-w-[140px]"
+                  value={filters.deadline_date_before}
+                  onChange={(e) => handleFilterChange('deadline_date_before', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-3">
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-2" />
+                {t("common.clear_filters")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="overflow-x-auto shadow-sm rounded-lg">
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
@@ -222,12 +562,12 @@ export default function OrdersPage() {
               <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150">
                 <td className="px-3 py-2 text-xs text-gray-600">
                   <div className="truncate" title={formatDate(order.created_at)}>
-                    {formatDate(order.created_at)?.split(' ')[0] || '-'}
+                    {formatDate(order.created_at)}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-xs text-gray-600">
                   <div className="truncate" title={formatDate(order.deadline_date)}>
-                    {formatDate(order.deadline_date)?.split(' ')[0] || '-'}
+                    {formatDate(order.deadline_date)}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-sm">
@@ -286,7 +626,7 @@ export default function OrdersPage() {
                       onClick={() => navigate(`/orders/edit/${order.id}`)}
                       title={t("common.edit_advanced")}
                     >
-                      ✏️
+                      <Pencil/>
                     </Button>
                     <Button
                       size="sm"
@@ -295,7 +635,7 @@ export default function OrdersPage() {
                       onClick={() => handleDeleteClick(order)}
                       title={t("common.delete")}
                     >
-                      🗑️
+                      <Trash/>
                     </Button>
                   </div>
                 </td>
@@ -304,6 +644,35 @@ export default function OrdersPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            {t("pagination.page")} {currentPage} {t("pagination.of")} {totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {t("pagination.previous")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              {t("pagination.next")}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>

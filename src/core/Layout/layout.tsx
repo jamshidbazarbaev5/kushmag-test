@@ -341,6 +341,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     onClick={() => {
                       if (item.id) {
                         setActiveSubmenu(activeSubmenu === item.id ? null : item.id);
+                        setDropdownOpen(false);
                       }
                     }}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${activeSubmenu === item.id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
@@ -358,6 +359,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           onClick={e => {
                             e.preventDefault();
                             setActiveSubmenu(null);
+                            setDropdownOpen(false);
                             if (subItem.href) navigate(subItem.href);
                           }}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-colors ${location.pathname === subItem.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}
@@ -374,6 +376,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   onClick={e => {
                     e.preventDefault();
+                    setActiveSubmenu(null);
+                    setDropdownOpen(false);
                     if (item.href) navigate(item.href);
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === item.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}

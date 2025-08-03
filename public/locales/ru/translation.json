@@ -41,7 +41,10 @@
     "expand": "Развернуть",
     "collapse": "Свернуть",
     "details": "Детали",
-    "items": "позиций"
+    "items": "позиций",
+    "filters": "Фильтры",
+    "all": "Все",
+    "clear_filters": "Очистить фильтры"
   },
   "roles": {
     "admin": "Администратор",
@@ -89,6 +92,14 @@
   
   "forms": {
     "model": "Модель",
+    "order_date_after":"Дата заказа с",
+    "order_date_before":"Дата заказа до",
+    "deadline_date_after": "Срок исполнения с",
+    "deadline_date_before": "Срок исполнения до",
+    "measure_date_after": "Дата замера с",
+    "measure_date_before": "Дата замера до",
+    "created_at_after": "Дата создания с",
+    "created_at_before": "Дата создания до",
     "created_at": "Дата создания",
     "deadline": "Срок исполнения",
     "type": "Тип",
@@ -348,6 +359,14 @@
     "enter_deadline_date": "Введите срок исполнения",
     "select_seller": "Выберите продавца",
     "select_operator": "Выберите оператора",
+    "select_status": "Выберите статус",
+    "select_zamershik": "Выберите замерщика",
+    "select_admin": "Выберите администратора",
+    "order_status": "Статус заказа",
+    "order_date_after": "Дата заказа с",
+    "order_date_before": "Дата заказа по",
+    "deadline_date_after": "Срок исполнения с",
+    "deadline_date_before": "Срок исполнения по",
     "select_model": "Выберите модель",
     "select_material": "Выберите материал",
     "select_material_type": "Выберите тип материала",
@@ -396,6 +415,7 @@
     "add_door": "Добавить дверь",
     "save_all_changes": "Сохранить все изменения",
     "saving": "Сохранение...",
+    "delete": "Удалить",
     "edit": "Редактировать",
     "create": "Создать",
     "create_order": "Создать заказ",
@@ -422,5 +442,16 @@
   "debug": {
     "info": "Отладочная информация",
     "measure_door_data": "Данные двери из замера"
+  },
+  "order_status": {
+    "draft": "Черновик",
+    "moy_sklad": "МойСклад",
+    "cancelled": "Отменён"
+  },
+  "pagination": {
+    "page": "Страница",
+    "of": "из",
+    "previous": "Предыдущая",
+    "next": "Следующая"
   }
 }

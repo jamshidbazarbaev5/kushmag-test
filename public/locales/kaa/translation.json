@@ -18,7 +18,10 @@
     "create": "Jasaw",
     "submit": "Jiberiw",
     "sending": "Jiberilmekte...",
-    "items": "daneler"
+    "items": "daneler",
+    "filters": "Filtrler",
+    "all": "Hámmesi",
+    "clear_filters": "Filtrlerdi tazalaw"
   },
   "roles": {
     "admin": "Administrator",
@@ -69,6 +72,12 @@
     "order_code": "Buyırtpa kodı",
     "order_date": "Buyırtpa sánesi",
     "deadline_date": "Tamamlaw sánesi",
+    "measure_date_after": "Ólshem sánesinin baslanıwı",
+    "measure_date_before": "Ólshem sánesinin tamamlanıwı",
+    "created_at_after": "Dúziliw waqtının baslanıwı",
+    "created_at_before": "Dúziliw waqtının tamamlanıwı",
+    "select_status": "Statusdı salıń",
+    "select_zamershik": "Ólshewshini salıń",
     "seller": "Satıwshı",
     "operator": "Operator",
     "discount_percentage": "Jeńillik procenti",
@@ -143,7 +152,16 @@
     "promog_bar": "Bar",
     "promog_joq": "Joq",
     "casing_zamer_p": "P tárizli",
-    "casing_zamer_g": "G tárizli"
+    "casing_zamer_g": "G tárizli",
+    "order_status": "Buyırtpa statusı",
+    "order_date_after": "Buyırtpa sánesi",
+    "order_date_before": "Buyırtpa sánesine shekem",
+    "deadline_date_after": "Tamamlaw sánesi",
+    "deadline_date_before": "Tamamlaw sánesine shekem",
+    "project": "Proyekt",
+    "store": "Ambaz",
+    "zamershik": "Ólshewshi",
+    "admin": "Administrator"
   },
   "messages": {
     "success": {
@@ -187,6 +205,9 @@
     "enter_deadline_date": "Tamamlaw sánesin jazıń",
     "select_seller": "Satıwshını tańlań",
     "select_operator": "Operatordı tańlań",
+    "select_status": "Statusdı tańlań",
+    "select_zamershik": "Ólshewshini tańlań",
+    "select_admin": "Administratordı tańlań",
     "select_model": "Modeldi tańlań",
     "select_material": "Materialdı tańlań",
     "select_material_type": "Material túrin tańlań",
@@ -255,5 +276,16 @@
   "debug": {
     "info": "Otladıw informatsiyası",
     "measure_door_data": "Ólshem esiginiń maǵlıwmatları"
+  },
+  "order_status": {
+    "draft": "Qoralaw",
+    "moy_sklad": "MoyAmbaz",
+    "cancelled": "Biykar etilgen"
+  },
+  "pagination": {
+    "page": "Bet",
+    "of": "den",
+    "previous": "Aldıńǵı",
+    "next": "Keyingi"
   }
 }
