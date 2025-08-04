@@ -88,6 +88,12 @@ const userFields = (t: any, { sellers, operators }: { sellers?: any[], operators
     type: 'number',
     placeholder: t('placeholders.enter_fixed_salary'),
   },
+  {
+    name: 'order_percentage',
+    label: t('forms.order_percentage'),
+    type: 'number',
+    placeholder: t('placeholders.enter_order_percentage'),
+  },  
 ];
 
 const columns = (t: any) => [
@@ -115,6 +121,10 @@ const columns = (t: any) => [
     header: t('forms.fixed_salary'),
     accessorKey: 'fixed_salary',
   },
+  {
+    header: t('forms.order_percentage'),
+    accessorKey: 'order_percentage',
+  }
 ];
 
 export default function UsersPage() {

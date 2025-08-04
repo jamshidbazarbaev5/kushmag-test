@@ -22,6 +22,7 @@ import CreateThresholdPage from "./core/pages/create-threshold";
 // import { Users } from "lucide-react";
 import UsersPage from "./core/pages/users";
 import CreateUserPage from "./core/pages/create-user";
+import MonthlySalariesPage from "./core/pages/monthly-salaries";
 import CreateMeasurePage from "./core/pages/create-measure";
 import MeasuresPage from "./core/pages/measures";
 import EditMeasurePage from "./core/pages/edit-measure";
@@ -32,6 +33,7 @@ import OrdersPage from "./core/pages/orders";
 import CreateOrderPage from "./core/pages/create-order";
 import EditOrderPage from "./core/pages/edit-order";
 import EditOrder2Page from "./core/pages/edit-order-2";
+import RoleBasedRedirect from "./core/components/RoleBasedRedirect";
 
 const queryClient = new QueryClient();
 function App() {
@@ -43,7 +45,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
              <Route element={<Layout><Outlet /></Layout>}>
              
-             <Route path="/" element={<div>Home Page</div>} />
+             <Route path="/" element={<RoleBasedRedirect />} />
                  <Route path="/materials" element={<MaterialsPage />} />
                  <Route path="/create-material" element={<CreateMaterialPage />} />
                  
@@ -75,6 +77,8 @@ function App() {
 
                   <Route path="/users" element={<UsersPage />} />
                  <Route path="/create-user" element={<CreateUserPage />} />
+                 
+                 <Route path="/monthly-salaries" element={<MonthlySalariesPage />} />
                   
                   {/* Measures routes */}
                   <Route path="/measures" element={<MeasuresPage />} />

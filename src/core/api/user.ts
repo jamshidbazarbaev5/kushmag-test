@@ -10,6 +10,7 @@ export interface User {
   api_login?: string;
   api_password?: string;
   fixed_salary?: number;
+  order_percentage?: number;
   moy_sklad_staff?: {
     meta: {
       href: string;

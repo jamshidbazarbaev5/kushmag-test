@@ -25,7 +25,10 @@
     "clear_filters": "Filtrlerdi tazalaw",
     "no_results_found": "Nátijeler tabılmadı",
     "type_to_search": "Izlewke kiritiń",
-    "creating": "Jasaw"
+    "creating": "Jasaw",
+    "exporting": "Eksport...",
+    "table": "Jedewel",
+    "charts": "Grafikler"
   },
   "roles": {
     "admin": "Administrator",
@@ -49,6 +52,7 @@
     "settings": "Sazlawlar",
     "users": "Paydalanıwshılar",
     "create_user": "Paydalanıwshı jasaw",
+    "monthly_salaries": "Aylıq maashlar",
     "staff_member": "Xızmetker",
     "measures": "Ólshemler",
     "create_measure": "Ólshem jasaw"
@@ -152,6 +156,13 @@
     "doors": "Esikler",
     "api_password": "API parol",
     "fixed_salary": "Belgilengen máyish",
+    "order_percentage": "Buyırtpa procesenti",
+    "month": "Ay",
+    "user": "Paydalanıwshı",
+    "order_percentage_salary": "Buyırtpa procesentinen máyish",
+    "penalties": "Jarimalar",
+    "bonuses": "Bonuslar",
+    "total_salary": "Jámi máyish",
     "door": "Esik",
     "dimensions": "Ólshemler",
     "qty_short": "San.",
@@ -188,8 +199,14 @@
     "error": {
       "create": "{{item}} jasaw kezinde qate payda boldı",
       "update": "{{item}} jańartw kezinde qate payda boldı",
-      "delete": "{{item}} joyw kezinde qate payda boldı"
+      "delete": "{{item}} joyw kezinde qate payda boldı",
+      "required_fields": "Hámmesi qájetti maydan tolıqlarıń"
     },
+    "confirm": {
+      "delete": "Bul elementdi joyıwǵa ishensiz be?"
+    },
+    "no_data_available": "Kórsetiwge derrek joq",
+    "no_users_found": "Paydalanıwshılar tabılmadı",
     "edit": "Óńdew",
     "create": "Jasaw",
     "created": "Jasaldı",
@@ -209,7 +226,9 @@
     "saving": "Saqlanbaqta...",
     "edit": "Óńdew",
     "create": "Jasaw",
-    "create_order": "Buyırtpa jasaw"
+    "create_order": "Buyırtpa jasaw",
+    "export_excel": "Excel-ke eksport",
+    "export": "Eksport"
   },
  
   "placeholders": {
@@ -256,6 +275,14 @@
     "enter_api_login": "API logindi kiritiń",
     "enter_api_password": "API paroldi kiritiń",
     "enter_fixed_salary": "Belgilengen máyishti kiritiń",
+    "enter_order_percentage": "Buyırtpa procesentini kiritiń",
+    "select_month": "Aydı tańlań",
+    "select_user": "Paydalanıwshını tańlań",
+    "type_username": "Paydalanıwshı atın kiritiń",
+    "type_to_search": "Izlewke kiritiń",
+    "enter_penalties": "Jarimalardı kiritiń",
+    "enter_bonuses": "Bonuslardı kiritiń",
+    "search_monthly_salary": "Aylıq maashlardı izdew",
     "update_door": "Esikti jańartıw",
     "measure_data": "Ólshem maǵlıwmatları",
     "prefilled": "aldın ala tolıqlanǧan",
@@ -307,5 +334,15 @@
     "of": "den",
     "previous": "Aldıńǵı",
     "next": "Keyingi"
+  },
+  "charts": {
+    "salary_by_user": "Xızmetkerler boynsha maash",
+    "salary_by_user_description": "Hár bir xızmetkerdıń ulıwma maashı",
+    "salary_components": "Maash qurıwıshlağı",
+    "salary_components_description": "Tólewler túrleriniń bóliniwi",
+    "monthly_trend": "Aylıq úrdis",
+    "monthly_trend_description": "Aylıq ulıwma hám orta maashlar",
+    "total_salaries": "Ulıwma maashlar",
+    "average_salary": "Orta maash"
   }
 }

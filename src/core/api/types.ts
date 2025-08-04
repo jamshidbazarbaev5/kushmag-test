@@ -71,3 +71,25 @@ export interface CasingRange {
   max_size: number;
   casing_size: number;
 }
+
+export interface MonthlySalary {
+  id?: number;
+  month: string; // Format: "2025-07-01"
+  user: number;
+  fixed_salary: number;
+  order_percentage: number;
+  order_percentage_salary: number;
+  penalties: number;
+  bonuses: number;
+  total_salary: number;
+  orders_total_sum?: number;
+  user_details?: {
+    id: number;
+    username: string;
+    full_name: string;
+    phone_number: string;
+    role: string;
+    fixed_salary: number;
+    order_percentage: number;
+  };
+}

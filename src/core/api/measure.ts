@@ -1,4 +1,6 @@
 import { createResourceApiHooks } from '../helpers/createResourceApi';
+import { useMutation } from '@tanstack/react-query';
+import api from './api';
 
 interface Extension {
   width: number;
@@ -47,4 +49,31 @@ export const {
   useUpdateResource: useUpdateMeasure,
   useDeleteResource: useDeleteMeasure,
 } = createResourceApiHooks<Measure>(MEASURE_URL, 'measures');
+
+// Export single measure to Excel
+export const useExportMeasure = () => {
+  return useMutation({
+    mutationFn: async (measureId: number) => {
+      const response = await api.get(`measures/${measureId}/export/`, {
+        responseType: 'blob',
+      });
+      
+      // Create blob and download file
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `measure_${measureId}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      return response.data;
+    },
+  });
+};
 

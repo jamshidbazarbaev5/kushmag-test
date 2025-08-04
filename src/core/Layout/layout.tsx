@@ -251,10 +251,61 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop Top Navigation Bar */}
       <nav className="hidden md:flex items-center justify-between px-6 py-4 shadow-sm border-b border-sidebar-border fixed top-0 left-0 right-0 bg-background z-50">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <div className="font-semibold text-sidebar-foreground">KUSHMAG</div>
           
-          {/* Desktop Hamburger Menu */}
+          {/* Desktop Main Navigation Items */}
+          <div className="flex items-center gap-4">
+            {/* Orders - only for ADMIN */}
+            {currentUser?.role === "ADMIN" && (
+              <a
+                href="/orders"
+                onClick={e => {
+                  e.preventDefault();
+                  navigate("/orders");
+                }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/orders" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+              >
+                <Package size={16} className={location.pathname === "/orders" ? "text-emerald-500" : "text-gray-500"} />
+                <span className="font-medium">{t("navigation.orders")}</span>
+              </a>
+            )}
+
+            {/* Measures - available for all roles */}
+            <a
+              href="/measures"
+              onClick={e => {
+                e.preventDefault();
+                navigate("/measures");
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/measures" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+            >
+              <Package size={16} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} />
+              <span className="font-medium">{t("navigation.measures")}</span>
+              {newMeasuresCount > 0 && (
+                <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
+                  {newMeasuresCount}
+                </div>
+              )}
+            </a>
+
+            {/* Monthly Salaries - only for ADMIN */}
+            {currentUser?.role === "ADMIN" && (
+              <a
+                href="/monthly-salaries"
+                onClick={e => {
+                  e.preventDefault();
+                  navigate("/monthly-salaries");
+                }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/monthly-salaries" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+              >
+                <Package size={16} className={location.pathname === "/monthly-salaries" ? "text-emerald-500" : "text-gray-500"} />
+                <span className="font-medium">{t("navigation.monthly_salaries")}</span>
+              </a>
+            )}
+          </div>
+          
+          {/* Desktop Hamburger Menu for Settings */}
           <div className="relative">
             <button
               onClick={() => {
@@ -411,6 +462,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         >
                           <User size={18} className={location.pathname === "/users" ? "text-emerald-500" : "text-gray-500"} />
                           <span className="font-medium">{t("navigation.users")}</span>
+                        </a>
+                        <a
+                          href="/monthly-salaries"
+                          onClick={e => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/monthly-salaries");
+                          }}
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/monthly-salaries" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                        >
+                          <Package size={18} className={location.pathname === "/monthly-salaries" ? "text-emerald-500" : "text-gray-500"} />
+                          <span className="font-medium">{t("navigation.monthly_salaries")}</span>
                         </a>
                         <a
                           href="/attribute-settings"
@@ -716,6 +779,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           >
                             <User size={18} className={location.pathname === "/users" ? "text-emerald-500" : "text-gray-500"} />
                             <span className="font-medium">{t("navigation.users")}</span>
+                          </a>
+                          <a
+                            href="/monthly-salaries"
+                            onClick={e => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/monthly-salaries");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/monthly-salaries" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                          >
+                            <Package size={18} className={location.pathname === "/monthly-salaries" ? "text-emerald-500" : "text-gray-500"} />
+                            <span className="font-medium">{t("navigation.monthly_salaries")}</span>
                           </a>
                           <a
                             href="/attribute-settings"

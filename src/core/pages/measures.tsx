@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useDeleteMeasure, useGetMeasures } from '../api/measure';
+import { useDeleteMeasure, useGetMeasures, useExportMeasure } from '../api/measure';
 import { useGetUsers } from '../api/user';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 import { ResourceTable } from '../helpers/ResourceTable';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Download, MoreHorizontal, Edit, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
 // import { format } from 'date-fns';
 // import { create } from 'zustand';
@@ -16,6 +17,7 @@ export default function MeasuresPage() {
   
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { data: currentUser } = useCurrentUser();
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -28,6 +30,9 @@ export default function MeasuresPage() {
     created_at_before: '',
     zamershik: ''
   });
+
+  // Check if current user is admin
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.is_superuser;
 
   // Build query params for API call
   const buildQueryParams = () => {
@@ -48,6 +53,7 @@ export default function MeasuresPage() {
   });
   const { data: users } = useGetUsers();
   const {mutate: deleteMeasure} = useDeleteMeasure();
+  const {mutate: exportMeasure} = useExportMeasure();
   
   const measures = Array.isArray(measuresData) ? measuresData : measuresData?.results || [];
   const totalCount = Array.isArray(measuresData) 
@@ -136,31 +142,7 @@ export default function MeasuresPage() {
     {
       header: t('tables.actions'),
       id: 'actions',
-      cell: (row: any) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/measures/${row?.id}/edit`)}
-          >
-            {t('actions.edit')}
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => navigate(`/orders/create-from-measure/${row?.id}`)}
-          >
-            {t('actions.create_order')}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDelete(row?.id)}
-          >
-            {t('actions.delete')}
-          </Button>
-        </div>
-      ),
+      cell: (row: any) => <ActionsDropdown row={row} />,
     },
   ];
   const handleDelete = (id: number) => {
@@ -175,6 +157,116 @@ export default function MeasuresPage() {
     },
   });
     // Implement delete functionality here
+  };
+
+  const handleExportMeasure = (id: number) => {
+    exportMeasure(id);
+  };
+
+  // Custom dropdown component for actions
+  const ActionsDropdown = ({ row }: { row: any }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+
+    const handleToggle = (event: React.MouseEvent) => {
+      if (!isOpen) {
+        // Calculate if dropdown should open above or below
+        const rect = event.currentTarget.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const dropdownHeight = 200; // Approximate dropdown height
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+          setDropdownPosition('top');
+        } else {
+          setDropdownPosition('bottom');
+        }
+      }
+      setIsOpen(!isOpen);
+    };
+
+    return (
+      <div className="relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleToggle}
+          className="h-8 w-8 p-0"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+
+        {isOpen && (
+          <>
+            {/* Backdrop to close dropdown */}
+            <div 
+              className="fixed inset-0 z-10" 
+              onClick={() => setIsOpen(false)}
+            />
+            {/* Dropdown menu */}
+            <div 
+              className={`absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 ${
+                dropdownPosition === 'top' ? 'bottom-8' : 'top-8'
+              }`}
+            >
+              <button
+                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  navigate(`/measures/${row?.id}/edit`);
+                  setIsOpen(false);
+                }}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                {t('actions.edit')}
+              </button>
+              
+              <button
+                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => {
+                  handleExportMeasure(row?.id);
+                  setIsOpen(false);
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t('actions.export')}
+              </button>
+
+              {/* Show Create Order button only if order status is null and user is admin */}
+              {(!row?.order_status && isAdmin) && (
+                <button
+                  className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => {
+                    navigate(`/orders/create-from-measure/${row?.id}`);
+                    setIsOpen(false);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('actions.create_order')}
+                </button>
+              )}
+
+              {/* Show Delete button only for admin users */}
+              {isAdmin && (
+                <>
+                  <div className="border-t border-gray-200 my-1" />
+                  <button
+                    className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    onClick={() => {
+                      handleDelete(row?.id);
+                      setIsOpen(false);
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t('actions.delete')}
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
   return (
     <div className="container mx-auto py-6">

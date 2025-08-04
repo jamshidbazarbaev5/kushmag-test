@@ -48,9 +48,12 @@
     "filters": "Фильтры",
     "all": "Все",
     "clear_filters": "Очистить фильтры",
+    "exporting": "Экспорт...",
     "no_results_found": "Результаты не найдены",
     "type_to_search": "Введите для поиска",
-    "creating": "Создание"
+    "creating": "Создание",
+    "table": "Таблица",
+    "charts": "Графики"
   },
   "roles": {
     "admin": "Администратор",
@@ -82,7 +85,8 @@
     "users": "Пользователи",
     "create_user": "Создать пользователя",
     "measures": "Замеры",
-    "create_measure": "Создать замер"
+    "create_measure": "Создать замер",
+    "monthly_salaries": "Месячные зарплаты"
   },
   "accessory_types":{
     "cube": "Куб",
@@ -282,6 +286,13 @@
     "api_login": "API логин",
     "api_password": "API пароль",
     "fixed_salary": "Фиксированная зарплата",
+    "order_percentage": "Процент от заказов",
+    "month": "Месяц",
+    "user": "Пользователь",
+    "order_percentage_salary": "Зарплата от процента заказов",
+    "penalties": "Штрафы",
+    "bonuses": "Бонусы",
+    "total_salary": "Общая зарплата",
     "staff_member": "Сотрудник",
     "zamershik": "Замерщик",
     "door": "Дверь",
@@ -347,8 +358,14 @@
     "error": {
       "create": "Произошла ошибка при создании {{item}}",
       "update": "Произошла ошибка при обновлении {{item}}",
-      "delete": "Произошла ошибка при удалении {{item}}"
+      "delete": "Произошла ошибка при удалении {{item}}",
+      "required_fields": "Заполните все обязательные поля"
     },
+    "confirm": {
+      "delete": "Вы уверены, что хотите удалить этот элемент?"
+    },
+    "no_data_available": "Нет данных для отображения",
+    "no_users_found": "Пользователи не найдены",
     "edit": "Редактировать",
     "create": "Создать",
     "created": "Создано",
@@ -429,6 +446,14 @@
     "enter_api_login": "Введите API логин",
     "enter_api_password": "Введите API пароль",
     "enter_fixed_salary": "Введите фиксированную зарплату",
+    "enter_order_percentage": "Введите процент от заказов",
+    "select_month": "Выберите месяц",
+    "select_user": "Выберите пользователя",
+    "type_username": "Введите имя пользователя",
+    "type_to_search": "Введите для поиска",
+    "enter_penalties": "Введите штрафы",
+    "enter_bonuses": "Введите бонусы",
+    "search_monthly_salary": "Поиск месячных зарплат",
     "enter_client_name": "Введите имя клиента",
     "enter_client_phone": "Введите номер телефона клиента",
     "enter_address": "Введите адрес",
@@ -454,7 +479,9 @@
     "create": "Создать",
     "create_order": "Создать заказ",
     "add_extension": "Добавить добор",
-    "add_crown": "Добавить корону"
+    "add_crown": "Добавить корону",
+    "export_excel": "Экспорт в Excel",
+    "export": "Экспорт"
   },
 
   "pages": {
@@ -487,5 +514,15 @@
     "of": "из",
     "previous": "Предыдущая",
     "next": "Следующая"
+  },
+  "charts": {
+    "salary_by_user": "Зарплата по сотрудникам",
+    "salary_by_user_description": "Общая зарплата каждого сотрудника",
+    "salary_components": "Компоненты зарплаты",
+    "salary_components_description": "Распределение типов выплат",
+    "monthly_trend": "Тенденция по месяцам",
+    "monthly_trend_description": "Общие и средние зарплаты по месяцам",
+    "total_salaries": "Общие зарплаты",
+    "average_salary": "Средняя зарплата"
   }
 }
