@@ -10,6 +10,7 @@
   "common": {
     "yes": "Да",
     "add":"Добавить",
+    "or": "или",
 
     "back_to_doors": "Вернуться к дверям",
     "no": "Нет",
@@ -170,6 +171,7 @@
     "total_amount": "Общая сумма",
     "discount_amount": "Сумма скидки",
     "remaining_balance": "Остаток",
+    "total_after_discount": "Итого после скидки",
     "price_type": "Тип цены",
     "select_price_type": "Выберите тип цены",
     "order_information": "Информация о заказе",
@@ -191,6 +193,10 @@
     "operator": "Оператор",
     "discount_percentage": "Процент скидки",
     "advance_payment": "Предоплата",
+    "discount_and_payment": "Скидка и оплата",
+    "enter_discount_amount_note": "Введите сумму скидки",
+    "enter_discount_percentage_note": "Введите процент скидки",
+    "enter_advance_payment_note": "Введите сумму предоплаты",
     "door_model": "Модель двери",
     "extension_model": "Модель добора",
     "casing_model": "Модель наличника",

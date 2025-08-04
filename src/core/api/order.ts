@@ -65,8 +65,8 @@ export interface Order {
   organization: ModelReference;
   salesChannel: ModelReference;
   address: string;
-  order_code: string;
-  order_date: string;
+  // order_code: string;
+  // order_date: string;
   deadline_date: string;
   seller: ModelReference;
   operator: ModelReference;

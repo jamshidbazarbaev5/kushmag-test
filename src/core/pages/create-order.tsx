@@ -348,13 +348,13 @@ export default function CreateOrderPage() {
 
   const onSubmit = async (data: any) => {
     const { totalAmount, discountAmount, remainingBalance } = totals;
-
+//  const discount = convertToNumber(discount_percentage, 0);
     const orderData = {
       ...data,
       // Set created_at to current date and time (ISO string)
       created_at: new Date().toISOString(),
       // Map IDs to full meta objects for the API
-      rate: getMetaById(currencies, data.rate),
+      // rate: getMetaById(currencies, data.rate),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
       agent: getMetaById(counterparties, data.agent),
@@ -383,9 +383,11 @@ export default function CreateOrderPage() {
           model: getProductById(productsList, acc.model),
         })),
       })),
+      
       // Add calculated totals
       total_amount: totalAmount.toFixed(2),
       discount_amount: discountAmount.toFixed(2),
+      // discount_percentage:Number(discount_percentage.toFixed(2)),
       remaining_balance: remainingBalance.toFixed(2),
     };
 
@@ -1942,7 +1944,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                     <Input
                       type="text"
                       inputMode="decimal"
-                      value={item.width?.toString() || ''}
+                      value={item.width?.toFixed(2)}
                       disabled
                       placeholder="0.0"
                       className="bg-gray-100"
@@ -2306,11 +2308,11 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
                 </div>
                 <div className="flex justify-between text-green-600">
                   <span>{t("forms.discount")} ({discount_percentage || 0}%)</span>
-                  <span>-{totals.discountAmount.toFixed(0)} сум</span>
+                  <span>{totals.discountAmount.toFixed(0)} сум</span>
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span>-{advance.toFixed(0)} сум</span>
+                  <span>{advance.toFixed(0)} сум</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useGetOrder, useUpdateOrder } from "../api/order";
 import {
   useGetCurrencies,
-  useGetStores,
+  useGetStores, 
   useGetProjects,
   useGetCounterparties,
   useGetOrganizations,
@@ -42,6 +42,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Trash2, DoorOpen, Package, Calculator, Edit, Save, X } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave } from "../hooks/useAutoSave";
+// import { create } from 'zustand';
 
 
 // Helper function to get the full object for a selected ID
@@ -92,6 +93,10 @@ export default function EditOrderPage() {
     discountAmount: 0,
     remainingBalance: 0,
   });
+  // New state for discount and advance payment in step 3
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [advancePayment, setAdvancePayment] = useState<number>(0);
   const orderForm = useForm();
 
   // Auto-save functionality
@@ -105,8 +110,6 @@ export default function EditOrderPage() {
     { id: 2, title: t("forms.doors"), icon: DoorOpen },
     { id: 3, title: t("forms.review"), icon: Calculator },
   ];
-
-  const { discount_percentage, advance_payment } = orderForm.watch();
 
   //  Fetching ---
   const { data: currencies } = useGetCurrencies();
@@ -169,13 +172,20 @@ export default function EditOrderPage() {
         seller: orderData.seller?.id || orderData.seller,
         operator: orderData.operator?.id || orderData.operator,
         address: orderData.address || "",
-        order_code: orderData.order_code || "",
-        order_date: formatDateForInput(orderData.order_date),
+        // order_code: orderData.order_code || "",
+        // order_date: formatDateForInput(orderData.created_at),
         deadline_date: formatDateForInput(orderData.deadline_date),
-        discount_percentage: orderData.discount_percentage || 0,
-        advance_payment: orderData.advance_payment || 0,
         description: orderData.description || "",
       };
+
+      // Initialize discount and advance payment state from order data
+      const initialDiscountPercentage = orderData.discount_percentage || 0;
+      const initialDiscountAmount = parseFloat(String(orderData.discount_amount || 0));
+      const initialAdvancePayment = parseFloat(String(orderData.advance_payment || 0));
+      
+      setDiscountPercentage(initialDiscountPercentage);
+      setDiscountAmount(initialDiscountAmount);
+      setAdvancePayment(initialAdvancePayment);
 
       console.log("Form data being set:", formData); // Debug log
       console.log("Original order data:", orderData); // Debug log
@@ -284,14 +294,7 @@ export default function EditOrderPage() {
   );
 
   const orderFields = [
-    {
-      name: "rate",
-      label: t("forms.currency"),
-      type: "searchable-select",
-      options: fieldOptions.rateOptions,
-      placeholder: t("placeholders.select_currency"),
-      required: true,
-    },
+    
     {
       name: "store",
       label: t("forms.store"),
@@ -339,20 +342,7 @@ export default function EditOrderPage() {
       placeholder: t("placeholders.enter_address"),
       required: true,
     },
-    {
-      name: "order_code",
-      label: t("forms.order_code"),
-      type: "text",
-      placeholder: t("placeholders.enter_order_code"),
-      required: true,
-    },
-    {
-      name: "order_date",
-      label: t("forms.order_date"),
-      type: "datetime-local",
-      placeholder: t("placeholders.enter_order_date"),
-      required: true,
-    },
+   
     {
       name: "deadline_date",
       label: t("forms.deadline_date"),
@@ -375,20 +365,6 @@ export default function EditOrderPage() {
       options: fieldOptions.operatorOptions,
       placeholder: t("placeholders.select_operator"),
       required: true,
-    },
-    {
-      name: "discount_percentage",
-      label: t("forms.discount_percentage"),
-      type: "number",
-      step: "0.1",
-      required: false,
-    },
-    {
-      name: "advance_payment",
-      label: t("forms.advance_payment"),
-      type: "number",
-      step: "0.01",
-      required: false,
     },
     {
       name: "description",
@@ -419,31 +395,34 @@ export default function EditOrderPage() {
         return total + doorTotal;
       }, 0);
 
-      const discount = parseFloat(discount_percentage || 0);
-      const advance = parseFloat(advance_payment || 0);
+      // Calculate discount amount based on whether we have percentage or amount
+      let finalDiscountAmount = discountAmount;
+      if (discountPercentage > 0) {
+        finalDiscountAmount = (totalAmount * discountPercentage) / 100;
+      }
 
-      const discountAmount = (totalAmount * discount) / 100;
-      const finalAmount = totalAmount - discountAmount;
-      const remainingBalance = finalAmount - advance;
+      const finalAmount = totalAmount - finalDiscountAmount;
+      const remainingBalance = finalAmount - advancePayment;
 
       setTotals({
         totalAmount: totalAmount,
-        discountAmount: discountAmount,
+        discountAmount: finalDiscountAmount,
         remainingBalance: remainingBalance,
       });
     };
 
     calculateTotals();
-  }, [doors, discount_percentage, advance_payment]);
+  }, [doors, discountAmount, discountPercentage, advancePayment]);
 
   const onSubmit = async (data: any) => {
-    const { totalAmount, discountAmount, remainingBalance } = totals;
+    const { totalAmount, remainingBalance } = totals;
 
     const orderUpdateData = {
       ...data,
       id: orderData?.id,
       // Map IDs to full meta objects for the API
-      rate: getMetaById(currencies, data.rate),
+      // rate: getMetaById(currencies, data.rate),
+      created_at:new Date(),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
       agent: getMetaById(counterparties, data.agent),
@@ -472,9 +451,11 @@ export default function EditOrderPage() {
           model: getProductById(productsList, acc.model),
         })),
       })),
-      // Add calculated totals
+      // Add calculated totals and payment info
       total_amount: totalAmount.toFixed(2),
-      discount_amount: discountAmount.toFixed(2),
+      discount_percentage: discountPercentage.toFixed(2),
+      discount_amount: totals.discountAmount.toFixed(2),
+      advance_payment: advancePayment.toFixed(2),
       remaining_balance: remainingBalance.toFixed(2),
     };
 
@@ -509,7 +490,7 @@ export default function EditOrderPage() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {t("forms.edit_order")} #{orderData?.order_code}
+                {/* {t("forms.edit_order")} #{orderData?.order_code} */}
               </h1>
               <p className="text-gray-600">
                 {t("forms.edit_order_description")}
@@ -589,8 +570,12 @@ export default function EditOrderPage() {
             isLoading={isUpdating}
             onSubmit={onSubmit}
             onBack={() => setCurrentStep(2)}
-            discount_percentage={discount_percentage}
-            advance_payment={advance_payment}
+            discountAmount={discountAmount}
+            setDiscountAmount={setDiscountAmount}
+            discountPercentage={discountPercentage}
+            setDiscountPercentage={setDiscountPercentage}
+            advancePayment={advancePayment}
+            setAdvancePayment={setAdvancePayment}
           />
         )}
       </div>
@@ -2227,10 +2212,44 @@ function StepThree({
   isLoading,
   onSubmit,
   onBack,
-  discount_percentage,
-  advance_payment,
+  discountAmount,
+  setDiscountAmount,
+  discountPercentage,
+  setDiscountPercentage,
+  advancePayment,
+  setAdvancePayment,
 }: any) {
   const { t } = useTranslation();
+
+  // Handle discount amount change
+  const handleDiscountAmountChange = (value: string) => {
+    const amount = parseFloat(value) || 0;
+    setDiscountAmount(amount);
+    
+    // Calculate percentage based on amount
+    if (totals.totalAmount > 0) {
+      const percentage = (amount / totals.totalAmount) * 100;
+      setDiscountPercentage(percentage);
+    } else {
+      setDiscountPercentage(0);
+    }
+  };
+
+  // Handle discount percentage change
+  const handleDiscountPercentageChange = (value: string) => {
+    const percentage = parseFloat(value) || 0;
+    setDiscountPercentage(percentage);
+    
+    // Calculate amount based on percentage
+    const amount = (totals.totalAmount * percentage) / 100;
+    setDiscountAmount(amount);
+  };
+
+  // Handle advance payment change
+  const handleAdvancePaymentChange = (value: string) => {
+    const payment = parseFloat(value) || 0;
+    setAdvancePayment(payment);
+  };
 
   // Calculate detailed subtotals
   const priceBreakdown = doors.reduce(
@@ -2381,20 +2400,82 @@ function StepThree({
                     {totals.totalAmount.toFixed(0)} сум
                   </span>
                 </div>
-                <div className="flex justify-between text-green-600">
-                  <span>
-                    {t("forms.discount")} ({discount_percentage || 0}%)
-                  </span>
-                  <span>-{totals.discountAmount.toFixed(0)} сум</span>
+                
+                {/* Discount Section */}
+                <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-green-700">{t("forms.discount")}</h4>
+                  
+                  {/* Discount Amount Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_amount")} (сум)
+                    </label>
+                    <Input
+                      type="number"
+                      value={discountAmount || ''}
+                      onChange={(e) => handleDiscountAmountChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                 
+                  {/* Discount Percentage Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_percentage")} (%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={discountPercentage || ''}
+                      onChange={(e) => handleDiscountPercentageChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  {/* Discount Summary */}
+                  {(discountAmount > 0 || discountPercentage > 0) && (
+                    <div className="flex justify-between text-green-600 font-medium pt-2 border-t border-green-200">
+                      <span>
+                        {t("forms.discount")} ({discountPercentage.toFixed(1)}%)
+                      </span>
+                      <span>{totals.discountAmount.toFixed(0)} сум</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between text-red-600">
-                  <span>{t("forms.advance_payment")}</span>
-                  <span>
-                    -{parseFloat(advance_payment || 0).toFixed(0)} сум
-                  </span>
+                
+                
+                
+                {/* Advance Payment Section */}
+                <div className="bg-orange-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-orange-700">{t("forms.advance_payment")}</h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.advance_payment")} (сум)
+                    </label>
+                    <Input
+                      type="number"
+                      value={advancePayment || ''}
+                      onChange={(e) => handleAdvancePaymentChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  {advancePayment > 0 && (
+                    <div className="flex justify-between text-orange-600 font-medium pt-2 border-t border-orange-200">
+                      <span>{t("forms.advance_payment")}</span>
+                      <span>{advancePayment.toFixed(0)} сум</span>
+                    </div>
+                  )}
                 </div>
+                
                 <Separator />
-                <div className="flex justify-between text-xl font-bold text-blue-600">
+                
+                {/* Final Remaining Balance */}
+                <div className="flex justify-between text-xl font-bold text-purple-600 bg-purple-50 p-4 rounded-lg">
                   <span>{t("forms.remaining_balance")}</span>
                   <span>{totals.remainingBalance.toFixed(0)} сум</span>
                 </div>

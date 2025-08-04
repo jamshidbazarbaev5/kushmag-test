@@ -95,6 +95,9 @@ export default function CreateOrderPage() {
     remainingBalance: 0,
   });
   const [measureProcessed, setMeasureProcessed] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState<string>('');
+  const [discountPercentage, setDiscountPercentage] = useState<string>('');
+  const [advancePayment, setAdvancePayment] = useState<string>('');
   const orderForm = useForm();
 
   // Pre-populate from measure data if available
@@ -188,8 +191,6 @@ export default function CreateOrderPage() {
     { id: 3, title: t("forms.review"), icon: Calculator },
   ];
 
-  const { discount_percentage, advance_payment } = orderForm.watch();
-
   //  Fetching ---
   const { data: currencies } = useGetCurrencies();
   const { data: stores } = useGetStores();
@@ -270,14 +271,7 @@ export default function CreateOrderPage() {
   console.log("Threshold Options value types:", fieldOptions.thresholdOptions?.map(opt => ({ value: opt.value, type: typeof opt.value })));
 
   const orderFields = [
-    {
-      name: "rate",
-      label: t("forms.currency"),
-      type: "searchable-select",
-      options: fieldOptions.rateOptions,
-      placeholder: t("placeholders.select_currency"),
-      required: true,
-    },
+   
     {
       name: "store",
       label: t("forms.store"),
@@ -325,20 +319,8 @@ export default function CreateOrderPage() {
       placeholder: t("placeholders.enter_address"),
       required: true,
     },
-    {
-      name: "order_code",
-      label: t("forms.order_code"),
-      type: "text",
-      placeholder: t("placeholders.enter_order_code"),
-      required: true,
-    },
-    {
-      name: "order_date",
-      label: t("forms.order_date"),
-      type: "datetime-local",
-      placeholder: t("placeholders.enter_order_date"),
-      required: true,
-    },
+  
+   
     {
       name: "deadline_date",
       label: t("forms.deadline_date"),
@@ -362,20 +344,7 @@ export default function CreateOrderPage() {
       placeholder: t("placeholders.select_operator"),
       required: true,
     },
-    {
-      name: "discount_percentage",
-      label: t("forms.discount_percentage"),
-      type: "number",
-      step: "0.1",
-      required: false,
-    },
-    {
-      name: "advance_payment",
-      label: t("forms.advance_payment"),
-      type: "number",
-      step: "0.01",
-      required: false,
-    },
+   
     {
       name: "description",
       label: t("forms.description"),
@@ -405,29 +374,47 @@ export default function CreateOrderPage() {
         return total + doorTotal;
       }, 0);
 
-      const discount = parseFloat(discount_percentage || 0);
-      const advance = parseFloat(advance_payment || 0);
+      // Calculate discount based on current inputs
+      let discountAmountValue = 0;
+      let discountPercentageValue = 0;
 
-      const discountAmount = (totalAmount * discount) / 100;
-      const finalAmount = totalAmount - discountAmount;
+      if (discountAmount && discountAmount.trim() !== '') {
+        // If discount amount is provided, calculate percentage
+        discountAmountValue = parseFloat(discountAmount.replace(/,/g, '.') || '0');
+        discountPercentageValue = totalAmount > 0 ? (discountAmountValue / totalAmount) * 100 : 0;
+      } else if (discountPercentage && discountPercentage.trim() !== '') {
+        // If discount percentage is provided, calculate amount
+        discountPercentageValue = parseFloat(discountPercentage.replace(/,/g, '.') || '0');
+        discountAmountValue = (totalAmount * discountPercentageValue) / 100;
+      }
+
+      const advance = parseFloat(advancePayment.replace(/,/g, '.') || '0');
+      const finalAmount = totalAmount - discountAmountValue;
       const remainingBalance = finalAmount - advance;
 
       setTotals({
         totalAmount: totalAmount,
-        discountAmount: discountAmount,
+        discountAmount: discountAmountValue,
         remainingBalance: remainingBalance,
       });
     };
 
     calculateTotals();
-  }, [doors, discount_percentage, advance_payment]);
+  }, [doors, discountAmount, discountPercentage, advancePayment]);
 
   const onSubmit = async (data: any) => {
-    const { totalAmount, discountAmount, remainingBalance } = totals;
+    const { totalAmount, discountAmount: calculatedDiscountAmount, remainingBalance } = totals;
+
+    // Calculate discount percentage for API
+    const discountPercentageForAPI = totalAmount > 0 ? (calculatedDiscountAmount / totalAmount) * 100 : 0;
+
+    // Remove unwanted fields from form data
+    const { order_code, order_date, ...cleanData } = data;
 
     const orderData = {
-      ...data,
+      ...cleanData,
       // Map IDs to full meta objects for the API
+      created_at: new Date().toISOString(),
       rate: getMetaById(currencies, data.rate),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
@@ -458,8 +445,10 @@ export default function CreateOrderPage() {
         })),
       })),
       // Add calculated totals
+      discount_percentage: discountPercentageForAPI,
+      discount_amount: calculatedDiscountAmount.toFixed(2),
       total_amount: totalAmount.toFixed(2),
-      discount_amount: discountAmount.toFixed(2),
+      advance_payment: parseFloat(advancePayment.replace(/,/g, '.') || '0').toFixed(2),
       remaining_balance: remainingBalance.toFixed(2),
     };
 
@@ -571,8 +560,12 @@ export default function CreateOrderPage() {
             isLoading={isLoading}
             onSubmit={onSubmit}
             onBack={() => setCurrentStep(2)}
-            discount_percentage={discount_percentage}
-            advance_payment={advance_payment}
+            discountAmount={discountAmount}
+            setDiscountAmount={setDiscountAmount}
+            discountPercentage={discountPercentage}
+            setDiscountPercentage={setDiscountPercentage}
+            advancePayment={advancePayment}
+            setAdvancePayment={setAdvancePayment}
           />
         )}
       </div>
@@ -2209,8 +2202,55 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
     </div>
   );
 }
-function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment }: any) {
+function StepThree({ 
+  orderForm, 
+  doors, 
+  totals, 
+  isLoading, 
+  onSubmit, 
+  onBack, 
+  discountAmount,
+  setDiscountAmount,
+  discountPercentage,
+  setDiscountPercentage,
+  advancePayment,
+  setAdvancePayment
+}: any) {
   const { t } = useTranslation();
+
+  // Helper function to convert values with comma to number for display
+  const convertToNumber = (value: any, defaultValue: number = 0) => {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+      if (normalized === '' || normalized === '.') return defaultValue;
+      const parsed = parseFloat(normalized);
+      return isNaN(parsed) ? defaultValue : parsed;
+    }
+    return defaultValue;
+  };
+
+  // Calculate discount percentage for display
+  const displayDiscountPercentage = totals.totalAmount > 0 ? 
+    (totals.discountAmount / totals.totalAmount) * 100 : 0;
+
+  // Handle discount amount input change
+  const handleDiscountAmountChange = (value: string) => {
+    setDiscountAmount(value);
+    // Clear percentage when amount is being edited
+    if (value.trim() !== '') {
+      setDiscountPercentage('');
+    }
+  };
+
+  // Handle discount percentage input change
+  const handleDiscountPercentageChange = (value: string) => {
+    setDiscountPercentage(value);
+    // Clear amount when percentage is being edited
+    if (value.trim() !== '') {
+      setDiscountAmount('');
+    }
+  };
 
   // Calculate detailed subtotals
   const priceBreakdown = doors.reduce(
@@ -2327,18 +2367,79 @@ function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, disc
               <CardTitle className="text-xl">{t("forms.pricing_summary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Discount and Payment Inputs */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-800">{t("forms.discount_and_payment")}</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Discount Amount */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_amount")}
+                    </label>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={discountAmount}
+                      onChange={(e) => handleDiscountAmountChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500">
+                      {t("forms.enter_discount_amount_note")}
+                    </p>
+                  </div>
+
+                  {/* Discount Percentage */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_percentage")}
+                    </label>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={discountPercentage}
+                      onChange={(e) => handleDiscountPercentageChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500">
+                      {t("forms.enter_discount_percentage_note")}
+                    </p>
+                  </div>
+
+                  {/* Advance Payment */}
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.advance_payment")}
+                    </label>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={advancePayment}
+                      onChange={(e) => setAdvancePayment(e.target.value)}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500">
+                      {t("forms.enter_advance_payment_note")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold">{totals.totalAmount.toFixed(0)} сум</span>
                 </div>
                 <div className="flex justify-between text-green-600">
-                  <span>{t("forms.discount")} ({discount_percentage || 0}%)</span>
-                  <span>-{totals.discountAmount.toFixed(0)} сум</span>
+                  <span>{t("forms.discount")} ({displayDiscountPercentage.toFixed(1)}%)</span>
+                  <span>{totals.discountAmount.toFixed(0)} сум</span>
                 </div>
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span>-{parseFloat(advance_payment || 0).toFixed(0)} сум</span>
+                  <span>{convertToNumber(advancePayment, 0).toFixed(0)} сум</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
