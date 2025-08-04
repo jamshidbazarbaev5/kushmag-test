@@ -102,6 +102,9 @@
   },
   
   "forms": {
+    "order_status": "Статус заказа",
+    "admin": "Администратор",
+
     "extension":"Добор",
     "date": "Дата",
       "salary_breakdown": "Разбивка зарплаты",
