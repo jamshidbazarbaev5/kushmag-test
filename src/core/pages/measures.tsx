@@ -99,7 +99,7 @@ export default function MeasuresPage() {
       accessorKey: 'date',
      cell:(row:any)=>(
           <p>
-            {formatDate(row.create)}
+            {formatDate(row.created_at)}
           </p>
       )
   

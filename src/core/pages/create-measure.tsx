@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 // import { useCreateMeasure } from '../api/measure';
 import { useGetUsers } from '../api/user';
 import { useCreateMeasure } from '../api/measure';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 export default function CreateMeasurePage() {
   const navigate = useNavigate();
@@ -13,11 +14,16 @@ export default function CreateMeasurePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {mutate:createMeasure} = useCreateMeasure();
+  const { data: currentUser } = useCurrentUser();
+  
   // Fetch all users and filter zamershiks
   const { data: usersData } = useGetUsers();
 
   const zamershiks = (Array.isArray(usersData) ? usersData : usersData?.results || [])
     .filter(user => user.role === 'ZAMERSHIK');
+
+  // Check if current user is a zamershik
+  const isCurrentUserZamershik = currentUser?.role === 'ZAMERSHIK';
 
   const fields = [
     {
@@ -41,7 +47,8 @@ export default function CreateMeasurePage() {
       placeholder: t('placeholders.enter_address'),
       required: true,
     },
-    {
+    // Only show zamershik select if current user is not a zamershik
+    ...(isCurrentUserZamershik ? [] : [{
       name: 'zamershik',
       label: t('forms.zamershik'),
       type: 'select',
@@ -50,15 +57,20 @@ export default function CreateMeasurePage() {
         value: user.id,
         label: user.full_name
       }))
-    }
+    }])
   ];
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      await createMeasure(data);
+      // If current user is a zamershik, set their ID as the zamershik
+      const submitData = isCurrentUserZamershik 
+        ? { ...data, zamershik: currentUser?.id }
+        : data;
+        
+      await createMeasure(submitData);
       toast.success(t('messages.success.created', { item: t('navigation.measures') }));
-      navigate('/');
+      navigate('/measures');
     } catch (error) {
       toast.error(t('messages.error.create', { item: t('navigation.measures') }));
     } finally {
