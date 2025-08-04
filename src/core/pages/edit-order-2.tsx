@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrder, useUpdateOrder } from "../api/order";
+import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import {
   useGetCurrencies,
-  useGetStores, 
+  useGetStores,
   useGetProjects,
   useGetCounterparties,
   useGetOrganizations,
@@ -166,7 +167,11 @@ export default function EditOrderPage() {
         rate: orderData.rate?.id || orderData.rate,
         store: orderData.store?.id || orderData.store,
         project: orderData.project?.id || orderData.project,
-        agent: orderData.agent?.id || orderData.agent,
+        agent: orderData.agent ? {
+          value: orderData.agent.id,
+          label: orderData.agent.name,
+          ...orderData.agent
+        } : null,
         organization: orderData.organization?.id || orderData.organization,
         salesChannel: orderData.salesChannel?.id || orderData.salesChannel,
         seller: orderData.seller?.id || orderData.seller,
@@ -312,14 +317,6 @@ export default function EditOrderPage() {
       required: true,
     },
     {
-      name: "agent",
-      label: t("forms.agent"),
-      type: "searchable-select",
-      options: fieldOptions.agentOptions,
-      placeholder: t("placeholders.select_agent"),
-      required: true,
-    },
-    {
       name: "organization",
       label: t("forms.organization"),
       type: "searchable-select",
@@ -425,7 +422,7 @@ export default function EditOrderPage() {
       created_at:new Date(),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
-      agent: getMetaById(counterparties, data.agent),
+      agent: data.agent && typeof data.agent === 'object' ? data.agent : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
       seller: getMetaById(sellers, data.seller),
@@ -614,6 +611,22 @@ function StepOne({ orderForm, orderFields, isLoading, onNext }: any) {
             form={orderForm}
             gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
           />
+          
+          {/* Custom Counterparty Select Field */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                {t("forms.agent")} *
+              </label>
+              <SearchableCounterpartySelect
+                value={orderForm.watch("agent")}
+                onChange={(value) => orderForm.setValue("agent", value)}
+                placeholder={t("placeholders.select_agent")}
+                required={true}
+              />
+            </div>
+          </div>
+          
           <div className="flex justify-end pt-6">
             <Button
               onClick={handleNext}

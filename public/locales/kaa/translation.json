@@ -22,7 +22,10 @@
     "items": "daneler",
     "filters": "Filtrler",
     "all": "Hámmesi",
-    "clear_filters": "Filtrlerdi tazalaw"
+    "clear_filters": "Filtrlerdi tazalaw",
+    "no_results_found": "Nátijeler tabılmadı",
+    "type_to_search": "Izlewke kiritiń",
+    "creating": "Jasaw"
   },
   "roles": {
     "admin": "Administrator",
@@ -70,6 +73,10 @@
     "sales_channel": "Satıw kanalı",
     "organization": "Shólkem",
     "agent": "Agent",
+    "counterparty": "Qarshı tárepshi",
+    "create_new_counterparty": "Jańa qarshı tárepshi jasaw",
+    "create_counterparty": "Qarshı tárepshi jasaw",
+    "phone": "Telefon",
     "order_code": "Buyırtpa kodı",
     "order_date": "Buyırtpa sánesi",
     "deadline_date": "Tamamlaw sánesi",
@@ -184,7 +191,10 @@
       "delete": "{{item}} joyw kezinde qate payda boldı"
     },
     "edit": "Óńdew",
-    "create": "Jasaw"
+    "create": "Jasaw",
+    "created": "Jasaldı",
+    "counterparty_created_successfully": "Qarshı tárepshi sátti jasaldı",
+    "error_creating_counterparty": "Qarshı tárepshi jasawda qate"
   },
   "titles": {
     "create_measure": "Ólshem jasaw",
@@ -207,6 +217,7 @@
     "select_store": "Skladtı tańlań",
     "select_project": "Proektti tańlań",
     "select_agent": "Agentti tańlań",
+    "enter_counterparty_name": "Qarshı tárepshi atın kiritiń",
     "select_organization": "Shólkemdi tańlań",
     "select_sales_channel": "Satıw kanalın tańlań",
     "enter_order_code": "Buyırtpa kodın jazıń",

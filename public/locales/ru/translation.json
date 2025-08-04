@@ -47,7 +47,10 @@
     "items": "позиций",
     "filters": "Фильтры",
     "all": "Все",
-    "clear_filters": "Очистить фильтры"
+    "clear_filters": "Очистить фильтры",
+    "no_results_found": "Результаты не найдены",
+    "type_to_search": "Введите для поиска",
+    "creating": "Создание"
   },
   "roles": {
     "admin": "Администратор",
@@ -183,6 +186,9 @@
 
     "project": "Проект",
     "counterparty": "Контрагент",
+    "create_new_counterparty": "Создать нового контрагента",
+    "create_counterparty": "Создать контрагента",
+    "phone": "Телефон",
     "sales_channel": "Канал продаж",
     "organization": "Организация",
     "agent": "Контрагент",
@@ -344,7 +350,10 @@
       "delete": "Произошла ошибка при удалении {{item}}"
     },
     "edit": "Редактировать",
-    "create": "Создать"
+    "create": "Создать",
+    "created": "Создано",
+    "counterparty_created_successfully": "Контрагент успешно создан",
+    "error_creating_counterparty": "Ошибка при создании контрагента"
   },
   "placeholders": {
     "search_doors": "Поиск двери",
@@ -369,6 +378,7 @@
     "select_store": "Выберите склад",
     "select_project": "Выберите проект",
     "select_agent": "Выберите контрагента",
+    "enter_counterparty_name": "Введите имя контрагента",
     "select_organization": "Выберите организацию",
     "select_sales_channel": "Выберите канал продаж",
     "search_extension_model": "Поиск модели добора",

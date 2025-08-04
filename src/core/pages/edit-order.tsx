@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useCreateOrder } from "../api/order";
+import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import {
   useGetCurrencies,
   useGetStores,
@@ -289,14 +290,6 @@ export default function CreateOrderPage() {
       required: true,
     },
     {
-      name: "agent",
-      label: t("forms.agent"),
-      type: "searchable-select",
-      options: fieldOptions.agentOptions,
-      placeholder: t("placeholders.select_agent"),
-      required: true,
-    },
-    {
       name: "organization",
       label: t("forms.organization"),
       type: "searchable-select",
@@ -418,7 +411,7 @@ export default function CreateOrderPage() {
       rate: getMetaById(currencies, data.rate),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
-      agent: getMetaById(counterparties, data.agent),
+      agent: data.agent && typeof data.agent === 'object' ? data.agent : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
       seller: getMetaById(sellers, data.seller),
@@ -604,6 +597,22 @@ function StepOne({ orderForm, orderFields, isLoading, onNext }: any) {
             form={orderForm}
             gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
           />
+          
+          {/* Custom Counterparty Select Field */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                {t("forms.agent")} *
+              </label>
+              <SearchableCounterpartySelect
+                value={orderForm.watch("agent")}
+                onChange={(value) => orderForm.setValue("agent", value)}
+                placeholder={t("placeholders.select_agent")}
+                required={true}
+              />
+            </div>
+          </div>
+          
           <div className="flex justify-end pt-6">
             <Button 
               onClick={handleNext}
