@@ -288,6 +288,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               )}
             </a>
+             <a
+              href="/salary-overview"
+              onClick={e => {
+                e.preventDefault();
+                navigate("/salary-overview");
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${location.pathname === "/measures" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+            >
+              <Package size={16} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} />
+              <span className="font-medium">{t("navigation.sales_overview")}</span>
+            
+            </a>
 
             {/* Monthly Salaries - only for ADMIN */}
             {currentUser?.role === "ADMIN" && (
@@ -519,6 +531,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           {newMeasuresCount}
                         </div>
                       )}
+                    </a>
+                     <a
+                      href="/salary-overview"
+                      onClick={e => {
+                        e.preventDefault();
+                        setMobileMenuOpen(false);
+                        navigate("/salary-overview");
+                      }}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${location.pathname === "/measures" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground hover:bg-gray-50"}`}
+                    >
+                      {/* <Package size={18} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} /> */}
+                      <span className="font-medium">{t("navigation.sales_overview")}</span>
+                    
                     </a>
                   </div>
                 </div>

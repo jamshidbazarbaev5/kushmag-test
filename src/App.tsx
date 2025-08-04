@@ -23,6 +23,7 @@ import CreateThresholdPage from "./core/pages/create-threshold";
 import UsersPage from "./core/pages/users";
 import CreateUserPage from "./core/pages/create-user";
 import MonthlySalariesPage from "./core/pages/monthly-salaries";
+import SalaryOverviewPage from "./core/pages/salary-overview";
 import CreateMeasurePage from "./core/pages/create-measure";
 import MeasuresPage from "./core/pages/measures";
 import EditMeasurePage from "./core/pages/edit-measure";
@@ -79,6 +80,7 @@ function App() {
                  <Route path="/create-user" element={<CreateUserPage />} />
                  
                  <Route path="/monthly-salaries" element={<MonthlySalariesPage />} />
+                 <Route path="/salary-overview" element={<SalaryOverviewPage />} />
                   
                   {/* Measures routes */}
                   <Route path="/measures" element={<MeasuresPage />} />

@@ -64,6 +64,7 @@
   },
   "navigation": {
     "orders": "Заказы",
+    "sales_overview": "Зарплата",
     "attribute_settings": "Настройки атрибутов",
     "casing_ranges": "Диапазоны наличников",
     
@@ -102,6 +103,12 @@
   
   "forms": {
     "extension":"Добор",
+    "date": "Дата",
+      "salary_breakdown": "Разбивка зарплаты",
+    "salary_breakdown_description": "Детальная разбивка компонентов зарплаты",
+    "role_distribution": "Распределение по ролям",
+    "role_distribution_description": "Распределение сотрудников и зарплат по ролям",
+    "create_extension": "Создать добор",
     "item_total": "Всего",
     "manage_accessorys":"Управление аксессуарами",
     "accessory":"Аксессуар",
@@ -525,4 +532,5 @@
     "total_salaries": "Общие зарплаты",
     "average_salary": "Средняя зарплата"
   }
+  
 }

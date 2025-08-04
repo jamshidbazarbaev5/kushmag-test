@@ -632,6 +632,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList,  onNext, onBack 
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDoor, setEditingDoor] = useState<any>(null);
+  const [showCasingsModal, setShowCasingsModal] = useState(false);
   
   const handleAddNewRow = () => {
     const newDoor = {
@@ -1372,31 +1373,17 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList,  onNext, onBack 
                     {/* Casings */}
                     <TableCell>
                       {editingIndex === index ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              {editingDoor?.casings?.length || 0}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>{t("forms.manage_casings")}</DialogTitle>
-                            </DialogHeader>
-                            <AccessoryManager
-                              items={editingDoor?.casings || []}
-                              onUpdate={(items) => handleFieldChange('casings', items)}
-                              type="casing"
-                              fieldOptions={fieldOptions}
-                              doorData={editingDoor}
-                              productsList={productsList}
-                            />
-                          </DialogContent>
-                        </Dialog>
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            onClick={() => setShowCasingsModal(true)}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            {editingDoor?.casings?.length || 0}
+                          </Button>
+                        </>
                       ) : (
                         <span className="text-xs">
                           {door.casings?.length || 0} items
@@ -1599,6 +1586,45 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList,  onNext, onBack 
           )}
         </CardContent>
       </Card>
+      
+      {/* Custom Casings Modal */}
+      {showCasingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-transparent bg-opacity-10"
+            onClick={() => setShowCasingsModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-lg shadow-xl w-[55vw] h-[85vh] max-w-7xl flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold">{t("forms.manage_casings")}</h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCasingsModal(false)}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <AccessoryManager
+                items={editingDoor?.casings || []}
+                onUpdate={(items) => handleFieldChange('casings', items)}
+                type="casing"
+                fieldOptions={fieldOptions}
+                doorData={editingDoor}
+                productsList={productsList}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1944,9 +1970,16 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Model */}
-                <div className="col-span-1 md:col-span-2">
+              {/* Responsive grid layout - different for casings due to more fields */}
+              <div className={`gap-4 ${type === 'casing' 
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6' 
+                : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              }`}>
+                {/* Model - Full width for all types */}
+                <div className={`${type === 'casing' 
+                  ? 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6' 
+                  : 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4'
+                }`}>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
                     {t("forms.model")} *
                   </label>
@@ -1968,7 +2001,10 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   const product = productsList.find(p => p.id === item.model);
                   return product && product.salePrices && product.salePrices.length > 1;
                 })() && (
-                  <div className="col-span-1 md:col-span-2">
+                  <div className={`${type === 'casing' 
+                    ? 'col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-3' 
+                    : 'col-span-1 md:col-span-2'
+                  }`}>
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
                       {t("forms.price_type")} *
                     </label>
@@ -2006,8 +2042,8 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   </div>
                 )}
 
-                {/* Price */}
-                <div>
+                {/* Price and Quantity - First row of main fields for casings */}
+                <div className={type === 'casing' ? 'col-span-1 xl:col-span-2' : 'col-span-1'}>
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
                     {t("forms.price")} *
                   </label>
@@ -2029,8 +2065,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   />
                 </div>
 
-                {/* Quantity */}
-                <div>
+                <div className="col-span-1">
                   <label className="text-sm font-medium text-gray-700 mb-1 block">
                     {t("forms.quantity")} *
                   </label>
@@ -2043,12 +2078,12 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   />
                 </div>
 
-                {/* Conditional fields based on type */}
+                {/* Dimensions - Second row for casings */}
                 {(type === 'extension' || type === 'casing') && (
                   <>
-                    <div>
+                    <div className="col-span-1">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.height")} {type === 'casing' ? '(auto-calculated)' : ''}
+                        {t("forms.height")} {type === 'casing' ? '(auto)' : ''}
                       </label>
                       <Input
                         type="text"
@@ -2060,9 +2095,9 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                         className={type === 'casing' ? 'bg-gray-100' : ''}
                       />
                     </div>
-                    <div>
+                    <div className="col-span-1">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.width")} {type === 'casing' ? '(auto-calculated)' : ''}
+                        {t("forms.width")} {type === 'casing' ? '(auto)' : ''}
                       </label>
                       <Input
                         type="text"
@@ -2078,7 +2113,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                 )}
 
                 {type === 'crown' && (
-                  <div>
+                  <div className="col-span-1">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
                       {t("forms.width")} (auto-calculated)
                     </label>
@@ -2093,9 +2128,10 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   </div>
                 )}
 
+                {/* Casing-specific fields - Third row */}
                 {type === 'casing' && (
                   <>
-                    <div>
+                    <div className="col-span-1 md:col-span-1 xl:col-span-2">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         {t("forms.casing_type")} *
                       </label>
@@ -2112,7 +2148,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
+                    <div className="col-span-1 md:col-span-1 xl:col-span-2">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">
                         {t("forms.casing_formula")} *
                       </label>
@@ -2129,8 +2165,9 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                         </SelectContent>
                       </Select>
                     </div>
+                    {/* Casing Range - Fourth row if formula2 is selected */}
                     {item.casing_formula === 'formula2' && (
-                      <div className="col-span-1 md:col-span-2">
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6">
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
                           {t("forms.casing_range")} *
                         </label>
@@ -2155,7 +2192,7 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                 )}
 
                 {type === 'accessory' && (
-                  <div className="col-span-1 md:col-span-2">
+                  <div className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
                     <label className="text-sm font-medium text-gray-700 mb-1 block">
                       {t("forms.accessory_type")} *
                     </label>
@@ -2178,8 +2215,11 @@ function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, produ
                   </div>
                 )}
 
-                {/* Item total */}
-                <div className="col-span-1 md:col-span-2 pt-2 border-t">
+                {/* Item total - spans appropriate columns based on type */}
+                <div className={`pt-2 border-t ${type === 'casing' 
+                  ? 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6' 
+                  : 'col-span-1 md:col-span-2'
+                }`}>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">{t("forms.item_total")}:</span>
                     <span className="font-semibold text-blue-600">
