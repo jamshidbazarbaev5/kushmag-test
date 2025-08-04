@@ -857,11 +857,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList,  onNext, onBack 
                   <h4 className="font-semibold text-blue-800">
                     {t("forms.measure_data_loaded")}
                   </h4>
-                  <p className="text-blue-600 text-sm mt-1">
-                    {t("forms.measure_data_description", { 
-                      count: doors.filter((door: any) => door.isFromMeasure).length 
-                    })}
-                  </p>
+                  
                 </div>
               </div>
             </div>
