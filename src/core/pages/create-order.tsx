@@ -1599,7 +1599,12 @@ function DoorProductSelect({ value, onChange, placeholder, productsList = [], on
       />
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-auto">
+        <div className="fixed z-[999] w-[calc(100%-2rem)] max-w-[350px] mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-auto" 
+             style={{
+               top: 'auto',
+               left: 'auto',
+               transform: 'translate(0, 0)',
+             }}>
           {isLoading ? (
             <div className="p-2 text-center text-gray-500">Loading...</div>
           ) : products.length > 0 ? (
