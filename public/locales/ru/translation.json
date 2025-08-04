@@ -102,16 +102,8 @@
   },
   
   "forms": {
-    "order_status": "Статус заказа",
-    "admin": "Администратор",
-
     "extension":"Добор",
-    "date": "Дата",
-      "salary_breakdown": "Разбивка зарплаты",
-    "salary_breakdown_description": "Детальная разбивка компонентов зарплаты",
-    "role_distribution": "Распределение по ролям",
-    "role_distribution_description": "Распределение сотрудников и зарплат по ролям",
-    "create_extension": "Создать добор",
+    "order_status": "Статус заказа",
     "item_total": "Всего",
     "manage_accessorys":"Управление аксессуарами",
     "accessory":"Аксессуар",
@@ -379,8 +371,21 @@
     "edit": "Редактировать",
     "create": "Создать",
     "created": "Создано",
+    "updated": "Обновлено",
+    "deleted": "Удалено",
+    "measure_created_successfully": "Замер успешно создан",
+    "measure_updated_successfully": "Замер успешно обновлен",
+    "measure_deleted_successfully": "Замер успешно удален",
+    "order_created_successfully": "Заказ успешно создан",
+    "order_updated_successfully": "Заказ успешно обновлен",
+    "order_deleted_successfully": "Заказ успешно удален",
+    "order_from_measure_created": "Заказ успешно создан из замера",
     "counterparty_created_successfully": "Контрагент успешно создан",
-    "error_creating_counterparty": "Ошибка при создании контрагента"
+    "error_creating_counterparty": "Ошибка при создании контрагента",
+    "error_creating_measure": "Ошибка при создании замера",
+    "error_updating_measure": "Ошибка при обновлении замера",
+    "error_creating_order": "Ошибка при создании заказа",
+    "error_updating_order": "Ошибка при обновлении заказа"
   },
   "placeholders": {
     "search_doors": "Поиск двери",
@@ -535,5 +540,4 @@
     "total_salaries": "Общие зарплаты",
     "average_salary": "Средняя зарплата"
   }
-  
 }

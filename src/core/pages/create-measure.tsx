@@ -69,10 +69,10 @@ export default function CreateMeasurePage() {
         : data;
         
       await createMeasure(submitData);
-      toast.success(t('messages.success.created', { item: t('navigation.measures') }));
+      toast.success(t('messages.measure_created_successfully'));
       navigate('/measures');
     } catch (error) {
-      toast.error(t('messages.error.create', { item: t('navigation.measures') }));
+      toast.error(t('messages.error_creating_measure'));
     } finally {
       setIsSubmitting(false);
     }

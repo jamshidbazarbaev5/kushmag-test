@@ -237,13 +237,13 @@ export default function OrdersPage() {
   const handleDeleteClick = (order: Order) => {
     if (!order.id) return;
 
-    if (window.confirm(t("messages.delete_confirm"))) {
+    if (window.confirm(t("messages.confirm.delete"))) {
       deleteOrder(order.id, {
         onSuccess: () => {
-          toast.success(t("messages.deleted"));
+          toast.success(t("messages.order_deleted_successfully"));
         },
         onError: () => {
-          toast.error(t("messages.error"));
+          toast.error(t("messages.error.delete", { item: t("navigation.orders") }));
         },
       });
     }
@@ -259,12 +259,12 @@ export default function OrdersPage() {
 
     updateOrder(orderData, {
       onSuccess: () => {
-        toast.success(t("messages.updated"));
+        toast.success(t("messages.order_updated_successfully"));
         setIsEditDialogOpen(false);
         setEditingOrder(null);
       },
       onError: () => {
-        toast.error(t("messages.error"));
+        toast.error(t("messages.error_updating_order"));
       },
     });
   };
@@ -534,6 +534,7 @@ export default function OrdersPage() {
           <thead>
             <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">№</th>
+                            <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.order_status")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.created_at")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.deadline")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.counterparty")}</th>
@@ -563,6 +564,11 @@ export default function OrdersPage() {
               <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150">
                 <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
                   {(currentPage - 1) * 20 + index + 1}
+                </td>
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                  <div className="truncate" title={formatDate(order.status)}>
+                    {order.order_status ? t(`order_status.${order.order_status}`) : '-'}  
+                  </div>
                 </td>
                 <td className="px-3 py-2 text-xs text-gray-600">
                   <div className="truncate" title={formatDate(order.created_at)}>

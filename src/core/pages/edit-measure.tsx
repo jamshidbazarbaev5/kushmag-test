@@ -2,23 +2,23 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ResourceForm } from '../helpers/ResourceForm';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
 import { 
   Plus, 
   Trash2, 
   DoorOpen, 
-  Ruler, 
-  Package, 
   Crown, 
   Save,
   Edit3,
-  User,
-  Building2
+  User
 } from 'lucide-react';
 import api from '../api/api';
 
@@ -262,22 +262,15 @@ export default function EditMeasure() {
         })),
       };
       await api.put(`measures/${id}/`, payload);
+      toast.success(t('messages.measure_updated_successfully'));
       navigate('/measures')
     } catch (e) {
-      alert('Error updating measure');
+      console.error('Error updating measure:', e);
+      toast.error(t('messages.error_updating_measure'));
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // ResourceForm fields for top-level
-  const fields = [
-    { name: 'client_name', label: t('forms.client_name'), type: 'text', required: true },
-    { name: 'client_phone', label: t('forms.client_phone'), type: 'text', required: true },
-    { name: 'address', label: t('forms.address'), type: 'text', required: true },
-    { name: 'zamer_status', label: t('forms.status'), type: 'select', options: zamerStatusOptions, required: true },
-    { name: 'comment', label: t('forms.comment'), type: 'textarea' },
-  ];
 
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
@@ -298,307 +291,381 @@ export default function EditMeasure() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResourceForm
-              fields={fields}
-              onSubmit={onSubmit}
-              isSubmitting={isSubmitting}
-              form={form}
-              hideSubmitButton={true}
-            />
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="font-medium w-1/4">
+                    <Label htmlFor="client_name">{t('forms.client_name')} *</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Input 
+                      id="client_name"
+                      {...form.register('client_name', { required: true })}
+                      className="border-gray-300 focus:border-blue-500"
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <Label htmlFor="client_phone">{t('forms.client_phone')} *</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Input 
+                      id="client_phone"
+                      {...form.register('client_phone', { required: true })}
+                      className="border-gray-300 focus:border-blue-500"
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <Label htmlFor="address">{t('forms.address')} *</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Input 
+                      id="address"
+                      {...form.register('address', { required: true })}
+                      className="border-gray-300 focus:border-blue-500"
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <Label htmlFor="zamer_status">{t('forms.status')} *</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Select 
+                      value={form.watch('zamer_status')} 
+                      onValueChange={value => form.setValue('zamer_status', value)}
+                    >
+                      <SelectTrigger className="border-gray-300 focus:border-blue-500">
+                        <SelectValue placeholder={t('forms.status')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {zamerStatusOptions.map(opt => 
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="font-medium">
+                    <Label htmlFor="comment">{t('forms.comment')}</Label>
+                  </TableCell>
+                  <TableCell>
+                    <Textarea 
+                      id="comment"
+                      {...form.register('comment')}
+                      className="border-gray-300 focus:border-blue-500"
+                      rows={3}
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
         {/* Doors Section */}
         <Card className="shadow-lg border-0">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <DoorOpen className="h-5 w-5 text-green-600" />
-              {t('titles.doors')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {doors.map((door, idx) => (
-              <Card key={idx} className="border-2 border-gray-100 hover:border-blue-200 transition-colors">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                        <span className="text-sm font-semibold text-blue-600">{idx + 1}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{t('forms.door')} #{idx + 1}</h3>
-                        <p className="text-sm text-gray-500">{t('forms.door_details')}</p>
-                      </div>
-                    </div>
-                    {doors.length > 1 && (
-                      <Button 
-                        type="button" 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => handleRemoveDoor(idx)}
-                        className="hover:bg-red-700"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        {t('common.delete')}
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Basic Door Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Building2 className="h-4 w-4" />
-                        {t('forms.room_name')}
-                      </label>
-                      <Input 
-                        placeholder={t('forms.room_name')} 
-                        value={door.room_name} 
-                        onChange={e => handleDoorChange(idx, 'room_name', e.target.value)}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.glass_type')}</label>
-                      <Select value={door.glass_type?.toString() || ''} onValueChange={v => handleDoorChange(idx, 'glass_type', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.glass_type')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {glassTypeOptions.map(opt => <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Ruler className="h-4 w-4" />
-                        {t('forms.width')}
-                      </label>
-                      <Input 
-                        placeholder={t('forms.width')} 
-                        type="number" 
-                        value={door.width} 
-                        onChange={e => handleDoorChange(idx, 'width', e.target.value)}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Ruler className="h-4 w-4" />
-                        {t('forms.height')}
-                      </label>
-                      <Input 
-                        placeholder={t('forms.height')} 
-                        type="number" 
-                        value={door.height} 
-                        onChange={e => handleDoorChange(idx, 'height', e.target.value)}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Package className="h-4 w-4" />
-                        {t('forms.quantity')}
-                      </label>
-                      <Input 
-                        placeholder={t('forms.quantity')} 
-                        type="number" 
-                        value={door.quantity} 
-                        onChange={e => handleDoorChange(idx, 'quantity', e.target.value)}
-                        className="border-gray-300 focus:border-blue-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.opening_side')}</label>
-                      <Select value={door.opening_side} onValueChange={v => handleDoorChange(idx, 'opening_side', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.opening_side')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {openingSideOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.swing_direction')}</label>
-                      <Select value={door.swing_direction} onValueChange={v => handleDoorChange(idx, 'swing_direction', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.swing_direction')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {swingDirectionOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.construction_side')}</label>
-                      <Select value={door.construction_side} onValueChange={v => handleDoorChange(idx, 'construction_side', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.construction_side')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {constructionSideOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.promog')}</label>
-                      <Select value={door.promog} onValueChange={v => handleDoorChange(idx, 'promog', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.promog')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {promogOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.threshold')}</label>
-                      <Select value={door.threshold?.toString() || ''} onValueChange={v => handleDoorChange(idx, 'threshold', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.threshold')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {thresholdOptions.map(opt => <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('forms.casing_zamer')}</label>
-                      <Select value={door.casing_zamer} onValueChange={v => handleDoorChange(idx, 'casing_zamer', v)}>
-                        <SelectTrigger className="border-gray-300 focus:border-blue-500">
-                          <SelectValue placeholder={t('forms.casing_zamer')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {casingZamerOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Extensions Section */}
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Package className="h-5 w-5 text-orange-600" />
-                        <h4 className="font-semibold text-lg">{t('forms.extensions')}</h4>
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleAddExtension(idx)}
-                        className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        {t('actions.add_extension')}
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {(door.extensions || []).map((ext, extIdx) => (
-                        <div key={extIdx} className="flex gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                          <Input 
-                            placeholder={t('forms.width')} 
-                            type="number" 
-                            value={ext.width} 
-                            onChange={e => handleExtensionChange(idx, extIdx, 'width', e.target.value)}
-                            className="flex-1 border-orange-300 focus:border-orange-500"
-                          />
-                          <Input 
-                            placeholder={t('forms.height')} 
-                            type="number" 
-                            value={ext.height} 
-                            onChange={e => handleExtensionChange(idx, extIdx, 'height', e.target.value)}
-                            className="flex-1 border-orange-300 focus:border-orange-500"
-                          />
-                          <Input 
-                            placeholder={t('forms.quantity')} 
-                            type="number" 
-                            value={ext.quantity} 
-                            onChange={e => handleExtensionChange(idx, extIdx, 'quantity', e.target.value)}
-                            className="flex-1 border-orange-300 focus:border-orange-500"
-                          />
-                          <Button 
-                            type="button" 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleRemoveExtension(idx, extIdx)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Crowns Section */}
-                  <div className="border-t pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Crown className="h-5 w-5 text-purple-600" />
-                        <h4 className="font-semibold text-lg">{t('forms.crowns')}</h4>
-                      </div>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleAddCrown(idx)}
-                        className="border-purple-300 text-purple-600 hover:bg-purple-50"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        {t('actions.add_crown')}
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {(door.crowns || []).map((crown, crownIdx) => (
-                        <div key={crownIdx} className="flex gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <Input 
-                            placeholder={t('forms.quantity')} 
-                            type="number" 
-                            value={crown.quantity} 
-                            onChange={e => handleCrownChange(idx, crownIdx, e.target.value)}
-                            className="flex-1 border-purple-300 focus:border-purple-500"
-                          />
-                          <Button 
-                            type="button" 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleRemoveCrown(idx, crownIdx)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            {/* Add Door Button at the bottom */}
-            <div className="flex justify-center pt-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <DoorOpen className="h-5 w-5 text-green-600" />
+                {t('titles.doors')}
+              </CardTitle>
               <Button 
                 type="button" 
                 onClick={handleAddDoor}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <Plus className="h-5 w-5 mr-2" />
+                <Plus className="h-4 w-4 mr-2" />
                 {t('actions.add_door')}
               </Button>
             </div>
+          </CardHeader>
+          <CardContent>
+            {doors.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>{t('forms.room_name')}</TableHead>
+                    <TableHead>{t('forms.glass_type')}</TableHead>
+                    <TableHead>{t('forms.width')}</TableHead>
+                    <TableHead>{t('forms.height')}</TableHead>
+                    <TableHead>{t('forms.quantity')}</TableHead>
+                    <TableHead>{t('forms.opening_side')}</TableHead>
+                    <TableHead>{t('forms.swing_direction')}</TableHead>
+                    <TableHead>{t('forms.construction_side')}</TableHead>
+                    <TableHead>{t('forms.promog')}</TableHead>
+                    <TableHead>{t('forms.threshold')}</TableHead>
+                    <TableHead>{t('forms.casing_zamer')}</TableHead>
+                    <TableHead className="min-w-[250px]">{t('forms.extensions')}</TableHead>
+                    <TableHead className="min-w-[200px]">{t('forms.crowns')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {doors.map((door, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full">
+                          <span className="text-xs font-semibold text-blue-600">{idx + 1}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          placeholder={t('forms.room_name')} 
+                          value={door.room_name} 
+                          onChange={e => handleDoorChange(idx, 'room_name', e.target.value)}
+                          className="min-w-[120px]"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.glass_type?.toString() || ''} onValueChange={v => handleDoorChange(idx, 'glass_type', v)}>
+                          <SelectTrigger className="min-w-[120px]">
+                            <SelectValue placeholder={t('forms.glass_type')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {glassTypeOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          placeholder="W" 
+                          type="number" 
+                          value={door.width} 
+                          onChange={e => handleDoorChange(idx, 'width', e.target.value)}
+                          className="w-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          placeholder="H" 
+                          type="number" 
+                          value={door.height} 
+                          onChange={e => handleDoorChange(idx, 'height', e.target.value)}
+                          className="w-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input 
+                          placeholder="Qty" 
+                          type="number" 
+                          value={door.quantity} 
+                          onChange={e => handleDoorChange(idx, 'quantity', e.target.value)}
+                          className="w-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.opening_side} onValueChange={v => handleDoorChange(idx, 'opening_side', v)}>
+                          <SelectTrigger className="min-w-[100px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {openingSideOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.swing_direction} onValueChange={v => handleDoorChange(idx, 'swing_direction', v)}>
+                          <SelectTrigger className="min-w-[100px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {swingDirectionOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.construction_side} onValueChange={v => handleDoorChange(idx, 'construction_side', v)}>
+                          <SelectTrigger className="min-w-[100px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {constructionSideOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.promog} onValueChange={v => handleDoorChange(idx, 'promog', v)}>
+                          <SelectTrigger className="min-w-[80px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {promogOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.threshold?.toString() || ''} onValueChange={v => handleDoorChange(idx, 'threshold', v)}>
+                          <SelectTrigger className="min-w-[100px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {thresholdOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select value={door.casing_zamer} onValueChange={v => handleDoorChange(idx, 'casing_zamer', v)}>
+                          <SelectTrigger className="min-w-[80px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {casingZamerOptions.map(opt => 
+                              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      {/* Extensions Column */}
+                      <TableCell className="min-w-[250px]">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-orange-600">{t('forms.extensions')}</span>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleAddExtension(idx)}
+                              className="h-7 w-7 p-0 border-orange-300 text-orange-600 hover:bg-orange-50"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {door.extensions && door.extensions.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-3 gap-1 text-xs font-medium text-gray-600 mb-1">
+                                <span className="text-center">{t('forms.width')}</span>
+                                <span className="text-center">{t('forms.height')}</span>
+                                <span className="text-center">{t('forms.quantity')}</span>
+                              </div>
+                              {door.extensions.map((ext, extIdx) => (
+                                <div key={extIdx} className="flex gap-2 items-center p-2 bg-orange-50 rounded-lg border border-orange-200">
+                                  <Input 
+                                    placeholder="W" 
+                                    type="number" 
+                                    value={ext.width} 
+                                    onChange={e => handleExtensionChange(idx, extIdx, 'width', e.target.value)}
+                                    className="h-8 w-16 text-sm text-center"
+                                  />
+                                  <Input 
+                                    placeholder="H" 
+                                    type="number" 
+                                    value={ext.height} 
+                                    onChange={e => handleExtensionChange(idx, extIdx, 'height', e.target.value)}
+                                    className="h-8 w-16 text-sm text-center"
+                                  />
+                                  <Input 
+                                    placeholder="Q" 
+                                    type="number" 
+                                    value={ext.quantity} 
+                                    onChange={e => handleExtensionChange(idx, extIdx, 'quantity', e.target.value)}
+                                    className="h-8 w-16 text-sm text-center"
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="destructive" 
+                                    size="sm"
+                                    onClick={() => handleRemoveExtension(idx, extIdx)}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-400 text-center py-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                              {t('forms.no_extensions_added')}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      {/* Crowns Column */}
+                      <TableCell className="min-w-[200px]">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-purple-600">{t('forms.crowns')}</span>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleAddCrown(idx)}
+                              className="h-7 w-7 p-0 border-purple-300 text-purple-600 hover:bg-purple-50"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {door.crowns && door.crowns.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="text-xs font-medium text-gray-600 text-center mb-1">
+                                {t('forms.quantity')}
+                              </div>
+                              {door.crowns.map((crown, crownIdx) => (
+                                <div key={crownIdx} className="flex gap-2 items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                                  <Input 
+                                    placeholder="Qty" 
+                                    type="number" 
+                                    value={crown.quantity} 
+                                    onChange={e => handleCrownChange(idx, crownIdx, e.target.value)}
+                                    className="h-8 flex-1 text-sm text-center"
+                                  />
+                                  <Button 
+                                    type="button" 
+                                    variant="destructive" 
+                                    size="sm"
+                                    onClick={() => handleRemoveCrown(idx, crownIdx)}
+                                    className="h-7 w-7 p-0"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-400 text-center py-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                              {t('forms.no_crowns_added')}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {doors.length > 1 && (
+                          <Button 
+                            type="button" 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => handleRemoveDoor(idx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                {t('common.no_data_available')}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDeleteMeasure, useGetMeasures, useExportMeasure } from '../api/measure';
+import { toast } from 'sonner';
 import { useGetUsers } from '../api/user';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { ResourceTable } from '../helpers/ResourceTable';
@@ -146,17 +147,18 @@ export default function MeasuresPage() {
     },
   ];
   const handleDelete = (id: number) => {
+    if (window.confirm(t("messages.confirm.delete"))) {
       deleteMeasure(id, {
-    onSuccess: () => {
-      // Optionally, you can show a success message or refresh the data
-      setPage(1); // Reset to the first page after deletion
-    },
-    onError: (error) => {
-      // Handle error, e.g., show a notification
-      console.error('Error deleting measure:', error);
-    },
-  });
-    // Implement delete functionality here
+        onSuccess: () => {
+          toast.success(t("messages.measure_deleted_successfully"));
+          setPage(1); // Reset to the first page after deletion
+        },
+        onError: (error) => {
+          console.error('Error deleting measure:', error);
+          toast.error(t("messages.error.delete", { item: t("navigation.measures") }));
+        },
+      });
+    }
   };
 
   const handleExportMeasure = (id: number) => {
@@ -173,7 +175,7 @@ export default function MeasuresPage() {
         // Calculate if dropdown should open above or below
         const rect = event.currentTarget.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
-        const dropdownHeight = 200; // Approximate dropdown height
+        const dropdownHeight = 100; // Approximate dropdown height
         const spaceBelow = viewportHeight - rect.bottom;
         const spaceAbove = rect.top;
 
@@ -292,13 +294,13 @@ export default function MeasuresPage() {
             <CardTitle>{t('common.filters')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-visible">
               {/* Client Name Filter */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">{t('tables.client_name')}</label>
                 <Input
                   placeholder={t('tables.client_name')}
-                  className="h-9 min-w-[200px]"
+                  className="h-9 w-full"
                   value={filters.client_name}
                   onChange={(e) => handleFilterChange('client_name', e.target.value)}
                 />
@@ -309,7 +311,7 @@ export default function MeasuresPage() {
                 <label className="text-sm font-medium">{t('tables.client_phone')}</label>
                 <Input
                   placeholder={t('tables.client_phone')}
-                  className="h-9 min-w-[200px]"
+                  className="h-9 w-full"
                   value={filters.client_phone}
                   onChange={(e) => handleFilterChange('client_phone', e.target.value)}
                 />
@@ -319,7 +321,7 @@ export default function MeasuresPage() {
               <div className="space-y-1">
                 <label className="text-sm font-medium">{t('tables.status')}</label>
                 <Select value={filters.zamer_status || 'all'} onValueChange={(value) => handleFilterChange('zamer_status', value)}>
-                  <SelectTrigger className="h-9 min-w-[200px]">
+                  <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder={t('forms.select_status')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -335,7 +337,7 @@ export default function MeasuresPage() {
               <div className="space-y-1">
                 <label className="text-sm font-medium">{t('forms.zamershik')}</label>
                 <Select value={filters.zamershik || 'all'} onValueChange={(value) => handleFilterChange('zamershik', value)}>
-                  <SelectTrigger className="h-9 min-w-[200px]">
+                  <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder={t('forms.select_zamershik')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -354,7 +356,7 @@ export default function MeasuresPage() {
                 <label className="text-sm font-medium">{t('forms.measure_date_after')}</label>
                 <Input
                   type="date"
-                  className="h-9 min-w-[140px]"
+                  className="h-9 w-full"
                   value={filters.measure_date_after}
                   onChange={(e) => handleFilterChange('measure_date_after', e.target.value)}
                 />
@@ -365,7 +367,7 @@ export default function MeasuresPage() {
                 <label className="text-sm font-medium">{t('forms.measure_date_before')}</label>
                 <Input
                   type="date"
-                  className="h-9 min-w-[140px]"
+                  className="h-9 w-full"
                   value={filters.measure_date_before}
                   onChange={(e) => handleFilterChange('measure_date_before', e.target.value)}
                 />
@@ -376,7 +378,7 @@ export default function MeasuresPage() {
                 <label className="text-sm font-medium">{t('forms.created_at_after')}</label>
                 <Input
                   type="date"
-                  className="h-9 min-w-[140px]"
+                  className="h-9 w-full"
                   value={filters.created_at_after}
                   onChange={(e) => handleFilterChange('created_at_after', e.target.value)}
                 />
@@ -387,7 +389,7 @@ export default function MeasuresPage() {
                 <label className="text-sm font-medium">{t('forms.created_at_before')}</label>
                 <Input
                   type="date"
-                  className="h-9 min-w-[140px]"
+                  className="h-9 w-full"
                   value={filters.created_at_before}
                   onChange={(e) => handleFilterChange('created_at_before', e.target.value)}
                 />

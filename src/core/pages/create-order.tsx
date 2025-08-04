@@ -25,6 +25,7 @@ import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
 import { useState, useEffect, useMemo, useRef } from "react";
+import React from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
 import { useForm } from "react-hook-form";
@@ -39,10 +40,10 @@ import { Separator } from "../../components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
 import { Input } from "../../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
 import { Plus, Trash2, DoorOpen, Package, Calculator, Edit, Save, X } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave, useOrderDraftRecovery } from "../hooks/useAutoSave";
+
 
 // Helper function to get the full object for a selected ID
 const getMetaById = (list: any, id: any) => {
@@ -68,6 +69,22 @@ const getProductById = (productsList: any[], id: string | any) => {
   
   const product = productsList.find((p) => p.id === actualId);
   return product || { id: actualId };
+};
+
+// Constants for dimension calculations
+const casingSize = 6; // Fixed casing size
+const crownSize = 10; // Fixed crown size
+
+// Helper function to convert string with comma to number
+const convertToNumber = (value: any, defaultValue: number = 0) => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
+    if (normalized === '' || normalized === '.') return defaultValue;
+    const parsed = parseFloat(normalized);
+    return isNaN(parsed) ? defaultValue : parsed;
+  }
+  return defaultValue;
 };
 
 
@@ -387,12 +404,12 @@ export default function CreateOrderPage() {
     createOrder(orderData, {
       onSuccess: () => {
         clearAllDrafts(); // Clear saved draft data on successful submission
-        toast.success(t("messages.created"));
+        toast.success(t("messages.order_created_successfully"));
         navigate("/orders");
       },
       onError: (e: any) => {
         console.error("Error creating order:", e.response?.data);
-        toast.error(t("messages.error"));
+        toast.error(t("messages.error_creating_order"));
       },
     });
   };
@@ -556,7 +573,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDoor, setEditingDoor] = useState<any>(null);
-  const [showCasingsModal, setShowCasingsModal] = useState(false);
   
   const handleAddNewRow = () => {
     const newDoor = {
@@ -690,6 +706,25 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
             [field]: processedValue
           };
           console.log('Setting editingDoor for numeric field:', field, 'new editingDoor:', newEditingDoor);
+          
+          // If door width or height changed, update crown widths and recalculate casing dimensions
+          if (field === 'width' || field === 'height') {
+            // Update crown widths
+            if (newEditingDoor.crowns && newEditingDoor.crowns.length > 0) {
+              newEditingDoor.crowns = newEditingDoor.crowns.map((crown: any) => ({
+                ...crown,
+                width: convertToNumber(newEditingDoor.width, 0) + crownSize
+              }));
+            }
+            
+            // Recalculate casing dimensions
+            if (newEditingDoor.casings && newEditingDoor.casings.length > 0) {
+              newEditingDoor.casings = newEditingDoor.casings.map((casing: any) => 
+                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions)
+              );
+            }
+          }
+          
           return newEditingDoor;
         } else if (field === 'quantity') {
           let numericValue = value;
@@ -708,10 +743,60 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
             [field]: value
           };
           console.log('Setting editingDoor for non-numeric field:', field, 'new editingDoor:', newEditingDoor);
+          
+          // If door width or height changed, update crown widths and recalculate casing dimensions
+          if (field === 'width' || field === 'height') {
+            // Update crown widths
+            if (newEditingDoor.crowns && newEditingDoor.crowns.length > 0) {
+              newEditingDoor.crowns = newEditingDoor.crowns.map((crown: any) => ({
+                ...crown,
+                width: convertToNumber(newEditingDoor.width, 0) + crownSize
+              }));
+            }
+            
+            // Recalculate casing dimensions
+            if (newEditingDoor.casings && newEditingDoor.casings.length > 0) {
+              newEditingDoor.casings = newEditingDoor.casings.map((casing: any) => 
+                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions)
+              );
+            }
+          }
+          
           return newEditingDoor;
         }
       });
     }
+  };
+
+  // Function to calculate casing dimensions based on formula and type
+  const calculateCasingDimensions = (casing: any, doorData: any, fieldOptions: any) => {
+    if (!doorData) return casing;
+
+    const doorWidth = convertToNumber(doorData.width, 0);
+    const doorHeight = convertToNumber(doorData.height, 0);
+    
+    // Auto-calculate height based on formula
+    if (casing.casing_formula === 'formula2' && casing.casing_range) {
+      // Find the selected casing range object to get its casing_size
+      const selectedRange = fieldOptions.casingRangeOptions?.find(
+        (range: any) => range.value === String(casing.casing_range)
+      );
+      if (selectedRange && selectedRange.casing_size !== undefined) {
+        casing.height = selectedRange.casing_size;
+      }
+    } else if (casing.casing_formula === 'formula1' || !casing.casing_formula) {
+      // Original logic using door dimensions
+      if (casing.casing_type === "боковой") {
+        casing.height = doorHeight + casingSize;
+      } else if (casing.casing_type === "прямой") {
+        casing.height = doorWidth + (2 * casingSize);
+      }
+    }
+    
+    // Always set width to casingSize for casings
+    casing.width = casingSize;
+    
+    return casing;
   };
 
   const getProductName = (modelId: string | any) => {
@@ -1203,55 +1288,58 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
 
                     {/* Extensions */}
                     <TableCell>
-                     <div > 
-                       {editingIndex === index ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              {editingDoor?.extensions?.length || 0}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>{t("forms.manage_extensions")}</DialogTitle>
-                            </DialogHeader>
-                            <AccessoryManager
-                              items={editingDoor?.extensions || []}
-                              onUpdate={(items) => handleFieldChange('extensions', items)}
-                              type="extension"
-                              fieldOptions={fieldOptions}
-                              doorData={editingDoor}
-                              productsList={productsList}
-                            />
-                          </DialogContent>
-                        </Dialog>
+                      {editingIndex === index ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                          onClick={() => {
+                            const newExtension = {
+                              model: '',
+                              price_type: '',
+                              price: 0,
+                              quantity: 1,
+                              height: 0,
+                              width: 0,
+                            };
+                            handleFieldChange('extensions', [...(editingDoor?.extensions || []), newExtension]);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {editingDoor?.extensions?.length || 0}
+                        </Button>
                       ) : (
                         <span className="text-xs">
                           {door.extensions?.length || 0} items
                         </span>
                       )}
-                     </div>
                     </TableCell>
 
                     {/* Casings */}
                     <TableCell>
                       {editingIndex === index ? (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            onClick={() => setShowCasingsModal(true)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            {editingDoor?.casings?.length || 0}
-                          </Button>
-                        </>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                          onClick={() => {
+                            const newCasing = {
+                              model: '',
+                              price_type: '',
+                              price: 0,
+                              quantity: 1,
+                              casing_type: '',
+                              casing_formula: 'formula1',
+                              casing_range: '',
+                              height: 0,
+                              width: casingSize,
+                            };
+                            handleFieldChange('casings', [...(editingDoor?.casings || []), newCasing]);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {editingDoor?.casings?.length || 0}
+                        </Button>
                       ) : (
                         <span className="text-xs">
                           {door.casings?.length || 0} items
@@ -1262,31 +1350,26 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                     {/* Crowns */}
                     <TableCell>
                       {editingIndex === index ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              {editingDoor?.crowns?.length || 0}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>{t("forms.manage_crowns")}</DialogTitle>
-                            </DialogHeader>
-                            <AccessoryManager
-                              items={editingDoor?.crowns || []}
-                              onUpdate={(items) => handleFieldChange('crowns', items)}
-                              type="crown"
-                              fieldOptions={fieldOptions}
-                              doorData={editingDoor}
-                              productsList={productsList}
-                            />
-                          </DialogContent>
-                        </Dialog>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                          onClick={() => {
+                            const doorWidth = convertToNumber(editingDoor?.width, 0);
+                            const newCrown = {
+                              model: '',
+                              price: 0,
+                              quantity: 1,
+                              height: 0,
+                              width: doorWidth + crownSize, // Auto-calculate crown width
+                              price_type: '',
+                            };
+                            handleFieldChange('crowns', [...(editingDoor?.crowns || []), newCrown]);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {editingDoor?.crowns?.length || 0}
+                        </Button>
                       ) : (
                         <span className="text-xs">
                           {door.crowns?.length || 0} items
@@ -1297,31 +1380,24 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                     {/* Accessories */}
                     <TableCell>
                       {editingIndex === index ? (
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              <Plus className="h-3 w-3 mr-1" />
-                              {editingDoor?.accessories?.length || 0}
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>{t("forms.manage_accessories")}</DialogTitle>
-                            </DialogHeader>
-                            <AccessoryManager
-                              items={editingDoor?.accessories || []}
-                              onUpdate={(items) => handleFieldChange('accessories', items)}
-                              type="accessory"
-                              fieldOptions={fieldOptions}
-                              doorData={editingDoor}
-                              productsList={productsList}
-                            />
-                          </DialogContent>
-                        </Dialog>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs"
+                          onClick={() => {
+                            const newAccessory = {
+                              model: '',
+                              price_type: '',
+                              price: 0,
+                              quantity: 1,
+                              accessory_type: '',
+                            };
+                            handleFieldChange('accessories', [...(editingDoor?.accessories || []), newAccessory]);
+                          }}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          {editingDoor?.accessories?.length || 0}
+                        </Button>
                       ) : (
                         <span className="text-xs">
                           {door.accessories?.length || 0} items
@@ -1410,6 +1486,796 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
                   </TableRow>
                 ))}
                 
+                {/* Inline Accessories Tables - for each door in edit mode */}
+                {doors.map((_door: any, index: number) => 
+                  editingIndex === index && (
+                    <React.Fragment key={`accessories-${index}`}>
+                      {/* Extensions Table */}
+                      {editingDoor?.extensions && editingDoor.extensions.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={21} className="p-0">
+                            <div className="bg-blue-50 p-4 border-t">
+                              <h4 className="font-medium text-sm mb-3 text-blue-900">
+                                {t("forms.extensions")} ({editingDoor.extensions.length})
+                              </h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-blue-100">
+                                      <th className="p-2 text-left">{t("forms.model")}</th>
+                                      <th className="p-2 text-left">{t("forms.price_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.price")}</th>
+                                      <th className="p-2 text-left">{t("forms.quantity")}</th>
+                                      <th className="p-2 text-left">{t("forms.height")}</th>
+                                      <th className="p-2 text-left">{t("forms.width")}</th>
+                                      <th className="p-2 text-left">{t("forms.total")}</th>
+                                      <th className="p-2 text-left">{t("common.actions")}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {editingDoor.extensions.map((extension: any, extIndex: number) => (
+                                      <tr key={extIndex} className="border-b border-blue-200">
+                                        <td className="p-2">
+                                          <DoorProductSelect
+                                            value={extension.model || ''}
+                                            onChange={(value) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], model: value };
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            onProductSelect={(product) => {
+                                              if (product && product.salePrices && product.salePrices.length > 0) {
+                                                const price = product.salePrices[0].value / 100;
+                                                const updatedExtensions = [...editingDoor.extensions];
+                                                updatedExtensions[extIndex] = { 
+                                                  ...updatedExtensions[extIndex], 
+                                                  model: product.id,
+                                                  price_type: product.salePrices[0].priceType.id,
+                                                  price: price 
+                                                };
+                                                handleFieldChange('extensions', updatedExtensions);
+                                              }
+                                            }}
+                                            placeholder={t("placeholders.select_extension_model")}
+                                            productsList={productsList}
+                                          />
+                                        </td>
+                                        
+                                        {/* Price Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={extension.price_type ? String(extension.price_type) : undefined}
+                                            onValueChange={(value) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], price_type: value };
+                                              
+                                              // Auto-set price when price type is selected
+                                              if (extension.model) {
+                                                const product = productsList.find((p: any) => p.id === extension.model);
+                                                if (product && product.salePrices) {
+                                                  const selectedPrice = product.salePrices.find(
+                                                    (p: any) => p.priceType.id === value
+                                                  );
+                                                  if (selectedPrice) {
+                                                    updatedExtensions[extIndex] = { 
+                                                      ...updatedExtensions[extIndex], 
+                                                      price: selectedPrice.value / 100 
+                                                    };
+                                                  }
+                                                }
+                                              }
+                                              
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_price_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {(() => {
+                                                if (!extension.model) {
+                                                  return <SelectItem value="no_product" disabled>{t("forms.select_model_first")}</SelectItem>;
+                                                }
+                                                
+                                                const product = productsList.find((p: any) => p.id === extension.model);
+                                                if (!product || !product.salePrices || product.salePrices.length === 0) {
+                                                  return <SelectItem value="no_prices" disabled>{t("forms.no_price_types")}</SelectItem>;
+                                                }
+                                                
+                                                return product.salePrices.map((salePrice: any) => (
+                                                  <SelectItem key={salePrice.priceType.id} value={String(salePrice.priceType.id)}>
+                                                    {salePrice.priceType.name} - {(salePrice.value / 100).toFixed(2)} сум
+                                                  </SelectItem>
+                                                ));
+                                              })()}
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={extension.price?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], price: e.target.value };
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="number"
+                                            value={extension.quantity || ''}
+                                            onChange={(e) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], quantity: e.target.value };
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            className="w-16 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={extension.height?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], height: e.target.value };
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={extension.width?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedExtensions = [...editingDoor.extensions];
+                                              updatedExtensions[extIndex] = { ...updatedExtensions[extIndex], width: e.target.value };
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2 font-medium text-blue-600">
+                                          {(parseFloat(extension.price || 0) * parseInt(extension.quantity || 1)).toFixed(2)}
+                                        </td>
+                                        <td className="p-2">
+                                          <Button
+                                            onClick={() => {
+                                              const updatedExtensions = editingDoor.extensions.filter((_: any, i: number) => i !== extIndex);
+                                              handleFieldChange('extensions', updatedExtensions);
+                                            }}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Casings Table */}
+                      {editingDoor?.casings && editingDoor.casings.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={21} className="p-0">
+                            <div className="bg-green-50 p-4 border-t">
+                              <h4 className="font-medium text-sm mb-3 text-green-900">
+                                {t("forms.casings")} ({editingDoor.casings.length})
+                              </h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-green-100">
+                                      <th className="p-2 text-left">{t("forms.model")}</th>
+                                      <th className="p-2 text-left">{t("forms.price_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.price")}</th>
+                                      <th className="p-2 text-left">{t("forms.quantity")}</th>
+                                      <th className="p-2 text-left">{t("forms.casing_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.casing_formula")}</th>
+                                      <th className="p-2 text-left">{t("forms.casing_range")}</th>
+                                      <th className="p-2 text-left">{t("forms.height")}</th>
+                                      <th className="p-2 text-left">{t("forms.width")}</th>
+                                      <th className="p-2 text-left">{t("forms.total")}</th>
+                                      <th className="p-2 text-left">{t("common.actions")}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {editingDoor.casings.map((casing: any, casIndex: number) => (
+                                      <tr key={casIndex} className="border-b border-green-200">
+                                        {/* Model */}
+                                        <td className="p-2">
+                                          <DoorProductSelect
+                                            value={casing.model || ''}
+                                            onChange={(value) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              updatedCasings[casIndex] = { ...updatedCasings[casIndex], model: value };
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                            onProductSelect={(product) => {
+                                              if (product && product.salePrices && product.salePrices.length > 0) {
+                                                const price = product.salePrices[0].value / 100;
+                                                const updatedCasings = [...editingDoor.casings];
+                                                updatedCasings[casIndex] = { 
+                                                  ...updatedCasings[casIndex], 
+                                                  model: product.id,
+                                                  price_type: product.salePrices[0].priceType.id,
+                                                  price: price 
+                                                };
+                                                handleFieldChange('casings', updatedCasings);
+                                              }
+                                            }}
+                                            placeholder={t("placeholders.select_casing_model")}
+                                            productsList={productsList}
+                                          />
+                                        </td>
+                                        
+                                        {/* Price Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={casing.price_type ? String(casing.price_type) : undefined}
+                                            onValueChange={(value) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              updatedCasings[casIndex] = { ...updatedCasings[casIndex], price_type: value };
+                                              
+                                              // Auto-set price when price type is selected
+                                              if (casing.model) {
+                                                const product = productsList.find((p: any) => p.id === casing.model);
+                                                if (product && product.salePrices) {
+                                                  const selectedPrice = product.salePrices.find(
+                                                    (p: any) => p.priceType.id === value
+                                                  );
+                                                  if (selectedPrice) {
+                                                    updatedCasings[casIndex] = { 
+                                                      ...updatedCasings[casIndex], 
+                                                      price: selectedPrice.value / 100 
+                                                    };
+                                                  }
+                                                }
+                                              }
+                                              
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_price_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {(() => {
+                                                if (!casing.model) {
+                                                  return <SelectItem value="no_product" disabled>{t("forms.select_model_first")}</SelectItem>;
+                                                }
+                                                
+                                                const product = productsList.find((p: any) => p.id === casing.model);
+                                                if (!product || !product.salePrices || product.salePrices.length === 0) {
+                                                  return <SelectItem value="no_prices" disabled>{t("forms.no_price_types")}</SelectItem>;
+                                                }
+                                                
+                                                return product.salePrices.map((salePrice: any) => (
+                                                  <SelectItem key={salePrice.priceType.id} value={String(salePrice.priceType.id)}>
+                                                    {salePrice.priceType.name} - {(salePrice.value / 100).toFixed(2)} сум
+                                                  </SelectItem>
+                                                ));
+                                              })()}
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        {/* Price */}
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={casing.price?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              updatedCasings[casIndex] = { ...updatedCasings[casIndex], price: e.target.value };
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        
+                                        {/* Quantity */}
+                                        <td className="p-2">
+                                          <Input
+                                            type="number"
+                                            value={casing.quantity || ''}
+                                            onChange={(e) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              updatedCasings[casIndex] = { ...updatedCasings[casIndex], quantity: e.target.value };
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                            className="w-16 h-8"
+                                          />
+                                        </td>
+                                        
+                                        {/* Casing Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={casing.casing_type || ''}
+                                            onValueChange={(value) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              const updatedCasing = { ...updatedCasings[casIndex], casing_type: value };
+                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                              updatedCasings[casIndex] = recalculatedCasing;
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_casing_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="боковой">боковой</SelectItem>
+                                              <SelectItem value="прямой">прямой</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        {/* Casing Formula */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={casing.casing_formula || 'formula1'}
+                                            onValueChange={(value) => {
+                                              const updatedCasings = [...editingDoor.casings];
+                                              const updatedCasing = { ...updatedCasings[casIndex], casing_formula: value };
+                                              // Clear casing_range when formula changes to formula1
+                                              if (value === 'formula1') {
+                                                updatedCasing.casing_range = '';
+                                              }
+                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                              updatedCasings[casIndex] = recalculatedCasing;
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_casing_formula")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="formula1">Formula 1</SelectItem>
+                                              <SelectItem value="formula2">Formula 2</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        {/* Casing Range - only show for formula2 */}
+                                        <td className="p-2">
+                                          {casing.casing_formula === 'formula2' ? (
+                                            <Select
+                                              value={casing.casing_range || ''}
+                                              onValueChange={(value) => {
+                                                const updatedCasings = [...editingDoor.casings];
+                                                const updatedCasing = { ...updatedCasings[casIndex], casing_range: value };
+                                                const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                                updatedCasings[casIndex] = recalculatedCasing;
+                                                handleFieldChange('casings', updatedCasings);
+                                              }}
+                                            >
+                                              <SelectTrigger className="w-32 h-8">
+                                                <SelectValue placeholder={t("placeholders.select_casing_range")} />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {fieldOptions.casingRangeOptions?.map((option: any) => (
+                                                  <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                          ) : (
+                                            <span className="text-gray-400 text-xs">N/A</span>
+                                          )}
+                                        </td>
+                                        
+                                        {/* Height (calculated) */}
+                                        <td className="p-2">
+                                          <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                            {casing.height || 0}
+                                          </span>
+                                        </td>
+                                        
+                                        {/* Width (calculated) */}
+                                        <td className="p-2">
+                                          <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                            {casing.width || casingSize}
+                                          </span>
+                                        </td>
+                                        
+                                        {/* Total */}
+                                        <td className="p-2 font-medium text-green-600">
+                                          {(parseFloat(casing.price || 0) * parseInt(casing.quantity || 1)).toFixed(2)}
+                                        </td>
+                                        
+                                        {/* Actions */}
+                                        <td className="p-2">
+                                          <Button
+                                            onClick={() => {
+                                              const updatedCasings = editingDoor.casings.filter((_: any, i: number) => i !== casIndex);
+                                              handleFieldChange('casings', updatedCasings);
+                                            }}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Crowns Table */}
+                      {editingDoor?.crowns && editingDoor.crowns.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={21} className="p-0">
+                            <div className="bg-purple-50 p-4 border-t">
+                              <h4 className="font-medium text-sm mb-3 text-purple-900">
+                                {t("forms.crowns")} ({editingDoor.crowns.length})
+                              </h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-purple-100">
+                                      <th className="p-2 text-left">{t("forms.model")}</th>
+                                      <th className="p-2 text-left">{t("forms.price_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.price")}</th>
+                                      <th className="p-2 text-left">{t("forms.quantity")}</th>
+                                      <th className="p-2 text-left">{t("forms.height")}</th>
+                                      <th className="p-2 text-left">{t("forms.width")}</th>
+                                      <th className="p-2 text-left">{t("forms.total")}</th>
+                                      <th className="p-2 text-left">{t("common.actions")}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {editingDoor.crowns.map((crown: any, crownIndex: number) => (
+                                      <tr key={crownIndex} className="border-b border-purple-200">
+                                        <td className="p-2">
+                                          <DoorProductSelect
+                                            value={crown.model || ''}
+                                            onChange={(value) => {
+                                              const updatedCrowns = [...editingDoor.crowns];
+                                              updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], model: value };
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                            onProductSelect={(product) => {
+                                              if (product && product.salePrices && product.salePrices.length > 0) {
+                                                const price = product.salePrices[0].value / 100;
+                                                const updatedCrowns = [...editingDoor.crowns];
+                                                updatedCrowns[crownIndex] = { 
+                                                  ...updatedCrowns[crownIndex], 
+                                                  model: product.id,
+                                                  price_type: product.salePrices[0].priceType.id,
+                                                  price: price 
+                                                };
+                                                handleFieldChange('crowns', updatedCrowns);
+                                              }
+                                            }}
+                                            placeholder={t("placeholders.select_crown_model")}
+                                            productsList={productsList}
+                                          />
+                                        </td>
+                                        
+                                        {/* Price Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={crown.price_type ? String(crown.price_type) : undefined}
+                                            onValueChange={(value) => {
+                                              const updatedCrowns = [...editingDoor.crowns];
+                                              updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], price_type: value };
+                                              
+                                              // Auto-set price when price type is selected
+                                              if (crown.model) {
+                                                const product = productsList.find((p: any) => p.id === crown.model);
+                                                if (product && product.salePrices) {
+                                                  const selectedPrice = product.salePrices.find(
+                                                    (p: any) => p.priceType.id === value
+                                                  );
+                                                  if (selectedPrice) {
+                                                    updatedCrowns[crownIndex] = { 
+                                                      ...updatedCrowns[crownIndex], 
+                                                      price: selectedPrice.value / 100 
+                                                    };
+                                                  }
+                                                }
+                                              }
+                                              
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_price_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {(() => {
+                                                if (!crown.model) {
+                                                  return <SelectItem value="no_product" disabled>{t("forms.select_model_first")}</SelectItem>;
+                                                }
+                                                
+                                                const product = productsList.find((p: any) => p.id === crown.model);
+                                                if (!product || !product.salePrices || product.salePrices.length === 0) {
+                                                  return <SelectItem value="no_prices" disabled>{t("forms.no_price_types")}</SelectItem>;
+                                                }
+                                                
+                                                return product.salePrices.map((salePrice: any) => (
+                                                  <SelectItem key={salePrice.priceType.id} value={String(salePrice.priceType.id)}>
+                                                    {salePrice.priceType.name} - {(salePrice.value / 100).toFixed(2)} сум
+                                                  </SelectItem>
+                                                ));
+                                              })()}
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={crown.price?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedCrowns = [...editingDoor.crowns];
+                                              updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], price: e.target.value };
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="number"
+                                            value={crown.quantity || ''}
+                                            onChange={(e) => {
+                                              const updatedCrowns = [...editingDoor.crowns];
+                                              updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], quantity: e.target.value };
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                            className="w-16 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={crown.height?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedCrowns = [...editingDoor.crowns];
+                                              updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], height: e.target.value };
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <span className="bg-blue-100 px-2 py-1 rounded text-xs">
+                                            {crown.width || (convertToNumber(editingDoor?.width, 0) + crownSize)} (auto)
+                                          </span>
+                                        </td>
+                                        <td className="p-2 font-medium text-purple-600">
+                                          {(parseFloat(crown.price || 0) * parseInt(crown.quantity || 1)).toFixed(2)}
+                                        </td>
+                                        <td className="p-2">
+                                          <Button
+                                            onClick={() => {
+                                              const updatedCrowns = editingDoor.crowns.filter((_: any, i: number) => i !== crownIndex);
+                                              handleFieldChange('crowns', updatedCrowns);
+                                            }}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {/* Accessories Table */}
+                      {editingDoor?.accessories && editingDoor.accessories.length > 0 && (
+                        <TableRow>
+                          <TableCell colSpan={21} className="p-0">
+                            <div className="bg-orange-50 p-4 border-t">
+                              <h4 className="font-medium text-sm mb-3 text-orange-900">
+                                {t("forms.accessories")} ({editingDoor.accessories.length})
+                              </h4>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr className="bg-orange-100">
+                                      <th className="p-2 text-left">{t("forms.model")}</th>
+                                      <th className="p-2 text-left">{t("forms.accessory_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.price_type")}</th>
+                                      <th className="p-2 text-left">{t("forms.price")}</th>
+                                      <th className="p-2 text-left">{t("forms.quantity")}</th>
+                                      <th className="p-2 text-left">{t("forms.total")}</th>
+                                      <th className="p-2 text-left">{t("common.actions")}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {editingDoor.accessories.map((accessory: any, accIndex: number) => (
+                                      <tr key={accIndex} className="border-b border-orange-200">
+                                        <td className="p-2">
+                                          <DoorProductSelect
+                                            value={accessory.model || ''}
+                                            onChange={(value) => {
+                                              const updatedAccessories = [...editingDoor.accessories];
+                                              updatedAccessories[accIndex] = { ...updatedAccessories[accIndex], model: value };
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                            onProductSelect={(product) => {
+                                              if (product && product.salePrices && product.salePrices.length > 0) {
+                                                const price = product.salePrices[0].value / 100;
+                                                const updatedAccessories = [...editingDoor.accessories];
+                                                updatedAccessories[accIndex] = { 
+                                                  ...updatedAccessories[accIndex], 
+                                                  model: product.id,
+                                                  price_type: product.salePrices[0].priceType.id,
+                                                  price: price,
+                                                  // Preserve existing accessory_type
+                                                  accessory_type: accessory.accessory_type || ''
+                                                };
+                                                handleFieldChange('accessories', updatedAccessories);
+                                              }
+                                            }}
+                                            placeholder={t("placeholders.select_accessory_model")}
+                                            productsList={productsList}
+                                          />
+                                        </td>
+                                        
+                                        {/* Accessory Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={accessory.accessory_type || ''}
+                                            onValueChange={(value) => {
+                                              const updatedAccessories = [...editingDoor.accessories];
+                                              updatedAccessories[accIndex] = { ...updatedAccessories[accIndex], accessory_type: value };
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_accessory_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="cube">Кубик</SelectItem>
+                                              <SelectItem value="leg">Ножка</SelectItem>
+                                              <SelectItem value="glass">Стекло</SelectItem>
+                                              <SelectItem value="lock">Замок</SelectItem>
+                                              <SelectItem value="topsa">Топса</SelectItem>
+                                              <SelectItem value="beading">Шпингалет</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        {/* Price Type */}
+                                        <td className="p-2">
+                                          <Select
+                                            value={accessory.price_type ? String(accessory.price_type) : undefined}
+                                            onValueChange={(value) => {
+                                              const updatedAccessories = [...editingDoor.accessories];
+                                              updatedAccessories[accIndex] = { ...updatedAccessories[accIndex], price_type: value };
+                                              
+                                              // Auto-set price when price type is selected
+                                              if (accessory.model) {
+                                                const product = productsList.find((p: any) => p.id === accessory.model);
+                                                if (product && product.salePrices) {
+                                                  const selectedPrice = product.salePrices.find(
+                                                    (p: any) => p.priceType.id === value
+                                                  );
+                                                  if (selectedPrice) {
+                                                    updatedAccessories[accIndex] = { 
+                                                      ...updatedAccessories[accIndex], 
+                                                      price: selectedPrice.value / 100 
+                                                    };
+                                                  }
+                                                }
+                                              }
+                                              
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                          >
+                                            <SelectTrigger className="w-24 h-8">
+                                              <SelectValue placeholder={t("placeholders.select_price_type")} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {(() => {
+                                                if (!accessory.model) {
+                                                  return <SelectItem value="no_product" disabled>{t("forms.select_model_first")}</SelectItem>;
+                                                }
+                                                
+                                                const product = productsList.find((p: any) => p.id === accessory.model);
+                                                if (!product || !product.salePrices || product.salePrices.length === 0) {
+                                                  return <SelectItem value="no_prices" disabled>{t("forms.no_price_types")}</SelectItem>;
+                                                }
+                                                
+                                                return product.salePrices.map((salePrice: any) => (
+                                                  <SelectItem key={salePrice.priceType.id} value={String(salePrice.priceType.id)}>
+                                                    {salePrice.priceType.name} - {(salePrice.value / 100).toFixed(2)} сум
+                                                  </SelectItem>
+                                                ));
+                                              })()}
+                                            </SelectContent>
+                                          </Select>
+                                        </td>
+                                        
+                                        <td className="p-2">
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={accessory.price?.toString() || ''}
+                                            onChange={(e) => {
+                                              const updatedAccessories = [...editingDoor.accessories];
+                                              updatedAccessories[accIndex] = { ...updatedAccessories[accIndex], price: e.target.value };
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                            className="w-20 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2">
+                                          <Input
+                                            type="number"
+                                            value={accessory.quantity || ''}
+                                            onChange={(e) => {
+                                              const updatedAccessories = [...editingDoor.accessories];
+                                              updatedAccessories[accIndex] = { ...updatedAccessories[accIndex], quantity: e.target.value };
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                            className="w-16 h-8"
+                                          />
+                                        </td>
+                                        <td className="p-2 font-medium text-orange-600">
+                                          {(parseFloat(accessory.price || 0) * parseInt(accessory.quantity || 1)).toFixed(2)}
+                                        </td>
+                                        <td className="p-2">
+                                          <Button
+                                            onClick={() => {
+                                              const updatedAccessories = editingDoor.accessories.filter((_: any, i: number) => i !== accIndex);
+                                              handleFieldChange('accessories', updatedAccessories);
+                                            }}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </React.Fragment>
+                  )
+                )}
+                
                 {doors.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={20} className="text-center py-8 text-gray-500">
@@ -1454,45 +2320,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, onNext, onBack }
           )}
         </CardContent>
       </Card>
-      
-      {/* Custom Casings Modal */}
-      {showCasingsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-transparent bg-opacity-10"
-            onClick={() => setShowCasingsModal(false)}
-          />
-          
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-lg shadow-xl w-[55vw] h-[85vh] max-w-7xl flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-xl font-semibold">{t("forms.manage_casings")}</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCasingsModal(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <AccessoryManager
-                items={editingDoor?.casings || []}
-                onUpdate={(items) => handleFieldChange('casings', items)}
-                type="casing"
-                fieldOptions={fieldOptions}
-                doorData={editingDoor}
-                productsList={productsList}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1629,502 +2456,7 @@ function DoorProductSelect({ value, onChange, placeholder, productsList = [], on
     </div>
   );
 }
-// Accessory Manager Component for managing extensions, casings, crowns, and accessories
-function AccessoryManager({ items, onUpdate, type, fieldOptions, doorData, productsList = [] }: { 
-  items: any[], 
-  onUpdate: (items: any[]) => void, 
-  type: string, 
-  fieldOptions: any,
-  doorData?: any, // Pass door data for calculations
-  productsList?: any[] // Pass productsList for product resolution
-}) {
-  const { t } = useTranslation();
-  const [crownSize, setCrownSize] = useState<number>(0);
-  const [casingSize, setCasingSize] = useState<number>(0);
 
-  // Helper function to convert values with comma to number
-  const convertToNumber = (value: any, defaultValue: number = 0) => {
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') {
-      const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
-      if (normalized === '' || normalized === '.') return defaultValue;
-      const parsed = parseFloat(normalized);
-      return isNaN(parsed) ? defaultValue : parsed;
-    }
-    return defaultValue;
-  };
-
-  // Fetch crown_size and casing_size from attribute settings API
-  useEffect(() => {
-    api
-      .get("attribute-settings/")
-      .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : res.data?.results || [];
-        const found = data.find((item: any) => 
-          item.crown_size !== undefined || item.casing_size !== undefined
-        );
-        
-        if (found) {
-          if (found.crown_size !== undefined) {
-            const size = typeof found.crown_size === "number" 
-              ? found.crown_size 
-              : parseFloat(found.crown_size);
-            setCrownSize(isNaN(size) ? 0 : size);
-          }
-          
-          if (found.casing_size !== undefined) {
-            const size = typeof found.casing_size === "number" 
-              ? found.casing_size 
-              : parseFloat(found.casing_size);
-            setCasingSize(isNaN(size) ? 0 : size);
-          }
-        }
-      })
-      .catch(() => {
-        setCrownSize(0);
-        setCasingSize(0);
-      });
-  }, []);
-
-  const addItem = () => {
-    const doorWidth = convertToNumber(doorData?.width, 0);
-    const doorHeight = convertToNumber(doorData?.height, 0);
-    
-    const newItem = type === 'extension' 
-      ? { model: '', price: 0, quantity: 1, height: 0, width: 0 }
-      : type === 'casing'
-      ? { 
-          model: '', 
-          price: 0, 
-          quantity: 1, 
-          height: doorHeight, // Default to door height
-          width: casingSize, // Default to casing size
-          casing_type: '', 
-          casing_formula: '',
-          casing_range: ''
-        }
-      : type === 'crown'
-      ? { 
-          model: '', 
-          price: 0, 
-          quantity: 1, 
-          width: doorWidth + crownSize // Auto-calculate crown width
-        }
-      : { model: '', price: 0, quantity: 1, accessory_type: '' };
-    
-    onUpdate([...items, newItem]);
-  };
-
-  const updateItem = (index: number, field: string, value: any, productData?: any) => {
-    console.log('AccessoryManager updateItem called - field:', field, 'value:', value, 'productData:', productData); // Debug log
-    if (field === 'model' && value === '') {
-      console.log('WARNING: AccessoryManager model field being set to empty string!'); // Debug log
-      console.trace('Stack trace for empty model value in AccessoryManager'); // Stack trace
-    }
-    
-    // Handle comma-separated decimal numbers for numeric fields - keep as strings during editing
-    if (field === 'price' || field === 'height' || field === 'width') {
-      if (typeof value === 'string') {
-        // Clean the input - replace comma with dot and remove any non-numeric characters except dots
-        let cleanedValue = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
-        
-        // Handle multiple dots - keep only the first one
-        const parts = cleanedValue.split('.');
-        if (parts.length > 2) {
-          cleanedValue = parts[0] + '.' + parts.slice(1).join('');
-        }
-        
-        // Keep as string to preserve partial input like "0." or "0"
-        value = cleanedValue;
-      }
-    }
-    
-    const updatedItems = [...items];
-    const item = { ...updatedItems[index], [field]: value };
-    
-    // Auto-set price when product is selected (but only if not already set)
-    if (field === 'model' && productData && productData.salePrices && !item.price_type) {
-      if (productData.salePrices.length === 1) {
-        // If only one price type, automatically set it
-        item.price_type = productData.salePrices[0].priceType.id;
-        item.price = productData.salePrices[0].value / 100;
-      } else if (productData.salePrices.length > 1) {
-        // If multiple price types, find optom (wholesale) or for sale (retail) and set default
-        const optomPrice = productData.salePrices.find((p: any) => 
-          p.priceType.name?.toLowerCase().includes('optom') || 
-          p.priceType.name?.toLowerCase().includes('wholesale')
-        );
-        const salePrice = productData.salePrices.find((p: any) => 
-          p.priceType.name?.toLowerCase().includes('sale') || 
-          p.priceType.name?.toLowerCase().includes('retail')
-        );
-        
-        // Default to optom price if available, otherwise use sale price, otherwise use first available
-        const defaultPrice = optomPrice || salePrice || productData.salePrices[0];
-        item.price_type = defaultPrice.priceType.id;
-        item.price = defaultPrice.value / 100;
-      }
-    }
-    
-    // Auto-calculate dimensions for casings based on type and formula
-    if (type === 'casing' && doorData) {
-      const doorWidth = convertToNumber(doorData.width, 0);
-      const doorHeight = convertToNumber(doorData.height, 0);
-      
-      if (field === 'casing_type' || field === 'casing_formula' || field === 'casing_range') {
-        if (item.casing_formula === 'formula2' && item.casing_range) {
-          // Find the selected casing range object to get its casing_size
-          const selectedRange = fieldOptions.casingRangeOptions?.find(
-            (range: any) => range.value === String(item.casing_range)
-          );
-          if (selectedRange && selectedRange.casing_size !== undefined) {
-            item.height = selectedRange.casing_size;
-          }
-        } else if (item.casing_formula === 'formula1' || !item.casing_formula) {
-          // Original logic using door dimensions
-          if (item.casing_type === "боковой") {
-            item.height = doorHeight + casingSize;
-          } else if (item.casing_type === "прямой") {
-            item.height = doorWidth + (2 * casingSize);
-          }
-        }
-        
-        // Always set width to casingSize for casings
-        item.width = casingSize;
-      }
-    }
-    
-    // Auto-calculate crown width
-    if (type === 'crown' && doorData && field !== 'width') {
-      const doorWidth = convertToNumber(doorData.width, 0);
-      item.width = doorWidth + crownSize;
-    }
-    
-    updatedItems[index] = item;
-    onUpdate(updatedItems);
-  };
-
-  const removeItem = (index: number) => {
-    onUpdate(items.filter((_, i) => i !== index));
-  };
-
-  return (
-    <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-      <div className="flex items-center justify-between sticky top-0 bg-white pb-2 border-b">
-        <h4 className="font-medium text-lg">{t(`forms.manage_${type}s`)}</h4>
-        <Button size="sm" onClick={addItem} className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-1" />
-          {t("common.add")}
-        </Button>
-      </div>
-
-      {items.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-gray-400 mb-2">
-            <Package className="h-8 w-8 mx-auto" />
-          </div>
-          <p className="text-gray-500">{t(`forms.no_${type}s_added`)}</p>
-        </div>
-      ) : (
-        <div className="space-y-4 ">
-          {items.map((item, index) => (
-            <div key={index} className="border rounded-lg p-4 bg-gray-50">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-medium text-blue-600">
-                  {t(`forms.${type}`)} #{index + 1}
-                </span>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => removeItem(index)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              
-{/* Responsive grid layout - different for casings due to more fields */}
-              <div className={`gap-4 ${type === 'casing' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6' 
-                : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-              }`}>
-                {/* Model - Full width for all types */}
-                <div className={`${type === 'casing' 
-                  ? 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6' 
-                  : 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4'
-                }`}>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    {t("forms.model")} *
-                  </label>
-                  <DoorProductSelect
-                    value={item.model}
-                    onChange={(value) => updateItem(index, 'model', value)}
-
-                    onProductSelect={(product) => {
-                      // Don't call updateItem for model again since onChange already handles it
-                      // Just pass the product data for price setting
-                      updateItem(index, 'model', product.id, product);
-                    }}
-                    placeholder={t(`placeholders.select_${type}_model`)}
-                    productsList={productsList}
-                  />
-                </div>
-
-                {/* Price Type (show only if product has multiple price types) */}
-                {item.model && (() => {
-                  const product = productsList.find(p => p.id === item.model);
-                  return product && product.salePrices && product.salePrices.length > 1;
-                })() && (
-                  <div className={`${type === 'casing' 
-                    ? 'col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-3' 
-                    : 'col-span-1 md:col-span-2'
-                  }`}>
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      {t("forms.price_type")} *
-                    </label>
-                    <select
-                      value={item.price_type || ''}
-                      onChange={(e) => {
-                        const selectedPriceTypeId = e.target.value;
-                        updateItem(index, 'price_type', selectedPriceTypeId);
-                        
-                        // Update price when price type changes
-                        const product = productsList.find(p => p.id === item.model);
-                        if (product && product.salePrices) {
-                          const selectedPrice = product.salePrices.find(
-                            (p: any) => p.priceType.id === selectedPriceTypeId
-                          );
-                          if (selectedPrice) {
-                            updateItem(index, 'price', selectedPrice.value / 100);
-                          }
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="">{t("placeholders.select_price_type")}</option>
-                      {(() => {
-                        const product = productsList.find(p => p.id === item.model);
-                        return product && product.salePrices 
-                          ? product.salePrices.map((p: any) => (
-                              <option key={p.priceType.id} value={p.priceType.id}>
-                                {p.priceType.name}
-                              </option>
-                            ))
-                          : [];
-                      })()}
-                    </select>
-                  </div>
-                )}
-
-                {/* Price and Quantity - First row of main fields for casings */}
-                <div className={type === 'casing' ? 'col-span-1 xl:col-span-2' : 'col-span-1'}>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    {t("forms.price")} *
-                  </label>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={item.price?.toString() || ''}
-                    onChange={(e) => updateItem(index, 'price', e.target.value)}
-                    placeholder="0.00"
-                    readOnly={(() => {
-                      const product = productsList.find(p => p.id === item.model);
-                      return product && product.salePrices && product.salePrices.length > 0;
-                    })()}
-                    className={(() => {
-                      const product = productsList.find(p => p.id === item.model);
-                      return product && product.salePrices && product.salePrices.length > 0 
-                        ? 'bg-gray-100' : '';
-                    })()}
-                  />
-                </div>
-
-                <div className="col-span-1">
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    {t("forms.quantity")} *
-                  </label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={item.quantity || ''}
-                    onChange={(e) => updateItem(index, 'quantity', e.target.value)}
-                    placeholder="1"
-                  />
-                </div>
-
-                {/* Dimensions - Second row for casings */}
-                {(type === 'extension' || type === 'casing') && (
-                  <>
-                    <div className="col-span-1">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.height")} {type === 'casing' ? '(auto)' : ''}
-                      </label>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={item.height?.toString() || ''}
-                        onChange={(e) => updateItem(index, 'height', e.target.value)}
-                        disabled={type === 'casing'}
-                        placeholder="0.0"
-                        className={type === 'casing' ? 'bg-gray-100' : ''}
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.width")} {type === 'casing' ? '(auto)' : ''}
-                      </label>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={item.width?.toString() || ''}
-                        onChange={(e) => updateItem(index, 'width', e.target.value)}
-                        disabled={type === 'casing'}
-                        placeholder="0.0"
-                        className={type === 'casing' ? 'bg-gray-100' : ''}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {type === 'crown' && (
-                  <div className="col-span-1">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      {t("forms.width")} (auto-calculated)
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={item.width?.toFixed(2)}
-                      disabled
-                      placeholder="0.0"
-                      className="bg-gray-100"
-                    />
-                  </div>
-                )}
-
-                {/* Casing-specific fields - Third row */}
-                {type === 'casing' && (
-                  <>
-                    <div className="col-span-1 md:col-span-1 xl:col-span-2">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.casing_type")} *
-                      </label>
-                      <Select
-                        value={item.casing_type || ''}
-                        onValueChange={(value) => updateItem(index, 'casing_type', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("placeholders.select_casing_type")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="боковой">{t("forms.casing_type_side")}</SelectItem>
-                          <SelectItem value="прямой">{t("forms.casing_type_straight")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-1 md:col-span-1 xl:col-span-2">
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        {t("forms.casing_formula")} *
-                      </label>
-                      <Select
-                        value={item.casing_formula || ''}
-                        onValueChange={(value) => updateItem(index, 'casing_formula', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("placeholders.select_casing_formula")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="formula1">{t("forms.formula_1")}</SelectItem>
-                          <SelectItem value="formula2">{t("forms.formula_2")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {/* Casing Range - Fourth row if formula2 is selected */}
-                    {item.casing_formula === 'formula2' && (
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6">
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          {t("forms.casing_range")} *
-                        </label>
-                        <Select
-                          value={item.casing_range || ''}
-                          onValueChange={(value) => updateItem(index, 'casing_range', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={t("placeholders.select_casing_range")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {fieldOptions.casingRangeOptions?.map((range: any) => (
-                              <SelectItem key={range.value} value={range.value}>
-                                {range.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {type === 'accessory' && (
-                  <div className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
-                    <label className="text-sm font-medium text-gray-700 mb-1 block">
-                      {t("forms.accessory_type")} *
-                    </label>
-                    <Select
-                      value={item.accessory_type || ''}
-                      onValueChange={(value) => updateItem(index, 'accessory_type', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("placeholders.select_accessory_type")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cube">{t("accessory_types.cube")}</SelectItem>
-                        <SelectItem value="leg">{t("accessory_types.leg")}</SelectItem>
-                        <SelectItem value="glass">{t("accessory_types.glass")}</SelectItem>
-                        <SelectItem value="lock">{t("accessory_types.lock")}</SelectItem>
-                        <SelectItem value="topsa">{t("accessory_types.topsa")}</SelectItem>
-                        <SelectItem value="beading">{t("accessory_types.beading")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Item total - spans appropriate columns based on type */}
-                <div className={`pt-2 border-t ${type === 'casing' 
-                  ? 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-6' 
-                  : 'col-span-1 md:col-span-2'
-                }`}>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">{t("forms.item_total")}:</span>
-                    <span className="font-semibold text-blue-600">
-                      {((convertToNumber(item.price, 0) * parseInt(item.quantity || 1)) || 0).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Total for all items */}
-      {items.length > 0 && (
-        <div className="sticky bottom-0 bg-white pt-4 border-t">
-          <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg">
-            <span className="font-medium text-blue-700">
-              {t("forms.total")} {t(`forms.${type}s`)}:
-            </span>
-            <span className="font-bold text-blue-600 text-lg">
-              {items.reduce((total, item) => 
-                total + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0
-              ).toFixed(2)}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function StepThree({ orderForm, doors, totals, isLoading, onSubmit, onBack, discount_percentage, advance_payment, discountAmountInput, setDiscountAmountInput }: any) {
   const { t } = useTranslation();

@@ -3,6 +3,7 @@ import { AuthProvider } from "./core/context/AuthContext";
 import { LoginPage } from "./core/pages/login";
 import { Outlet, Route, Routes } from "react-router-dom";
 import Layout from "./core/Layout/layout";
+import { Toaster } from "sonner";
 import MaterialsPage from "./core/pages/material";
 import CreateMaterialPage from "./core/pages/create-material";
 import MaterialTypesPage from "./core/pages/material-type";
@@ -94,6 +95,7 @@ function App() {
 
                </Route>
         </Routes>
+        <Toaster position="top-right" richColors />
       </AuthProvider>
     </QueryClientProvider>
   );

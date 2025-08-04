@@ -458,12 +458,12 @@ export default function EditOrderPage() {
 
     updateOrder(orderUpdateData, {
       onSuccess: () => {
-        toast.success(t("messages.updated"));
+        toast.success(t("messages.order_updated_successfully"));
         navigate("/orders");
       },
       onError: (e: any) => {
         console.error("Error updating order:", e.response?.data);
-        toast.error(t("messages.error"));
+        toast.error(t("messages.error_updating_order"));
       },
     });
   };

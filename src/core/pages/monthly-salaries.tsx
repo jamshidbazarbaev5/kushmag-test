@@ -10,13 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Check, X, BarChart3, Users } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line    } from 'recharts';
 
 interface EditingMonthlySalary extends Partial<MonthlySalary> {
   id?: number;
@@ -52,110 +50,10 @@ export default function MonthlySalariesPage() {
   const users = usersData || [];
 
   // Chart colors
-  const CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   // Process data for charts
-  const prepareChartData = () => {
-    // Return empty data if no salaries
-    if (!monthlySalaries || monthlySalaries.length === 0) {
-      return {
-        salaryByUser: [],
-        monthlyTrend: [],
-        pieData: [],
-      };
-    }
+ 
 
-    // 1. Salary by User (Bar Chart)
-    const salaryByUser = monthlySalaries.reduce((acc, salary) => {
-      const userName = salary.user_details ? 
-        `${salary.user_details.full_name}` : 
-        users.find(user => user.id === salary.user)?.full_name || `User ${salary.user}`;
-      
-      if (!acc[userName]) {
-        acc[userName] = {
-          name: userName,
-          totalSalary: 0,
-          fixedSalary: 0,
-          orderSalary: 0,
-          bonuses: 0,
-          penalties: 0,
-        };
-      }
-      
-      const totalSalary = Number(salary.total_salary) || 0;
-      const fixedSalary = Number(salary.fixed_salary) || 0;
-      const orderSalary = Number(salary.order_percentage_salary) || 0;
-      const bonuses = Number(salary.bonuses) || 0;
-      const penalties = Number(salary.penalties) || 0;
-      
-      acc[userName].totalSalary += totalSalary;
-      acc[userName].fixedSalary += fixedSalary;
-      acc[userName].orderSalary += orderSalary;
-      acc[userName].bonuses += bonuses;
-      acc[userName].penalties += penalties;
-      
-      return acc;
-    }, {} as Record<string, any>);
-
-    // 2. Monthly Trend (Line Chart)
-    const monthlyTrend = monthlySalaries.reduce((acc, salary) => {
-      const salaryDate = new Date(salary.month);
-      if (isNaN(salaryDate.getTime())) {
-        return acc; // Skip invalid dates
-      }
-      
-      const month = salaryDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
-      
-      if (!acc[month]) {
-        acc[month] = {
-          month,
-          totalSalaries: 0,
-          averageSalary: 0,
-          count: 0,
-        };
-      }
-      
-      const totalSalary = Number(salary.total_salary) || 0;
-      acc[month].totalSalaries += totalSalary;
-      acc[month].count += 1;
-      acc[month].averageSalary = acc[month].count > 0 ? acc[month].totalSalaries / acc[month].count : 0;
-      
-      return acc;
-    }, {} as Record<string, any>);
-
-    // 3. Salary Components (Pie Chart)
-    const salaryComponents = monthlySalaries.reduce((acc, salary) => {
-      const fixedSalary = Number(salary.fixed_salary) || 0;
-      const orderSalary = Number(salary.order_percentage_salary) || 0;
-      const bonuses = Number(salary.bonuses) || 0;
-      const penalties = Math.abs(Number(salary.penalties) || 0); // Use absolute value
-      
-      acc.fixedSalary += fixedSalary;
-      acc.orderSalary += orderSalary;
-      acc.bonuses += bonuses;
-      acc.penalties += penalties;
-      return acc;
-    }, { fixedSalary: 0, orderSalary: 0, bonuses: 0, penalties: 0 });
-
-    const pieData = [
-      { name: t('forms.fixed_salary'), value: Math.round(salaryComponents.fixedSalary) },
-      { name: t('forms.order_percentage_salary'), value: Math.round(salaryComponents.orderSalary) },
-      { name: t('forms.bonuses'), value: Math.round(salaryComponents.bonuses) },
-      { name: t('forms.penalties'), value: Math.round(salaryComponents.penalties) },
-    ].filter(item => item.value > 0);
-
-    return {
-      salaryByUser: Object.values(salaryByUser),
-      monthlyTrend: Object.values(monthlyTrend).sort((a: any, b: any) => {
-        const dateA = new Date(a.month + ' 1, 2000'); // Add year for proper sorting
-        const dateB = new Date(b.month + ' 1, 2000');
-        return dateA.getTime() - dateB.getTime();
-      }),
-      pieData,
-    };
-  };
-
-  const chartData = prepareChartData();
 
   const userForm = useForm<User>({
     defaultValues: {
@@ -379,13 +277,7 @@ export default function MonthlySalariesPage() {
       </div>
 
       <Tabs defaultValue="table" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="table">{t('common.table')}</TabsTrigger>
-          <TabsTrigger value="charts">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            {t('common.charts')}
-          </TabsTrigger>
-        </TabsList>
+       
 
         <TabsContent value="table" className="space-y-4">
           <div className="flex gap-4">
@@ -552,168 +444,7 @@ export default function MonthlySalariesPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="charts" className="space-y-6">
-          {monthlySalaries.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">{t('messages.no_data_available')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-1 gap-6">
-            {/* Salary by User - Bar Chart */}
-            <Card className="col-span-1 md:col-span-2 lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  {t('charts.salary_by_user')}
-                </CardTitle>
-                <CardDescription>
-                  {t('charts.salary_by_user_description')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData.salaryByUser}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 12 }}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }} 
-                      tickFormatter={(value) => 
-                        new Intl.NumberFormat('uz-UZ', { 
-                          notation: 'compact',
-                          compactDisplay: 'short'
-                        }).format(value)
-                      }
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [
-                        new Intl.NumberFormat('uz-UZ', { 
-                          style: 'currency', 
-                          currency: 'UZS',
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0 
-                        }).format(value), 
-                        t('forms.total_salary')
-                      ]}
-                      labelStyle={{ color: '#000' }}
-                    />
-                    <Bar dataKey="totalSalary" fill={CHART_COLORS[0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Salary Components - Pie Chart
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  {t('charts.salary_components')}
-                </CardTitle>
-                <CardDescription>
-                  {t('charts.salary_components_description')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={chartData.pieData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) => `${name}: ${new Intl.NumberFormat('ru-RU', { 
-                        notation: 'compact',
-                        compactDisplay: 'short'
-                      }).format(value)} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {chartData.pieData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => [
-                      new Intl.NumberFormat('ru-RU', { 
-                        style: 'currency', 
-                        currency: 'RUB',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0 
-                      }).format(value), 
-                      ''
-                    ]} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card> */}
-
-            {/* Monthly Trend - Line Chart */}
-            <Card className="col-span-1 md:col-span-2 lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  {t('charts.monthly_trend')}
-                </CardTitle>
-                <CardDescription>
-                  {t('charts.monthly_trend_description')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData.monthlyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }} 
-                      tickFormatter={(value) => 
-                        new Intl.NumberFormat('uz-UZ', { 
-                          notation: 'compact',
-                          compactDisplay: 'short'
-                        }).format(value)
-                      }
-                    />
-                    <Tooltip 
-                      formatter={(value: number, name: string) => [
-                        new Intl.NumberFormat('uz-UZ', { 
-                          style: 'currency', 
-                          currency: 'UZS',
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0 
-                        }).format(value), 
-                        name
-                      ]}
-                      labelStyle={{ color: '#000' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="totalSalaries" 
-                      stroke={CHART_COLORS[1]} 
-                      strokeWidth={2}
-                      name={t('charts.total_salaries')}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="averageSalary" 
-                      stroke={CHART_COLORS[2]} 
-                      strokeWidth={2}
-                      name={t('charts.average_salary')}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-          )}
-        </TabsContent>
+      
       </Tabs>
 
       {/* Create User Modal */}

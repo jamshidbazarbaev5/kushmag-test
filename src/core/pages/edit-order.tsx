@@ -449,22 +449,22 @@ export default function CreateOrderPage() {
     if (measureId) {
       try {
         await api.put(`orders/${measureId}/`, orderData);
-        toast.success(t("messages.created"));
+        toast.success(t("messages.order_from_measure_created"));
         navigate("/orders");
       } catch (error: any) {
         console.error("Error creating order from measure:", error.response?.data);
-        toast.error(t("messages.error"));
+        toast.error(t("messages.error_creating_order"));
       }
     } else {
       // Use the default createOrder mutation for regular order creation
       createOrder(orderData, {
         onSuccess: () => {
-          toast.success(t("messages.created"));
+          toast.success(t("messages.order_created_successfully"));
           navigate("/orders");
         },
         onError: (e: any) => {
           console.error("Error creating order:", e.response?.data);
-          toast.error(t("messages.error"));
+          toast.error(t("messages.error_creating_order"));
         },
       });
     }

@@ -210,8 +210,21 @@
     "edit": "Óńdew",
     "create": "Jasaw",
     "created": "Jasaldı",
+    "updated": "Jańartıldı",
+    "deleted": "Joyıldı",
+    "measure_created_successfully": "Ólshem sátti jasaldı",
+    "measure_updated_successfully": "Ólshem sátti jańartıldı",
+    "measure_deleted_successfully": "Ólshem sátti joyıldı",
+    "order_created_successfully": "Buyırtpa sátti jasaldı",
+    "order_updated_successfully": "Buyırtpa sátti jańartıldı",
+    "order_deleted_successfully": "Buyırtpa sátti joyıldı",
+    "order_from_measure_created": "Ólshemnen buyırtpa sátti jasaldı",
     "counterparty_created_successfully": "Qarshı tárepshi sátti jasaldı",
-    "error_creating_counterparty": "Qarshı tárepshi jasawda qate"
+    "error_creating_counterparty": "Qarshı tárepshi jasawda qate",
+    "error_creating_measure": "Ólshem jasawda qate",
+    "error_updating_measure": "Ólshem jańartwda qate",
+    "error_creating_order": "Buyırtpa jasawda qate",
+    "error_updating_order": "Buyırtpa jańartwda qate"
   },
   "titles": {
     "create_measure": "Ólshem jasaw",
