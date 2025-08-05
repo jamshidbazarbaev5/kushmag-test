@@ -24,6 +24,7 @@ import { useGetBeadings } from "../api/beading";
 import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
+import { useGetAttributeSettings } from "../api/attributeSettings";
 import { useState, useEffect, useMemo, useRef } from "react";
 import React from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
@@ -95,10 +96,6 @@ const getProductById = (productsList: any[], id: string | any) => {
   return product || { id: actualId };
 };
 
-// Constants for dimension calculations
-const casingSize = 6; // Fixed casing size
-const crownSize = 10; // Fixed crown size
-
 // Helper function to convert string with comma to number
 const convertToNumber = (value: any, defaultValue: number = 0) => {
   if (typeof value === "number") return value;
@@ -130,6 +127,14 @@ export default function CreateOrderPage() {
   const { getOrderDraft, clearAllDrafts, hasDraftData, STORAGE_KEYS } =
     useOrderDraftRecovery();
   const orderFormData = orderForm.watch();
+
+  // Fetch attribute settings for casing and crown sizes
+  const { data: attributeSettings } = useGetAttributeSettings();
+  const attributeSettingsArray = Array.isArray(attributeSettings) 
+    ? attributeSettings 
+    : attributeSettings?.results || [];
+  const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
+  const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
 
   // Auto-save order form data and doors (will be filtered in the hook based on hasCheckedForDraft)
   useAutoSave(orderFormData, STORAGE_KEYS.ORDER_DRAFT);
@@ -536,6 +541,8 @@ export default function CreateOrderPage() {
             fieldOptions={fieldOptions}
             productsList={productsList}
             orderForm={orderForm}
+            casingSize={casingSize}
+            crownSize={crownSize}
           />
 
           {/* Step 3: Summary and Submit */}
@@ -625,7 +632,7 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
   );
 }
 
-function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any) {
+function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casingSize, crownSize }: any) {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDoor, setEditingDoor] = useState<any>(null);
@@ -838,7 +845,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
                   calculateCasingDimensions(
                     { ...casing },
                     newEditingDoor,
-                    fieldOptions
+                    fieldOptions,
+                    casingSize
                   )
               );
             }
@@ -887,7 +895,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
                   calculateCasingDimensions(
                     { ...casing },
                     newEditingDoor,
-                    fieldOptions
+                    fieldOptions,
+                    casingSize
                   )
               );
             }
@@ -903,7 +912,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
   const calculateCasingDimensions = (
     casing: any,
     doorData: any,
-    fieldOptions: any
+    fieldOptions: any,
+    casingSize: number
   ) => {
     if (!doorData) return casing;
 
@@ -2378,7 +2388,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
                                                       calculateCasingDimensions(
                                                         updatedCasing,
                                                         editingDoor,
-                                                        fieldOptions
+                                                        fieldOptions,
+                                                        casingSize
                                                       );
                                                     updatedCasings[casIndex] =
                                                       recalculatedCasing;
@@ -2432,7 +2443,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
                                                       calculateCasingDimensions(
                                                         updatedCasing,
                                                         editingDoor,
-                                                        fieldOptions
+                                                        fieldOptions,
+                                                        casingSize
                                                       );
                                                     updatedCasings[casIndex] =
                                                       recalculatedCasing;
@@ -2482,7 +2494,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm }: any
                                                         calculateCasingDimensions(
                                                           updatedCasing,
                                                           editingDoor,
-                                                          fieldOptions
+                                                          fieldOptions,
+                                                          casingSize
                                                         );
                                                       updatedCasings[casIndex] =
                                                         recalculatedCasing;

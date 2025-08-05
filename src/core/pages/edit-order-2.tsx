@@ -24,6 +24,7 @@ import { useGetBeadings } from "../api/beading";
 import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
+import { useGetAttributeSettings } from "../api/attributeSettings";
 import { useState, useEffect, useMemo } from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
@@ -110,6 +111,14 @@ export default function EditOrderPage() {
     glass_type: '',
     threshold: ''
   });
+
+  // Fetch attribute settings for casing and crown sizes
+  const { data: attributeSettings } = useGetAttributeSettings();
+  const attributeSettingsArray = Array.isArray(attributeSettings) 
+    ? attributeSettings 
+    : attributeSettings?.results || [];
+  const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
+  const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
   
   const orderForm = useForm();
 
@@ -587,6 +596,8 @@ export default function EditOrderPage() {
             fieldOptions={fieldOptions}
             productsList={productsList}
             globalDoorSettings={globalDoorSettings}
+            casingSize={casingSize}
+            crownSize={crownSize}
           />
 
       
@@ -674,7 +685,7 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {/* Material */}
             <div className="space-y-2">
@@ -809,7 +820,7 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
             </div>
 
             {/* Glass Type */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
                 {t("forms.glass_type")}
               </label>
@@ -828,10 +839,10 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
             {/* Threshold */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
                 {t("forms.threshold")}
               </label>
@@ -850,7 +861,7 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
           </div>
           
@@ -874,8 +885,8 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
                       color: globalDoorSettings.color,
                       patina_color: globalDoorSettings.patina_color,
                       beading_main: globalDoorSettings.beading_main,
-                      glass_type: globalDoorSettings.glass_type,
-                      threshold: globalDoorSettings.threshold,
+                      // glass_type: globalDoorSettings.glass_type,
+                      // threshold: globalDoorSettings.threshold,
                     }));
                     setDoors(updatedDoors);
                   }}
@@ -892,13 +903,10 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
   );
 }
 
-function StepTwo({ doors, setDoors, fieldOptions, productsList, globalDoorSettings }: any) {
+function StepTwo({ doors, setDoors, fieldOptions, productsList, globalDoorSettings, casingSize, crownSize }: any) {
   const { t } = useTranslation();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDoor, setEditingDoor] = useState<any>(null);
-  // Constants for dimension calculations
-const casingSize = 6; // Fixed casing size
-const crownSize = 10; // Fixed crown size
   const convertToNumber = (value: any, defaultValue: number = 0) => {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
@@ -925,8 +933,8 @@ const crownSize = 10; // Fixed crown size
       patina_color: globalDoorSettings.patina_color,
       beading_main: globalDoorSettings.beading_main,
       beading_additional: '',
-      glass_type: globalDoorSettings.glass_type,
-      threshold: globalDoorSettings.threshold,
+    glass_type: '',
+      threshold: '',
       extensions: [],
       casings: [],
       crowns: [],
@@ -1069,7 +1077,7 @@ const crownSize = 10; // Fixed crown size
             // Recalculate casing dimensions
             if (newEditingDoor.casings && newEditingDoor.casings.length > 0) {
               newEditingDoor.casings = newEditingDoor.casings.map((casing: any) => 
-                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions)
+                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions, casingSize)
               );
             }
           }
@@ -1106,7 +1114,7 @@ const crownSize = 10; // Fixed crown size
             // Recalculate casing dimensions
             if (newEditingDoor.casings && newEditingDoor.casings.length > 0) {
               newEditingDoor.casings = newEditingDoor.casings.map((casing: any) => 
-                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions)
+                calculateCasingDimensions({ ...casing }, newEditingDoor, fieldOptions, casingSize)
               );
             }
           }
@@ -1118,7 +1126,7 @@ const crownSize = 10; // Fixed crown size
   };
 
   // Function to calculate casing dimensions based on formula and type
-  const calculateCasingDimensions = (casing: any, doorData: any, fieldOptions: any) => {
+  const calculateCasingDimensions = (casing: any, doorData: any, fieldOptions: any, casingSize: number) => {
     if (!doorData) return casing;
     const convertToNumber = (value: any, defaultValue: number = 0) => {
   if (typeof value === 'number') return value;
@@ -1132,9 +1140,7 @@ const crownSize = 10; // Fixed crown size
 };
     const doorWidth = convertToNumber(doorData.width, 0);
     const doorHeight = convertToNumber(doorData.height, 0);
-    // Constants for dimension calculations
-const casingSize = 6; // Fixed casing size
-// const crownSize = 10; // Fixed crown size
+
     // Auto-calculate height based on formula
     if (casing.casing_formula === 'formula2' && casing.casing_range) {
       // Find the selected casing range object to get its casing_size
@@ -1225,6 +1231,8 @@ const casingSize = 6; // Fixed casing size
                   <TableHead>{t("forms.quantity")}</TableHead>
                   <TableHead>{t("forms.height")}</TableHead>
                   <TableHead>{t("forms.width")}</TableHead>
+                  <TableHead>{t("forms.glass_type")}</TableHead>
+                  <TableHead>{t("forms.threshold")}</TableHead>
                   <TableHead>{t("forms.extensions")}</TableHead>
                   <TableHead>{t("forms.casings")}</TableHead>
                   <TableHead>{t("forms.crowns")}</TableHead>
@@ -1438,6 +1446,56 @@ const casingSize = 6; // Fixed casing size
                       )}
                     </TableCell>
 
+
+                   {/* Glass Type */}
+                    <TableCell>
+                      {editingIndex === index ? (
+                        <Select
+                          value={editingDoor?.glass_type || ''}
+                          onValueChange={(value) => handleFieldChange('glass_type', value)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder={t("placeholders.select_glass_type")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fieldOptions.glassTypeOptions?.map((option: any) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="truncate max-w-[100px]">
+                          {fieldOptions.glassTypeOptions?.find((opt: any) => opt.value === door.glass_type)?.label || '-'}
+                        </span>
+                      )}
+                    </TableCell>
+
+                    {/* Threshold */}
+                    <TableCell>
+                      {editingIndex === index ? (
+                        <Select
+                          value={editingDoor?.threshold || ''}
+                          onValueChange={(value) => handleFieldChange('threshold', value)}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue placeholder={t("placeholders.select_threshold")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {fieldOptions.thresholdOptions?.map((option: any) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="truncate max-w-[100px]">
+                          {fieldOptions.thresholdOptions?.find((opt: any) => opt.value === door.threshold)?.label || '-'}
+                        </span>
+                      )}
+                    </TableCell>
                     {/* Extensions */}
                     <TableCell>
                       {editingIndex === index ? (
@@ -1963,7 +2021,7 @@ const casingSize = 6; // Fixed casing size
                                             onValueChange={(value) => {
                                               const updatedCasings = [...editingDoor.casings];
                                               const updatedCasing = { ...updatedCasings[casIndex], casing_type: value };
-                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions, casingSize);
                                               updatedCasings[casIndex] = recalculatedCasing;
                                               handleFieldChange('casings', updatedCasings);
                                             }}
@@ -1989,7 +2047,7 @@ const casingSize = 6; // Fixed casing size
                                               if (value === 'formula1') {
                                                 updatedCasing.casing_range = '';
                                               }
-                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                              const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions, casingSize);
                                               updatedCasings[casIndex] = recalculatedCasing;
                                               handleFieldChange('casings', updatedCasings);
                                             }}
@@ -2012,7 +2070,7 @@ const casingSize = 6; // Fixed casing size
                                               onValueChange={(value) => {
                                                 const updatedCasings = [...editingDoor.casings];
                                                 const updatedCasing = { ...updatedCasings[casIndex], casing_range: value };
-                                                const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions);
+                                                const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions, casingSize);
                                                 updatedCasings[casIndex] = recalculatedCasing;
                                                 handleFieldChange('casings', updatedCasings);
                                               }}
