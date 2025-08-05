@@ -548,12 +548,14 @@ export default function CreateOrderPage() {
 
         <div className="space-y-8">
  <StepOne 
-            orderForm={orderForm} 
-            orderFields={orderFields} 
-            isLoading={isLoading}
-              globalDoorSettings={globalDoorSettings}
+           orderForm={orderForm}
+            orderFields={orderFields}
+            // isLoading={isUpdating}
+            globalDoorSettings={globalDoorSettings}
             setGlobalDoorSettings={setGlobalDoorSettings}
             fieldOptions={fieldOptions}
+            doors={doors}
+            setDoors={setDoors}
             // onNext={() => setCurrentStep(2)}
 
           />
@@ -594,7 +596,7 @@ export default function CreateOrderPage() {
 }
 
 // Step Components
-function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlobalDoorSettings, fieldOptions }: any) {
+function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlobalDoorSettings, fieldOptions,doors, setDoors }: any) {
   const { t } = useTranslation();
   
   
@@ -828,8 +830,41 @@ function StepOne({ orderForm, orderFields, isLoading, globalDoorSettings, setGlo
                 </SelectContent>
               </Select>
             </div> */}
+             {/* Apply to All Doors Button */}
+                     
 
           </div>
+           {doors?.length > 0 && (
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="text-sm font-medium text-blue-900">{t("forms.apply_to_all_doors")}</h4>
+                              <p className="text-xs text-blue-700 mt-1">{t("forms.apply_to_all_doors_description")}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const updatedDoors = doors.map((door:any) => ({
+                                  ...door,
+                                  material: globalDoorSettings.material,
+                                  material_type: globalDoorSettings.material_type,
+                                  massif: globalDoorSettings.massif,
+                                  color: globalDoorSettings.color,
+                                  patina_color: globalDoorSettings.patina_color,
+                                  beading_main: globalDoorSettings.beading_main,
+                                  // glass_type: globalDoorSettings.glass_type,
+                                  // threshold: globalDoorSettings.threshold,
+                                }));
+                                setDoors(updatedDoors);
+                              }}
+                              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                            >
+                              {t("forms.apply_to_all")}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
         </CardContent>
       </Card>
           
