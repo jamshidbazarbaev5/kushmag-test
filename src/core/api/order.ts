@@ -88,3 +88,25 @@ export const {
   useUpdateResource: useUpdateOrder,
   useDeleteResource: useDeleteOrder,
 } = createResourceApiHooks<Order>(ORDER_URL, 'orders');
+
+// Add calculate order functionality
+import { useMutation } from '@tanstack/react-query';
+import api from './api';
+
+export interface CalculateOrderResponse {
+  total_sum: number;
+  door_price: number;
+  casing_price: number;
+  extension_price: number;
+  crown_price: number;
+  accessory_price: number;
+}
+
+export const useCalculateOrder = () => {
+  return useMutation<CalculateOrderResponse, Error, any>({
+    mutationFn: async (orderData: any) => {
+      const response = await api.post('orders/calculate/', orderData);
+      return response.data;
+    },
+  });
+};

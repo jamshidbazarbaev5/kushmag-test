@@ -25,6 +25,9 @@ export interface Organization extends BaseReference {}
 export interface SalesChannel extends BaseReference {}
 export interface Seller extends BaseReference {}
 export interface Operator extends BaseReference {}
+export interface Branch extends BaseReference {
+ 
+}
 
 const CURRENCY_URL = 'currency/';
 const STORE_URL = 'store/';
@@ -34,6 +37,7 @@ const ORGANIZATION_URL = 'organization/';
 const SALESCHANNEL_URL = 'saleschannel/';
 const SELLER_URL = 'sellers/';
 const OPERATOR_URL = 'operators/';
+const BRANCH_URL = 'branches/';
 
 export const {
   useGetResources: useGetCurrencies,
@@ -74,3 +78,8 @@ export const {
   useGetResources: useGetOperators,
   useGetResource: useGetOperator,
 } = createResourceApiHooks<Operator>(OPERATOR_URL, 'operators');
+
+export const {
+  useGetResources: useGetBranches,
+  useGetResource: useGetBranch,
+} = createResourceApiHooks<Branch>(BRANCH_URL, 'branches');

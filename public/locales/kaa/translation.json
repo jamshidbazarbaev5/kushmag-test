@@ -98,6 +98,9 @@
     "advance_payment": "Aldın tólem",
     "remaining_balance": "Qaldıq",
     "total_after_discount": "Jeńillikten keyin jámi",
+    "calculate": "Esaplaw",
+    "calculating": "Esaplanıp atır...",
+    "subtotal": "Aralıq jámi",
     "discount_and_payment": "Jáńilislik hám tólem",
     "enter_discount_amount_note": "Jáńilislik summasın jazıń",
     "enter_discount_percentage_note": "Jáńilislik payızın jazıń",
@@ -206,6 +209,8 @@
       "delete": "Bul elementdi joyıwǵa ishensiz be?"
     },
     "no_data_available": "Kórsetiwge derrek joq",
+    "calculation_completed": "Esaplaw sátti amalga asırıldı",
+    "calculation_failed": "Buyırtpanı esaplaw kezinde qate",
     "no_users_found": "Paydalanıwshılar tabılmadı",
     "edit": "Óńdew",
     "create": "Jasaw",

@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useCreateOrder } from "../api/order";
+import { useCreateOrder, useCalculateOrder } from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import {
   useGetCurrencies,
@@ -13,6 +13,7 @@ import {
   useGetSalesChannels,
   useGetSellers,
   useGetOperators,
+  useGetBranches,
 } from "../api/references";
 import { useGetProducts } from "../api/products";
 import { useGetMaterials } from "../api/material";
@@ -81,6 +82,7 @@ export default function CreateOrderPage() {
   const location = useLocation();
   const params = useParams();
   const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
+  const { mutate: calculateOrder, isPending: isCalculating } = useCalculateOrder();
       
   // Global door attributes state
   const [globalDoorSettings, setGlobalDoorSettings] = useState({
@@ -112,7 +114,12 @@ export default function CreateOrderPage() {
   const [doors, setDoors] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [totals, setTotals] = useState({
-    totalAmount: 0,
+    total_sum: 0,
+    door_price: 0,
+    casing_price: 0,
+    extension_price: 0,
+    crown_price: 0,
+    accessory_price: 0,
     discountAmount: 0,
     remainingBalance: 0,
   });
@@ -230,6 +237,7 @@ export default function CreateOrderPage() {
   const { data: beadings } = useGetBeadings();
   const { data: glassTypes } = useGetGlassTypes();
   const { data: products } = useGetProducts();
+  const {data:branches} = useGetBranches()
   const { data: thresholds } = useGetThresholds();
   const { data: casingRanges } = useGetCasingRanges();
   const productsList = useMemo(
@@ -251,6 +259,7 @@ export default function CreateOrderPage() {
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
+    branchOptions:formatReferenceOptions(branches),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
@@ -367,60 +376,85 @@ export default function CreateOrderPage() {
     },
   ];
 
-  // --- Calculations ---
-  useEffect(() => {
-    const calculateTotals = () => {
-      const totalAmount = doors.reduce((total, door) => {
-        let doorTotal = parseFloat(door.price || 0) * (door.quantity || 1);
-
-        const sumItems = (items: any[]) =>
-          items?.reduce(
-            (sum, item) =>
-              sum + parseFloat(item.price || 0) * (item.quantity || 1),
-            0
-          ) || 0;
-
-        doorTotal += sumItems(door.extensions);
-        doorTotal += sumItems(door.casings);
-        doorTotal += sumItems(door.crowns);
-        doorTotal += sumItems(door.accessories);
-
-        return total + doorTotal;
-      }, 0);
-
-      // Calculate discount based on current inputs
-      let discountAmountValue = 0;
-      let discountPercentageValue = 0;
-
-      if (discountAmount && discountAmount.trim() !== '') {
-        // If discount amount is provided, calculate percentage
-        discountAmountValue = parseFloat(discountAmount.replace(/,/g, '.') || '0');
-        discountPercentageValue = totalAmount > 0 ? (discountAmountValue / totalAmount) * 100 : 0;
-      } else if (discountPercentage && discountPercentage.trim() !== '') {
-        // If discount percentage is provided, calculate amount
-        discountPercentageValue = parseFloat(discountPercentage.replace(/,/g, '.') || '0');
-        discountAmountValue = (totalAmount * discountPercentageValue) / 100;
-      }
-
-      const advance = parseFloat(advancePayment.replace(/,/g, '.') || '0');
-      const finalAmount = totalAmount - discountAmountValue;
-      const remainingBalance = finalAmount - advance;
-
-      setTotals({
-        totalAmount: totalAmount,
-        discountAmount: discountAmountValue,
-        remainingBalance: remainingBalance,
-      });
+  // --- API-based Calculation Function ---
+  const handleCalculateOrder = () => {
+    const orderData = orderForm.getValues();
+    
+    // Prepare order data for calculation
+    const calculationData = {
+      ...orderData,
+      // Map IDs to full meta objects for the API
+      store: getMetaById(stores, orderData.store),
+      project: getMetaById(projects, orderData.project),
+      agent: orderData.agent && typeof orderData.agent === "object"
+        ? orderData.agent
+        : getMetaById(counterparties, orderData.agent),
+      organization: getMetaById(organizations, orderData.organization),
+      salesChannel: getMetaById(salesChannels, orderData.salesChannel),
+      seller: getMetaById(sellers, orderData.seller),
+      operator: getMetaById(operators, orderData.operator),
+      branch: getMetaById(branches, orderData.branch),
+      // Hydrate door data with full product info
+      doors: doors.map((door: any) => ({
+        ...door,
+        model: getProductById(productsList, door.model),
+        extensions: door.extensions?.map((ext: any) => ({
+          ...ext,
+          model: getProductById(productsList, ext.model),
+        })),
+        casings: door.casings?.map((casing: any) => ({
+          ...casing,
+          model: getProductById(productsList, casing.model),
+        })),
+        crowns: door.crowns?.map((crown: any) => ({
+          ...crown,
+          model: getProductById(productsList, crown.model),
+        })),
+        accessories: door.accessories?.map((acc: any) => ({
+          ...acc,
+          model: getProductById(productsList, acc.model),
+        })),
+      })),
     };
 
-    calculateTotals();
-  }, [doors, discountAmount, discountPercentage, advancePayment]);
+    calculateOrder(calculationData, {
+      onSuccess: (response) => {
+        // Calculate discount based on current inputs
+        let discountAmountValue = 0;
+
+        if (discountAmount && discountAmount.trim() !== '') {
+          // If discount amount is provided, use it
+          discountAmountValue = parseFloat(discountAmount.replace(/,/g, '.') || '0');
+        } else if (discountPercentage && discountPercentage.trim() !== '') {
+          // If discount percentage is provided, calculate amount
+          const discountPercentageValue = parseFloat(discountPercentage.replace(/,/g, '.') || '0');
+          discountAmountValue = (response.total_sum * discountPercentageValue) / 100;
+        }
+
+        const advance = parseFloat(advancePayment.replace(/,/g, '.') || '0');
+        const finalAmount = response.total_sum - discountAmountValue;
+        const remainingBalance = finalAmount - advance;
+
+        setTotals({
+          ...response,
+          discountAmount: discountAmountValue,
+          remainingBalance: remainingBalance,
+        });
+        
+        toast.success(t("messages.calculation_completed"));
+      },
+      onError: (error: any) => {
+        console.error("Error calculating order:", error);
+        toast.error(t("messages.calculation_failed"));
+      },
+    });
+  };
 
   const onSubmit = async (data: any) => {
-    const { totalAmount, discountAmount: calculatedDiscountAmount, remainingBalance } = totals;
+    const { total_sum, discountAmount: calculatedDiscountAmount, remainingBalance } = totals;
 
     // Calculate discount percentage for API
-    const discountPercentageForAPI = totalAmount > 0 ? (calculatedDiscountAmount / totalAmount) * 100 : 0;
+    const discountPercentageForAPI = total_sum > 0 ? (calculatedDiscountAmount / total_sum) * 100 : 0;
 
     // Remove unwanted fields from form data
     const { order_code, order_date, ...cleanData } = data;
@@ -437,6 +471,7 @@ export default function CreateOrderPage() {
       salesChannel: getMetaById(salesChannels, data.salesChannel),
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
+      branch: getMetaById(branches, data.branch),
       // Hydrate door data with full product info
       doors: doors.map((door: any) => ({
         ...door,
@@ -461,7 +496,7 @@ export default function CreateOrderPage() {
       // Add calculated totals
       discount_percentage: discountPercentageForAPI,
       discount_amount: calculatedDiscountAmount.toFixed(2),
-      total_amount: totalAmount.toFixed(2),
+      total_amount: total_sum.toFixed(2),
       advance_payment: parseFloat(advancePayment.replace(/,/g, '.') || '0').toFixed(2),
       remaining_balance: remainingBalance.toFixed(2),
     };
@@ -579,7 +614,9 @@ export default function CreateOrderPage() {
             doors={doors}
             totals={totals}
             isLoading={isLoading}
+            isCalculating={isCalculating}
             onSubmit={onSubmit}
+            onCalculate={handleCalculateOrder}
             onBack={() => setCurrentStep(2)}
             discountAmount={discountAmount}
             setDiscountAmount={setDiscountAmount}
@@ -2624,7 +2661,9 @@ function StepThree({
   doors, 
   totals, 
   isLoading, 
+  isCalculating,
   onSubmit, 
+  onCalculate,
   onBack, 
   discountAmount,
   setDiscountAmount,
@@ -2648,8 +2687,8 @@ function StepThree({
   };
 
   // Calculate discount percentage for display
-  const displayDiscountPercentage = totals.totalAmount > 0 ? 
-    (totals.discountAmount / totals.totalAmount) * 100 : 0;
+  const displayDiscountPercentage = totals.total_sum > 0 ? 
+    (totals.discountAmount / totals.total_sum) * 100 : 0;
 
   // Handle discount amount input change
   const handleDiscountAmountChange = (value: string) => {
@@ -2670,23 +2709,7 @@ function StepThree({
   };
 
   // Calculate detailed subtotals
-  const priceBreakdown = doors.reduce(
-    (acc: any, door: any) => {
-      const qty = parseInt(door.quantity || 1);
-      const doorPrice = parseFloat(door.price || 0) * qty;
-      acc.doors += doorPrice;
-
-      const sumItems = (items: any[]) =>
-        items?.reduce((sum, item) => sum + parseFloat(item.price || 0) * (item.quantity || 1), 0) || 0;
-
-      acc.extensions += sumItems(door.extensions);
-      acc.casings += sumItems(door.casings);
-      acc.crowns += sumItems(door.crowns);
-      acc.accessories += sumItems(door.accessories);
-      return acc;
-    },
-    { doors: 0, extensions: 0, casings: 0, crowns: 0, accessories: 0 }
-  );
+  // Now using API response data instead of client-side calculation
 
   return (
     <div className="w-full">
@@ -2725,34 +2748,54 @@ function StepThree({
 
               {/* Price Breakdown */}
               <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-blue-600" />
-                  {t("forms.price_breakdown")}
-                </h4>
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-semibold text-blue-700 flex items-center gap-2">
+                    <Calculator className="h-5 w-5 text-blue-600" />
+                    {t("forms.price_breakdown")}
+                  </h4>
+                  <Button
+                    onClick={onCalculate}
+                    disabled={doors.length === 0 || isCalculating}
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-md"
+                    size="sm"
+                  >
+                    {isCalculating ? (
+                      <>
+                        <Calculator className="h-4 w-4 mr-2 animate-spin" />
+                        {t("forms.calculating")}
+                      </>
+                    ) : (
+                      <>
+                        <Calculator className="h-4 w-4 mr-2" />
+                        {t("forms.calculate")}
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
-                    <span className="font-semibold">{priceBreakdown.doors.toFixed(2)} сум</span>
+                    <span className="font-semibold">{totals.door_price.toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{priceBreakdown.extensions.toFixed(2)} сум</span>
+                    <span>{totals.extension_price.toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{priceBreakdown.casings.toFixed(2)} сум</span>
+                    <span>{totals.casing_price.toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{priceBreakdown.crowns.toFixed(2)} сум</span>
+                    <span>{totals.crown_price.toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{priceBreakdown.accessories.toFixed(2)} сум</span>
+                    <span>{totals.accessory_price.toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
-                    <span className="font-bold">{totals.totalAmount.toFixed(2)} сум</span>
+                    <span className="font-bold">{totals.total_sum.toFixed(2)} сум</span>
                   </div>
                 </div>
               </div>
@@ -2848,7 +2891,7 @@ function StepThree({
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
-                  <span className="font-semibold">{totals.totalAmount.toFixed(0)} сум</span>
+                  <span className="font-semibold">{totals.total_sum.toFixed(0)} сум</span>
                 </div>
                 <div className="flex justify-between text-green-600">
                   <span>{t("forms.discount")} ({displayDiscountPercentage.toFixed(1)}%)</span>

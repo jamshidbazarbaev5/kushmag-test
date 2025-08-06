@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useCreateOrder } from "../api/order";
+import { useCreateOrder, useCalculateOrder } from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import {
   useGetCurrencies,
@@ -13,6 +13,7 @@ import {
   useGetSalesChannels,
   useGetSellers,
   useGetOperators,
+  useGetBranches,
 } from "../api/references";
 import { useGetProducts } from "../api/products";
 import { useGetMaterials } from "../api/material";
@@ -112,9 +113,15 @@ export default function CreateOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
+  const { mutate: calculateOrder, isPending: isCalculating } = useCalculateOrder();
   const [doors, setDoors] = useState<any[]>([]);
   const [totals, setTotals] = useState({
-    totalAmount: 0,
+    total_sum: 0,
+    door_price: 0,
+    casing_price: 0,
+    extension_price: 0,
+    crown_price: 0,
+    accessory_price: 0,
     discountAmount: 0,
     remainingBalance: 0,
   });
@@ -180,6 +187,7 @@ export default function CreateOrderPage() {
 
   //  Fetching ---
   const { data: currencies } = useGetCurrencies();
+  const { data: branches } = useGetBranches();
   const { data: stores } = useGetStores();
   const { data: projects } = useGetProjects();
   const { data: counterparties } = useGetCounterparties();
@@ -205,6 +213,7 @@ export default function CreateOrderPage() {
   // --- Format Options for Selects ---
   const fieldOptions = {
     rateOptions: formatReferenceOptions(currencies),
+    branchOptions: formatReferenceOptions(branches),
     storeOptions: formatReferenceOptions(stores),
     projectOptions: formatReferenceOptions(projects),
     agentOptions: formatReferenceOptions(counterparties),
@@ -269,11 +278,19 @@ export default function CreateOrderPage() {
       required: true,
     },
     {
-      name: "organization",
-      label: t("forms.organization"),
+          name: "organization",
+          label: t("forms.organization"),
+          type: "searchable-select",
+          options: fieldOptions.organizationOptions,
+          placeholder: t("placeholders.select_organization"),
+      required: true,
+    },
+    {
+      name: "branch",
+      label: t("forms.branch"),
       type: "searchable-select",
-      options: fieldOptions.organizationOptions,
-      placeholder: t("placeholders.select_organization"),
+      options: fieldOptions.branchOptions,
+      placeholder: t("placeholders.select_branch"),
       required: true,
     },
     {
@@ -373,10 +390,49 @@ export default function CreateOrderPage() {
     },
   ];
 
-  // --- Calculations ---
-  useEffect(() => {
-    const calculateTotals = () => {
-      const totalAmount = doors.reduce((total, door) => {
+  // --- API-based Calculation Function ---
+  const handleCalculateOrder = () => {
+    const orderData = orderForm.getValues();
+    
+    // Prepare order data for calculation
+    const calculationData = {
+      ...orderData,
+      // Map IDs to full meta objects for the API
+      store: getMetaById(stores, orderData.store),
+      project: getMetaById(projects, orderData.project),
+      agent: orderData.agent && typeof orderData.agent === "object"
+        ? orderData.agent
+        : getMetaById(counterparties, orderData.agent),
+      organization: getMetaById(organizations, orderData.organization),
+      salesChannel: getMetaById(salesChannels, orderData.salesChannel),
+      seller: getMetaById(sellers, orderData.seller),
+      operator: getMetaById(operators, orderData.operator),
+      branch: getMetaById(branches, orderData.branch),
+      // Hydrate door data with full product info
+      doors: doors.map((door: any) => ({
+        ...door,
+        model: getProductById(productsList, door.model),
+        extensions: door.extensions?.map((ext: any) => ({
+          ...ext,
+          model: getProductById(productsList, ext.model),
+        })),
+        casings: door.casings?.map((casing: any) => ({
+          ...casing,
+          model: getProductById(productsList, casing.model),
+        })),
+        crowns: door.crowns?.map((crown: any) => ({
+          ...crown,
+          model: getProductById(productsList, crown.model),
+        })),
+        accessories: door.accessories?.map((acc: any) => ({
+          ...acc,
+          model: getProductById(productsList, acc.model),
+        })),
+      })),
+    };
+
+    calculateOrder(calculationData, {
+      onSuccess: (response) => {
         // Helper function to convert values with comma to number
         const convertToNumber = (value: any, defaultValue: number = 0) => {
           if (typeof value === "number") return value;
@@ -389,58 +445,33 @@ export default function CreateOrderPage() {
           return defaultValue;
         };
 
-        let doorTotal = convertToNumber(door.price, 0) * (door.quantity || 1);
+        const discount = convertToNumber(discount_percentage, 0);
+        const advance = convertToNumber(advance_payment, 0);
 
-        const sumItems = (items: any[]) =>
-          items?.reduce(
-            (sum, item) =>
-              sum + convertToNumber(item.price, 0) * (item.quantity || 1),
-            0
-          ) || 0;
-
-        doorTotal += sumItems(door.extensions);
-        doorTotal += sumItems(door.casings);
-        doorTotal += sumItems(door.crowns);
-        doorTotal += sumItems(door.accessories);
-
-        return total + doorTotal;
-      }, 0);
-
-      // Helper function to convert values with comma to number
-      const convertToNumber = (value: any, defaultValue: number = 0) => {
-        if (typeof value === "number") return value;
-        if (typeof value === "string") {
-          const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
-          if (normalized === "" || normalized === ".") return defaultValue;
-          const parsed = parseFloat(normalized);
-          return isNaN(parsed) ? defaultValue : parsed;
-        }
-        return defaultValue;
-      };
-
-      const discount = convertToNumber(discount_percentage, 0);
-      const advance = convertToNumber(advance_payment, 0);
-
-      // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
-      const discountAmount =
-        discountAmountInput > 0
+        // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
+        const discountAmount = discountAmountInput > 0
           ? discountAmountInput
-          : (totalAmount * discount) / 100;
-      const finalAmount = totalAmount - discountAmount;
-      const remainingBalance = finalAmount - advance;
+          : (response.total_sum * discount) / 100;
+        const finalAmount = response.total_sum - discountAmount;
+        const remainingBalance = finalAmount - advance;
 
-      setTotals({
-        totalAmount: totalAmount,
-        discountAmount: discountAmount,
-        remainingBalance: remainingBalance,
-      });
-    };
-
-    calculateTotals();
-  }, [doors, discount_percentage, advance_payment, discountAmountInput]);
+        setTotals({
+          ...response,
+          discountAmount: discountAmount,
+          remainingBalance: remainingBalance,
+        });
+        
+        toast.success(t("messages.calculation_completed"));
+      },
+      onError: (error: any) => {
+        console.error("Error calculating order:", error);
+        toast.error(t("messages.calculation_failed"));
+      },
+    });
+  };
 
   const onSubmit = async (data: any) => {
-    const { totalAmount, discountAmount, remainingBalance } = totals;
+    const { total_sum, discountAmount, remainingBalance } = totals;
     //  const discount = convertToNumber(discount_percentage, 0);
     const orderData = {
       ...data,
@@ -458,6 +489,7 @@ export default function CreateOrderPage() {
       salesChannel: getMetaById(salesChannels, data.salesChannel),
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
+      branch: getMetaById(branches, data.branch),
       // Hydrate door data with full product info
       doors: doors.map((door: any) => ({
         ...door,
@@ -481,7 +513,7 @@ export default function CreateOrderPage() {
       })),
 
       // Add calculated totals
-      total_amount: totalAmount.toFixed(2),
+      total_amount: total_sum.toFixed(2),
       discount_amount: discountAmount.toFixed(2),
       // discount_percentage:Number(discount_percentage.toFixed(2)),
       remaining_balance: remainingBalance.toFixed(2),
@@ -551,7 +583,9 @@ export default function CreateOrderPage() {
             doors={doors}
             totals={totals}
             isLoading={isLoading}
+            isCalculating={isCalculating}
             onSubmit={onSubmit}
+            onCalculate={handleCalculateOrder}
             discount_percentage={discount_percentage}
             advance_payment={advance_payment}
             discountAmountInput={discountAmountInput}
@@ -1018,9 +1052,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                   <TableHead>{t("forms.casings")}</TableHead>
                   <TableHead>{t("forms.crowns")}</TableHead>
                   <TableHead>{t("forms.accessories")}</TableHead>
-                  <TableHead className="min-w-[120px]">
+                  {/* <TableHead className="min-w-[120px]">
                     {t("forms.total")}
-                  </TableHead>
+                  </TableHead> */}
                   <TableHead className="w-32">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1544,7 +1578,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     </TableCell>
 
                     {/* Total */}
-                    <TableCell>
+                    {/* <TableCell>
                       <span className="font-semibold text-blue-600">
                         {(() => {
                           // Helper function to convert values with comma to number
@@ -1612,7 +1646,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           return total.toFixed(2);
                         })()}
                       </span>
-                    </TableCell>
+                    </TableCell> */}
 
                     {/* Actions */}
                     <TableCell>
@@ -3545,7 +3579,9 @@ function StepThree({
   doors,
   totals,
   isLoading,
+  isCalculating,
   onSubmit,
+  onCalculate,
   discount_percentage,
   advance_payment,
   discountAmountInput,
@@ -3567,28 +3603,14 @@ function StepThree({
 
   const advance = convertToNumber(advance_payment, 0);
 
-  // Calculate detailed subtotals
-  const priceBreakdown = doors.reduce(
-    (acc: any, door: any) => {
-      const qty = parseInt(door.quantity || 1);
-      const doorPrice = convertToNumber(door.price, 0) * qty;
-      acc.doors += doorPrice;
-
-      const sumItems = (items: any[]) =>
-        items?.reduce(
-          (sum, item) =>
-            sum + convertToNumber(item.price, 0) * (item.quantity || 1),
-          0
-        ) || 0;
-
-      acc.extensions += sumItems(door.extensions);
-      acc.casings += sumItems(door.casings);
-      acc.crowns += sumItems(door.crowns);
-      acc.accessories += sumItems(door.accessories);
-      return acc;
-    },
-    { doors: 0, extensions: 0, casings: 0, crowns: 0, accessories: 0 }
-  );
+  // Use API response data for price breakdown
+  const priceBreakdown = {
+    doors: totals.door_price || 0,
+    extensions: totals.extension_price || 0,
+    casings: totals.casing_price || 0,
+    crowns: totals.crown_price || 0,
+    accessories: totals.accessory_price || 0,
+  };
 
   return (
     <div className="w-full">
@@ -3599,6 +3621,8 @@ function StepThree({
               <Calculator className="h-6 w-6 text-purple-600" />
             </div>
             {t("forms.order_review")}
+            {/* Calculate Button */}
+           
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -3657,7 +3681,7 @@ function StepThree({
               <div className="flex justify-between border-t pt-2 mt-2">
                 <span className="font-bold">{t("forms.subtotal")}</span>
                 <span className="font-bold">
-                  {totals.totalAmount.toFixed(2)} сум
+                  {totals.total_sum.toFixed(2)} сум
                 </span>
               </div>
             </div>
@@ -3691,6 +3715,7 @@ function StepThree({
           </div>
         </CardContent>
       </Card>
+      
 
       {/* Pricing Summary & Actions */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
@@ -3702,9 +3727,23 @@ function StepThree({
         <CardContent className="space-y-4">
           {/* Discount and Payment Fields */}
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-semibold text-gray-800">
+            <div className="flex items-center justify-between mb-4">
+  <h4 className="font-semibold text-gray-800">
               {t("forms.discount")} & {t("forms.advance_payment")}
             </h4>
+             <div className="ml-auto">
+              <Button
+                onClick={onCalculate}
+                disabled={isCalculating || doors.length === 0}
+                className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                size="lg"
+              >
+                <Calculator className="h-5 w-5" />
+                {isCalculating ? t("forms.calculating") : t("forms.calculate")}
+              </Button>
+            </div>
+            </div>
+          
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
@@ -3736,8 +3775,8 @@ function StepThree({
                         setDiscountAmountInput(amount);
                         // Update percentage for display purposes
                         const percentage =
-                          totals.totalAmount > 0
-                            ? (amount / totals.totalAmount) * 100
+                          totals.total_sum > 0
+                            ? (amount / totals.total_sum) * 100
                             : 0;
                         orderForm.setValue(
                           "discount_percentage",
@@ -3772,7 +3811,7 @@ function StepThree({
                           }
                           const percentage = parseFloat(value) || 0;
                           const amount =
-                            totals.totalAmount * (percentage / 100);
+                            totals.total_sum * (percentage / 100);
                           setDiscountAmountInput(amount);
                         },
                       })}
@@ -3788,7 +3827,7 @@ function StepThree({
                     {discountAmountInput > 0
                       ? discountAmountInput.toFixed(0)
                       : (
-                          totals.totalAmount *
+                          totals.total_sum *
                           (discount_percentage / 100)
                         ).toFixed(0)}{" "}
                     сум
@@ -3824,6 +3863,7 @@ function StepThree({
                   })}
                 />
               </div>
+              
             </div>
           </div>
 
@@ -3831,7 +3871,7 @@ function StepThree({
             <div className="flex justify-between">
               <span className="text-gray-600">{t("forms.subtotal")}</span>
               <span className="font-semibold">
-                {totals.totalAmount.toFixed(0)} сум
+                {totals.total_sum.toFixed(0)} сум
               </span>
             </div>
             <div className="flex justify-between text-green-600">
