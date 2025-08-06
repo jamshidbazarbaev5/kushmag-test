@@ -7,9 +7,9 @@ import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
 import { useGetUsers, useUpdateUser, useDeleteUser } from '../api/user';
 import type { User } from '../api/user';
-import { useGetSellers, useGetOperators } from '../api/staff';
+import { useGetSellers, useGetOperators, useGetZamershiks } from '../api/staff';
 
-const userFields = (t: any, { sellers, operators }: { sellers?: any[], operators?: any[] }) => [
+const userFields = (t: any, { sellers, operators, zamershiks }: { sellers?: any[], operators?: any[], zamershiks?: any[] }) => [
   {
     name: 'username',
     label: t('forms.username'),
@@ -66,9 +66,15 @@ const userFields = (t: any, { sellers, operators }: { sellers?: any[], operators
           value: JSON.stringify(operator)
         }));
       }
+      if (formData.role === 'ZAMERSHIK' && zamershiks) {
+        return zamershiks.map(zamershik => ({
+          label: zamershik.name,
+          value: JSON.stringify(zamershik)
+        }));
+      }
       return [];
     },
-    show: (formData: any) => ['PRODAVEC', 'OPERATOR'].includes(formData.role),
+    show: (formData: any) => ['PRODAVEC', 'OPERATOR', 'ZAMERSHIK'].includes(formData.role),
   },
   {
     name: 'api_login',
@@ -136,6 +142,8 @@ export default function UsersPage() {
   const { data: sellers } = useGetSellers();
   const { data: operators } = useGetOperators();
   
+  const { data: zamershiks } = useGetZamershiks();
+  
   const { data: usersData, isLoading } = useGetUsers({
     params: {
       search: searchTerm
@@ -159,8 +167,8 @@ export default function UsersPage() {
     const userData = { ...user };
     
     // Set the staff_member field if moy_sklad_staff exists
-    if (userData.moy_sklad_staff && ['PRODAVEC', 'OPERATOR'].includes(userData.role)) {
-      const staffList = userData.role === 'PRODAVEC' ? sellers : operators;
+    if (userData.moy_sklad_staff && ['PRODAVEC', 'OPERATOR','ZAMERSHIK'].includes(userData.role)) {
+      const staffList = userData.role === 'PRODAVEC' ? sellers : userData.role === 'OPERATOR' ? operators : zamershiks;
       const staffMember = staffList?.find(staff => staff.meta.href === userData.moy_sklad_staff?.meta.href);
       if (staffMember) {
         userData.staff_member = JSON.stringify(staffMember);

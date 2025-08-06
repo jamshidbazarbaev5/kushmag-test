@@ -73,6 +73,8 @@ export interface Order {
   discount_percentage: number;
   discount_amount: string;
   total_amount: string;
+  branch?: ModelReference;
+  zamershik?: ModelReference;
   advance_payment: string;
   remaining_balance: string;
   description: string;

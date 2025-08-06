@@ -46,6 +46,7 @@ import { Plus, Trash2, DoorOpen, Package, Calculator, Edit, Save, X } from "luci
 import api from "../api/api";
 import { useGetMeasure } from "../api/measure";
 import React from "react";
+import { useGetZamershiks } from "../api/staff";
 
 
 // Helper function to get the full object for a selected ID
@@ -240,6 +241,7 @@ export default function CreateOrderPage() {
   const {data:branches} = useGetBranches()
   const { data: thresholds } = useGetThresholds();
   const { data: casingRanges } = useGetCasingRanges();
+  const { data: zamershiks } = useGetZamershiks();
   const productsList = useMemo(
     () => (Array.isArray(products) ? products : products?.results || []),
     [products]
@@ -259,7 +261,8 @@ export default function CreateOrderPage() {
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
-    branchOptions:formatReferenceOptions(branches),
+    branchOptions: formatReferenceOptions(branches),
+    zamershikOptions: formatReferenceOptions(zamershiks),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
@@ -357,6 +360,14 @@ export default function CreateOrderPage() {
       type: "searchable-select",
       options: fieldOptions.sellerOptions,
       placeholder: t("placeholders.select_seller"),
+      required: true,
+    },
+     {
+      name: "zamershik",
+      label: t("forms.zamershik"),
+      type: "searchable-select",
+      options: fieldOptions.zamershikOptions,
+      placeholder: t("placeholders.select_zamershik"),
       required: true,
     },
     {
@@ -1009,6 +1020,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, globalDoorSettin
     }
   };
 
+
+
   const handleFieldChange = (field: string, value: any) => {
     // Constants for dimension calculations
 // const casingSize = 6; // Fixed casing size
@@ -1247,7 +1260,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, globalDoorSettin
                   <TableHead>{t("forms.casings")}</TableHead>
                   <TableHead>{t("forms.crowns")}</TableHead>
                   <TableHead>{t("forms.accessories")}</TableHead>
-                  <TableHead className="min-w-[120px]">{t("forms.total")}</TableHead>
+                  {/* <TableHead className="min-w-[120px]">{t("forms.total")}</TableHead> */}
                   <TableHead className="w-32">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1623,40 +1636,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, globalDoorSettin
                       )}
                     </TableCell>
                     
-                    {/* Total */}
-                    <TableCell>
-                      <span className="font-semibold text-blue-600">
-                        {(() => {
-                          // Helper function to convert values with comma to number
-                          const convertToNumber = (value: any, defaultValue: number = 0) => {
-                            if (typeof value === 'number') return value;
-                            if (typeof value === 'string') {
-                              const normalized = value.replace(/,/g, '.').replace(/[^\d.]/g, '');
-                              if (normalized === '' || normalized === '.') return defaultValue;
-                              const parsed = parseFloat(normalized);
-                              return isNaN(parsed) ? defaultValue : parsed;
-                            }
-                            return defaultValue;
-                          };
-
-                          let total = convertToNumber(door.price, 0) * parseInt(door.quantity || 1);
-                          // Add extensions total
-                          const extensionsTotal = (door.extensions || []).reduce((sum: number, item: any) => 
-                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
-                          // Add casings total
-                          const casingsTotal = (door.casings || []).reduce((sum: number, item: any) => 
-                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
-                          // Add crowns total
-                          const crownsTotal = (door.crowns || []).reduce((sum: number, item: any) => 
-                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
-                          // Add accessories total
-                          const accessoriesTotal = (door.accessories || []).reduce((sum: number, item: any) => 
-                            sum + (convertToNumber(item.price, 0) * parseInt(item.quantity || 1)), 0);
-                          total += extensionsTotal + casingsTotal + crownsTotal + accessoriesTotal;
-                          return total.toFixed(2);
-                        })()}
-                      </span>
-                    </TableCell>
+                    
                     
                     {/* Actions */}
                     <TableCell>
@@ -2753,24 +2733,7 @@ function StepThree({
                     <Calculator className="h-5 w-5 text-blue-600" />
                     {t("forms.price_breakdown")}
                   </h4>
-                  <Button
-                    onClick={onCalculate}
-                    disabled={doors.length === 0 || isCalculating}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-md"
-                    size="sm"
-                  >
-                    {isCalculating ? (
-                      <>
-                        <Calculator className="h-4 w-4 mr-2 animate-spin" />
-                        {t("forms.calculating")}
-                      </>
-                    ) : (
-                      <>
-                        <Calculator className="h-4 w-4 mr-2" />
-                        {t("forms.calculate")}
-                      </>
-                    )}
-                  </Button>
+                  
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
@@ -2824,7 +2787,28 @@ function StepThree({
         <div className="space-y-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
             <CardHeader>
-              <CardTitle className="text-xl">{t("forms.pricing_summary")}</CardTitle>
+              <div className='flex justify-between mb-4'>
+<CardTitle className="text-xl">{t("forms.pricing_summary")}</CardTitle>
+              <Button
+                    onClick={onCalculate}
+                    disabled={doors.length === 0 || isCalculating}
+                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-md"
+                    size="sm"
+                  >
+                    {isCalculating ? (
+                      <>
+                        <Calculator className="h-4 w-4 mr-2 animate-spin" />
+                        {t("forms.calculating")}
+                      </>
+                    ) : (
+                      <>
+                        <Calculator className="h-4 w-4 mr-2" />
+                        {t("forms.calculate")}
+                      </>
+                    )}
+                  </Button>
+              </div>
+              
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Discount and Payment Inputs */}

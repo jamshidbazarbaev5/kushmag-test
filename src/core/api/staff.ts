@@ -31,3 +31,13 @@ export const useGetOperators = () => {
     },
   });
 };
+
+export const useGetZamershiks = () => {
+  return useQuery({
+    queryKey: ['zamershiks'],
+    queryFn: async () => {
+      const { data } = await api.get<StaffMember[]>('/zamershiks');
+      return data;
+    },
+  });
+};

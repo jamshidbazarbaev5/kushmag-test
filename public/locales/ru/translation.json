@@ -11,7 +11,7 @@
     "yes": "Да",
     "add":"Добавить",
     "or": "или",
-
+    "send_to_moy_sklad":"Отправить в Мой Склад",
     "back_to_doors": "Вернуться к дверям",
     "no": "Нет",
     "logout": "Выйти",
@@ -104,6 +104,9 @@
   "forms": {
     "extension":"Добор",
     "order_status": "Статус заказа",
+    "branch": "Филиал",
+    "moy_sklad_id": "Мой склад ID",
+    "admin":"Администратор",
     "item_total": "Всего",
     "apply_to_all_doors": "Применить ко всем дверям",
     "apply_to_all": "Применить ко всем",
@@ -403,6 +406,7 @@
     "search_doors": "Поиск двери",
     "select_crown_model": "Выберите модель короны",
     "select_casing_model": "Поиск модели наличника",
+    "select_branch": "Выберите филиал", 
 
     "select_accessory_model": "Выберите модель аксессуара",
     "select_accessory_type": "Выберите тип аксессуара",

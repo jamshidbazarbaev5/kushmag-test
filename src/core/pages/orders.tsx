@@ -21,7 +21,8 @@ import {
   useGetOperators 
 } from "../api/references";
 import { useGetUsers } from "../api/user";
-import { Pencil, Trash, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash, Filter, X, ChevronLeft, ChevronRight, SendHorizontal } from "lucide-react";
+import api from "../api/api";
 
 // import { format } from 'date-fns';
 
@@ -267,6 +268,18 @@ export default function OrdersPage() {
         toast.error(t("messages.error_updating_order"));
       },
     });
+  };
+
+
+  const handleSendToMoySklad = (order: Order) => {
+    if (!order.id) return;
+
+    api.post(`orders/${order.id}/moy_sklad/`, {}).then(() => {
+      toast.success(t("messages.order_sent_to_moy_sklad"));
+    }).catch(() => {
+      toast.error(t("messages.error_sending_order_to_moy_sklad"));
+    });
+  
   };
 
   // ...expanded row logic removed...
@@ -535,6 +548,8 @@ export default function OrdersPage() {
             <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">№</th>
                             <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.order_status")}</th>
+                                          <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.moy_sklad_id")}</th>
+
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.created_at")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.deadline")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.counterparty")}</th>
@@ -555,6 +570,8 @@ export default function OrdersPage() {
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.store")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.description")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.seller")}</th>
+                            <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.zamershik")}</th>
+                                          <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.admin")}</th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.operator")}</th>
               <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("common.actions")}</th>
             </tr>
@@ -568,6 +585,11 @@ export default function OrdersPage() {
                   <td className="px-3 py-2 text-xs text-gray-600">
                   <div className="truncate" title={formatDate(order.status)}>
                     {order.order_status ? t(`order_status.${order.order_status}`) : '-'}  
+                  </div>
+                </td>
+                 <td className="px-3 py-2 text-xs text-gray-600">
+                  <div className="truncate" title={order.name}>
+                    {order.name || '-'}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-xs text-gray-600">
@@ -617,9 +639,20 @@ export default function OrdersPage() {
                     {order?.description || '-'}
                   </div>
                 </td>
-                <td className="px-3 py-2 text-sm">
+               
+                 <td className="px-3 py-2 text-sm">
                   <div className="truncate text-gray-700" title={order.seller?.name}>
                     {order.seller?.name || '-'}
+                  </div>
+                </td>
+                 <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.seller?.name}>
+                    {order.admin?.name || '-'}
+                  </div>
+                </td>
+                 <td className="px-3 py-2 text-sm">
+                  <div className="truncate text-gray-700" title={order.seller?.name}>
+                    {order.zamershik?.name || '-'}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-sm">
@@ -646,6 +679,15 @@ export default function OrdersPage() {
                       title={t("common.delete")}
                     >
                       <Trash/>
+                    </Button>
+                        <Button
+                      size="sm"
+                      variant='link'
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleSendToMoySklad(order)}
+                      title={t("common.send_to_moy_sklad")}
+                    >
+                      <SendHorizontal/>
                     </Button>
                   </div>
                 </td>

@@ -67,6 +67,7 @@ import {
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave, useOrderDraftRecovery } from "../hooks/useAutoSave";
+import { useGetZamershiks } from "../api/staff";
 
 // Helper function to get the full object for a selected ID
 const getMetaById = (list: any, id: any) => {
@@ -204,6 +205,7 @@ export default function CreateOrderPage() {
   const { data: glassTypes } = useGetGlassTypes();
   const { data: products } = useGetProducts();
   const { data: thresholds } = useGetThresholds();
+    const { data: zamershiks } = useGetZamershiks();
   const { data: casingRanges } = useGetCasingRanges();
   const productsList = useMemo(
     () => (Array.isArray(products) ? products : products?.results || []),
@@ -225,6 +227,7 @@ export default function CreateOrderPage() {
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
+    zamershikOptions: formatReferenceOptions(zamershiks),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
@@ -322,6 +325,14 @@ export default function CreateOrderPage() {
       type: "searchable-select",
       options: fieldOptions.sellerOptions,
       placeholder: t("placeholders.select_seller"),
+      required: true,
+    },
+     {
+      name: "zamershik",
+      label: t("forms.zamershik"),
+      type: "searchable-select",
+      options: fieldOptions.zamershikOptions,
+      placeholder: t("placeholders.select_zamershik"),
       required: true,
     },
     {

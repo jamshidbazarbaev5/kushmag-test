@@ -4,9 +4,9 @@ import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
 import { useCreateUser } from '../api/user';
 import type { User } from '../api/user';
-import { useGetSellers, useGetOperators } from '../api/staff';
+import { useGetSellers, useGetOperators, useGetZamershiks } from '../api/staff';
 
-const userFields = (t: any, { sellers, operators }: { sellers?: any[], operators?: any[] }) => [
+const userFields = (t: any, { sellers, operators, zamershiks }: { sellers?: any[], operators?: any[], zamershiks?: any[] }) => [
   {
     name: 'username',
     label: t('forms.username'),
@@ -77,9 +77,18 @@ const userFields = (t: any, { sellers, operators }: { sellers?: any[], operators
         console.log('Mapped operators:', mappedOperators);
         return mappedOperators;
       }
+       if (formData.role === 'ZAMERSHIK' && zamershiks) {
+        console.log('Zamershiks available:', zamershiks.length);
+        const mappedZamershiks = zamershiks.map(zamershik => ({
+          label: zamershik.name,
+          value: JSON.stringify(zamershik)
+        }));
+        console.log('Mapped zamershiks:', mappedZamershiks);
+        return mappedZamershiks;
+      }
       return [];
     },
-    show: (formData: any) => ['PRODAVEC', 'OPERATOR'].includes(formData.role),
+    show: (formData: any) => ['PRODAVEC', 'OPERATOR', 'ZAMERSHIK'].includes(formData.role),
   },
   {
     name: 'api_login',
@@ -113,6 +122,8 @@ export default function CreateUserPage() {
   const { mutate: createUser, isPending: isCreating } = useCreateUser();
   const { data: sellers,   } = useGetSellers();
   const { data: operators } = useGetOperators();
+   const { data: zamershiks } = useGetZamershiks();
+
   
 //   console.log('Operators:', operators); // Debug log
 
@@ -148,7 +159,7 @@ export default function CreateUserPage() {
       
       <div className="max-w-2xl">
         <ResourceForm
-          fields={userFields(t, { sellers, operators })}
+          fields={userFields(t, { sellers, operators ,zamershiks})}
           onSubmit={handleSubmit}
           isSubmitting={isCreating}
         />
