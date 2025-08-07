@@ -64,8 +64,6 @@ import {
   Edit,
   Save,
   X,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave, useOrderDraftRecovery } from "../hooks/useAutoSave";
@@ -703,20 +701,41 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
   const [casingSearch, setCasingSearch] = useState<string>("");
   const [crownSearch, setCrownSearch] = useState<string>("");
   
+  // Search states for accessories
+  const [cubeSearch, setCubeSearch] = useState<string>("");
+  const [legSearch, setLegSearch] = useState<string>("");
+  const [glassSearch, setGlassSearch] = useState<string>("");
+  const [lockSearch, setLockSearch] = useState<string>("");
+  const [topsaSearch, setTopsaSearch] = useState<string>("");
+  const [beadingSearch, setBeadingSearch] = useState<string>("");
+  
   // Selected products and price types for each section
   const [selectedDoorProduct, setSelectedDoorProduct] = useState<any>(null);
   const [selectedExtensionProduct, setSelectedExtensionProduct] = useState<any>(null);
   const [selectedCasingProduct, setSelectedCasingProduct] = useState<any>(null);
   const [selectedCrownProduct, setSelectedCrownProduct] = useState<any>(null);
   
+  // Selected products for accessories
+  const [selectedCubeProduct, setSelectedCubeProduct] = useState<any>(null);
+  const [selectedLegProduct, setSelectedLegProduct] = useState<any>(null);
+  const [selectedGlassProduct, setSelectedGlassProduct] = useState<any>(null);
+  const [selectedLockProduct, setSelectedLockProduct] = useState<any>(null);
+  const [selectedTopsaProduct, setSelectedTopsaProduct] = useState<any>(null);
+  const [selectedBeadingProduct, setSelectedBeadingProduct] = useState<any>(null);
+  
   // Price types for each section
   const [doorPriceType, setDoorPriceType] = useState<string>("");
   const [extensionPriceType, setExtensionPriceType] = useState<string>("");
   const [casingPriceType, setCasingPriceType] = useState<string>("");
   const [crownPriceType, setCrownPriceType] = useState<string>("");
-
-  // State for accessories expansion (per door)
-  const [accessoriesExpanded, setAccessoriesExpanded] = useState<{[key: number]: boolean}>({});
+  
+  // Price types for accessories
+  const [cubePriceType, setCubePriceType] = useState<string>("");
+  const [legPriceType, setLegPriceType] = useState<string>("");
+  const [glassPriceType, setGlassPriceType] = useState<string>("");
+  const [lockPriceType, setLockPriceType] = useState<string>("");
+  const [topsaPriceType, setTopsaPriceType] = useState<string>("");
+  const [beadingPriceType, setBeadingPriceType] = useState<string>("");
 
   const handleAddNewRow = () => {
     // Check if user has selected required products first
@@ -796,67 +815,61 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
       }
     ];
 
-    // Create 6 predefined accessories with individual model selection capability
+    // Create 6 predefined accessories with selected products
     const defaultAccessories = [
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedCubeProduct ? selectedCubeProduct.id : "",
+        price_type: cubePriceType || "",
+        price: selectedCubeProduct && cubePriceType ? 
+          (selectedCubeProduct.salePrices?.find((p: any) => p.priceType.id === cubePriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "cube",
-        name: "Кубик",
-        searchValue: "",
-        selectedProduct: null
+        name: "Кубик"
       },
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedLegProduct ? selectedLegProduct.id : "",
+        price_type: legPriceType || "",
+        price: selectedLegProduct && legPriceType ? 
+          (selectedLegProduct.salePrices?.find((p: any) => p.priceType.id === legPriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "leg",
-        name: "Ножка",
-        searchValue: "",
-        selectedProduct: null
+        name: "Ножка"
       },
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedGlassProduct ? selectedGlassProduct.id : "",
+        price_type: glassPriceType || "",
+        price: selectedGlassProduct && glassPriceType ? 
+          (selectedGlassProduct.salePrices?.find((p: any) => p.priceType.id === glassPriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "glass",
-        name: "Стекло",
-        searchValue: "",
-        selectedProduct: null
+        name: "Стекло"
       },
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedLockProduct ? selectedLockProduct.id : "",
+        price_type: lockPriceType || "",
+        price: selectedLockProduct && lockPriceType ? 
+          (selectedLockProduct.salePrices?.find((p: any) => p.priceType.id === lockPriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "lock",
-        name: "Замок",
-        searchValue: "",
-        selectedProduct: null
+        name: "Замок"
       },
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedTopsaProduct ? selectedTopsaProduct.id : "",
+        price_type: topsaPriceType || "",
+        price: selectedTopsaProduct && topsaPriceType ? 
+          (selectedTopsaProduct.salePrices?.find((p: any) => p.priceType.id === topsaPriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "topsa",
-        name: "Топса",
-        searchValue: "",
-        selectedProduct: null
+        name: "Топса"
       },
       {
-        model: "",
-        price_type: "",
-        price: 0,
+        model: selectedBeadingProduct ? selectedBeadingProduct.id : "",
+        price_type: beadingPriceType || "",
+        price: selectedBeadingProduct && beadingPriceType ? 
+          (selectedBeadingProduct.salePrices?.find((p: any) => p.priceType.id === beadingPriceType)?.value || 0) / 100 : 0,
         quantity: 0,
         accessory_type: "beading",
-        name: "Шпингалет",
-        searchValue: "",
-        selectedProduct: null
+        name: "Шпингалет"
       }
     ];
     
@@ -1350,6 +1363,26 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                   setCrownPriceType("");
                   setCrownSearch("");
                   
+                  // Reset accessories
+                  setSelectedCubeProduct(null);
+                  setCubePriceType("");
+                  setCubeSearch("");
+                  setSelectedLegProduct(null);
+                  setLegPriceType("");
+                  setLegSearch("");
+                  setSelectedGlassProduct(null);
+                  setGlassPriceType("");
+                  setGlassSearch("");
+                  setSelectedLockProduct(null);
+                  setLockPriceType("");
+                  setLockSearch("");
+                  setSelectedTopsaProduct(null);
+                  setTopsaPriceType("");
+                  setTopsaSearch("");
+                  setSelectedBeadingProduct(null);
+                  setBeadingPriceType("");
+                  setBeadingSearch("");
+                  
                   toast.info("Ready to select a new door model. Your existing doors are preserved.");
                 }}
                 variant="outline"
@@ -1432,9 +1465,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[210px]">
+                  <TableHead className="min-w-[400px]">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-10">
+                      <div className="flex items-center gap-1">
                         <span>{t("forms.casings")}</span>
                         {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
@@ -1492,11 +1525,170 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                   </TableHead>
                   <TableHead className="min-w-[200px]">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span>{t("forms.accessories")}</span>
-                        {/* <span className="text-xs text-gray-500">(Individual model selection)</span> */}
+                      <div className="flex items-center gap-1">
+                        <span>Кубик</span>
                       </div>
-                     
+                      <HeaderSearch
+                        value={cubeSearch}
+                        onChange={setCubeSearch}
+                        placeholder="Search cubes..."
+                        onProductSelect={setSelectedCubeProduct}
+                      />
+                      <Select
+                        value={cubePriceType}
+                        onValueChange={setCubePriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedCubeProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <span>Ножка</span>
+                      </div>
+                      <HeaderSearch
+                        value={legSearch}
+                        onChange={setLegSearch}
+                        placeholder="Search legs..."
+                        onProductSelect={setSelectedLegProduct}
+                      />
+                      <Select
+                        value={legPriceType}
+                        onValueChange={setLegPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedLegProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <span>Стекло</span>
+                      </div>
+                      <HeaderSearch
+                        value={glassSearch}
+                        onChange={setGlassSearch}
+                        placeholder="Search glass..."
+                        onProductSelect={setSelectedGlassProduct}
+                      />
+                      <Select
+                        value={glassPriceType}
+                        onValueChange={setGlassPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedGlassProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <span>Замок</span>
+                      </div>
+                      <HeaderSearch
+                        value={lockSearch}
+                        onChange={setLockSearch}
+                        placeholder="Search locks..."
+                        onProductSelect={setSelectedLockProduct}
+                      />
+                      <Select
+                        value={lockPriceType}
+                        onValueChange={setLockPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedLockProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <span>Топса</span>
+                      </div>
+                      <HeaderSearch
+                        value={topsaSearch}
+                        onChange={setTopsaSearch}
+                        placeholder="Search topsa..."
+                        onProductSelect={setSelectedTopsaProduct}
+                      />
+                      <Select
+                        value={topsaPriceType}
+                        onValueChange={setTopsaPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedTopsaProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                  <TableHead className="min-w-[200px]">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1">
+                        <span>Шпингалет</span>
+                      </div>
+                      <HeaderSearch
+                        value={beadingSearch}
+                        onChange={setBeadingSearch}
+                        placeholder="Search beading..."
+                        onProductSelect={setSelectedBeadingProduct}
+                      />
+                      <Select
+                        value={beadingPriceType}
+                        onValueChange={setBeadingPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Price Type" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedBeadingProduct?.salePrices?.map((price: any) => (
+                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="w-32">{t("common.actions")}</TableHead>
@@ -1890,150 +2082,136 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                       </div>
                     </TableCell>
 
-                    {/* Accessories - Inline Sub-table */}
-                    <TableCell className="align-top p-2">
-                      <div className="space-y-2 min-w-[400px]">
-                        {editingIndex === index ? (
-                          <>
-                            <div className="bg-blue-100 p-2 rounded text-center flex items-center justify-between">
-                              <span className="text-sm font-medium text-gray-700">AKSESSUARLAR</span>
-                              {editingDoor?.accessories?.length > 3 && (
-                                <Button
-                                  onClick={() => {
-                                    setAccessoriesExpanded(prev => ({
-                                      ...prev,
-                                      [index]: !prev[index]
-                                    }));
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0"
-                                >
-                                  {accessoriesExpanded[index] ? (
-                                    <ChevronUp className="h-4 w-4" />
-                                  ) : (
-                                    <ChevronDown className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              )}
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-2">
-                              {editingDoor?.accessories
-                                ?.slice(0, accessoriesExpanded[index] ? editingDoor.accessories.length : 3)
-                                .map((accessory: any, accIndex: number) => (
-                                <div key={accIndex} className="bg-orange-50 p-3 rounded border text-center">
-                                  {/* Accessory Name Header */}
-                                  <div className="mb-3 pb-2 border-b border-orange-200">
-                                    <span className="text-xs font-medium text-gray-700 uppercase">
-                                      {accessory.name || accessory.accessory_type}
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="space-y-3">
-                                    {/* Model Selection */}
-                                    <div>
-                                      <HeaderSearch
-                                        value={accessory.searchValue || ""}
-                                        onChange={(value) => {
-                                          const updatedAccessories = [...editingDoor.accessories];
-                                          updatedAccessories[accIndex] = { 
-                                            ...updatedAccessories[accIndex], 
-                                            searchValue: value 
-                                          };
-                                          handleFieldChange("accessories", updatedAccessories);
-                                        }}
-                                        placeholder="Модель"
-                                        onProductSelect={(product) => {
-                                          const updatedAccessories = [...editingDoor.accessories];
-                                          updatedAccessories[accIndex] = { 
-                                            ...updatedAccessories[accIndex], 
-                                            model: product?.id || "",
-                                            selectedProduct: product,
-                                            price_type: "", // Reset price type when model changes
-                                            price: 0
-                                          };
-                                          handleFieldChange("accessories", updatedAccessories);
-                                        }}
-                                      />
-                                    </div>
-                                    
-                                    {/* Price Type Selection */}
-                                    <div>
-                                      <Select
-                                        value={accessory.price_type || ""}
-                                        onValueChange={(value) => {
-                                          const updatedAccessories = [...editingDoor.accessories];
-                                          const selectedPrice = accessory.selectedProduct?.salePrices?.find((p: any) => p.priceType.id === value);
-                                          updatedAccessories[accIndex] = { 
-                                            ...updatedAccessories[accIndex], 
-                                            price_type: value,
-                                            price: selectedPrice ? (selectedPrice.value / 100) : 0
-                                          };
-                                          handleFieldChange("accessories", updatedAccessories);
-                                        }}
-                                        disabled={!accessory.selectedProduct}
-                                      >
-                                        <SelectTrigger className="h-10 text-sm">
-                                          <SelectValue placeholder="Price Type" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
-                                          {accessory.selectedProduct?.salePrices?.map((price: any) => (
-                                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
-                                              {price.priceType.name}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    
-                                    {/* Quantity */}
-                                    <div>
-                                      <Input
-                                        type="number"
-                                        value={accessory.quantity || ""}
-                                        onChange={(e) => {
-                                          const updatedAccessories = [...editingDoor.accessories];
-                                          updatedAccessories[accIndex] = { 
-                                            ...updatedAccessories[accIndex], 
-                                            quantity: parseInt(e.target.value) || 0 
-                                          };
-                                          handleFieldChange("accessories", updatedAccessories);
-                                        }}
-                                        className="h-10 text-center"
-                                        placeholder="0"
-                                        min="0"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {editingDoor?.accessories?.length > 3 && !accessoriesExpanded[index] && (
-                              <div className="text-center text-xs text-gray-500 mt-2">
-                                +{editingDoor.accessories.length - 3} more accessories (click arrow to expand)
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="text-xs text-gray-600">
-                            <div className="space-y-1">
-                              {door.accessories?.filter((acc: any) => parseInt(acc.quantity) > 0).map((accessory: any, i: number) => (
-                                <div key={i} className="text-xs bg-orange-50 p-1 rounded">
-                                  {accessory.name || accessory.accessory_type}: {accessory.quantity}x 
-                                  {accessory.selectedProduct?.name && (
-                                    <span className="text-gray-500"> - {accessory.selectedProduct.name}</span>
-                                  )}
-                                </div>
-                              ))}
-                              {door.accessories?.filter((acc: any) => parseInt(acc.quantity) > 0).length === 0 && (
-                                <div className="text-gray-500">No accessories selected</div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    {/* Кубик */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[0]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[0]) {
+                              updatedAccessories[0] = { ...updatedAccessories[0], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[0]?.quantity || 0}</span>
+                      )}
+                    </TableCell>
+
+                    {/* Ножка */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[1]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[1]) {
+                              updatedAccessories[1] = { ...updatedAccessories[1], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[1]?.quantity || 0}</span>
+                      )}
+                    </TableCell>
+
+                    {/* Стекло */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[2]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[2]) {
+                              updatedAccessories[2] = { ...updatedAccessories[2], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[2]?.quantity || 0}</span>
+                      )}
+                    </TableCell>
+
+                    {/* Замок */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[3]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[3]) {
+                              updatedAccessories[3] = { ...updatedAccessories[3], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[3]?.quantity || 0}</span>
+                      )}
+                    </TableCell>
+
+                    {/* Топса */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[4]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[4]) {
+                              updatedAccessories[4] = { ...updatedAccessories[4], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[4]?.quantity || 0}</span>
+                      )}
+                    </TableCell>
+
+                    {/* Шпингалет */}
+                    <TableCell className="align-top">
+                      {editingIndex === index ? (
+                        <Input
+                          type="number"
+                          value={editingDoor?.accessories?.[5]?.quantity || ""}
+                          onChange={(e) => {
+                            const updatedAccessories = [...(editingDoor.accessories || [])];
+                            if (updatedAccessories[5]) {
+                              updatedAccessories[5] = { ...updatedAccessories[5], quantity: parseInt(e.target.value) || 0 };
+                              handleFieldChange("accessories", updatedAccessories);
+                            }
+                          }}
+                          className="w-16"
+                          placeholder="0"
+                          min="0"
+                        />
+                      ) : (
+                        <span className="text-xs">{door.accessories?.[5]?.quantity || 0}</span>
+                      )}
                     </TableCell>
 
                     {/* Actions */}
@@ -2087,7 +2265,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                 {doors.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={11}
+                      colSpan={17}
                       className="text-center py-8 text-gray-500"
                     >
                       <div className="flex flex-col items-center gap-2">
