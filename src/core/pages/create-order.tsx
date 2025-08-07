@@ -64,6 +64,8 @@ import {
   Edit,
   Save,
   X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave, useOrderDraftRecovery } from "../hooks/useAutoSave";
@@ -558,7 +560,7 @@ export default function CreateOrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div>
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -712,6 +714,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
   const [extensionPriceType, setExtensionPriceType] = useState<string>("");
   const [casingPriceType, setCasingPriceType] = useState<string>("");
   const [crownPriceType, setCrownPriceType] = useState<string>("");
+
+  // State for accessories expansion (per door)
+  const [accessoriesExpanded, setAccessoriesExpanded] = useState<{[key: number]: boolean}>({});
 
   const handleAddNewRow = () => {
     // Check if user has selected required products first
@@ -970,7 +975,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
           width: convertToNumber(ext.width, 0),
         })) || [],
         // Update casings with header selection
-        casings: editingDoor.casings?.map((casing: any) => ({
+        casings: editingDoor.casings?.map((casing: any, casIndex: number) => ({
           ...casing,
           model: selectedCasingProduct?.id || casing.model,
           price_type: casingPriceType || casing.price_type,
@@ -979,6 +984,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
             convertToNumber(casing.price, 0),
           height: convertToNumber(casing.height, 0),
           width: convertToNumber(casing.width, 0),
+          // Ensure casing types are properly set: first one is "боковой", second one is "прямой"
+          casing_type: casIndex === 0 ? "боковой" : "прямой",
         })) || [],
         // Update crowns with header selection
         crowns: editingDoor.crowns?.map((crown: any) => ({
@@ -1396,11 +1403,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                   <TableHead className="w-20">{t("forms.width")}</TableHead>
                   <TableHead className="w-28">{t("forms.glass_type")}</TableHead>
                   <TableHead className="w-28">{t("forms.threshold")}</TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[200px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span>{t("forms.extensions")}</span>
-                        <span className="text-xs text-gray-500">(Search & select first)</span>
+                        {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
                       <HeaderSearch
                         value={extensionSearch}
@@ -1425,11 +1432,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[210px]">
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-10">
                         <span>{t("forms.casings")}</span>
-                        <span className="text-xs text-gray-500">(Search & select first)</span>
+                        {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
                       <HeaderSearch
                         value={casingSearch}
@@ -1454,11 +1461,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[200px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span>{t("forms.crowns")}</span>
-                        <span className="text-xs text-gray-500">(Search & select first)</span>
+                        {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
                       <HeaderSearch
                         value={crownSearch}
@@ -1483,15 +1490,13 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[200px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span>{t("forms.accessories")}</span>
-                        <span className="text-xs text-gray-500">(Individual model selection)</span>
+                        {/* <span className="text-xs text-gray-500">(Individual model selection)</span> */}
                       </div>
-                      <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-                        Each accessory type can have its own model and price type selected individually within the editing area
-                      </div>
+                     
                     </div>
                   </TableHead>
                   <TableHead className="w-32">{t("common.actions")}</TableHead>
@@ -1606,7 +1611,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           <>
                             {editingDoor?.extensions?.map((extension: any, extIndex: number) => (
                               <div key={extIndex} className="bg-blue-50 p-2 rounded border space-y-1">
-                                <div className="text-xs font-medium text-blue-700 mb-1">Extension {extIndex + 1}</div>
+                                {/* <div className="text-xs font-medium text-blue-700 mb-1">Extension {extIndex + 1}</div> */}
                                 <div className="grid grid-cols-3 gap-1">
                                   {/* <div>
                                     <label className="text-xs text-gray-600">Model</label>
@@ -1657,22 +1662,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     />
                                   </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-1">
+                                {/* <div className="flex justify-between items-center mt-1">
                                   <span className="text-xs font-medium text-blue-600">
                                     Total: {(parseFloat(extension.price || 0) * parseInt(extension.quantity || 1)).toFixed(2)}
                                   </span>
-                                  <Button
-                                    onClick={() => {
-                                      const updatedExtensions = editingDoor.extensions.filter((_: any, i: number) => i !== extIndex);
-                                      handleFieldChange("extensions", updatedExtensions);
-                                    }}
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                                </div> */}
                               </div>
                             ))}
                           </>
@@ -1700,7 +1694,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           <>
                             {editingDoor?.casings?.map((casing: any, casIndex: number) => (
                               <div key={casIndex} className="bg-green-50 p-2 rounded border space-y-1">
-                                <div className="text-xs font-medium text-green-700 mb-1">Casing {casIndex + 1}</div>
                                 <div className="grid grid-cols-4 gap-1">
                                   <div>
                                     <label className="text-xs text-gray-600">Qty</label>
@@ -1715,27 +1708,12 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       className="h-8"
                                     />
                                   </div>
-                                  <div>
+                                  {/* <div>
                                     <label className="text-xs text-gray-600">Type</label>
-                                    <Select
-                                      value={casing.casing_type || ""}
-                                      onValueChange={(value) => {
-                                        const updatedCasings = [...editingDoor.casings];
-                                        const updatedCasing = { ...updatedCasings[casIndex], casing_type: value };
-                                        const recalculatedCasing = calculateCasingDimensions(updatedCasing, editingDoor, fieldOptions, casingSize);
-                                        updatedCasings[casIndex] = recalculatedCasing;
-                                        handleFieldChange("casings", updatedCasings);
-                                      }}
-                                    >
-                                      <SelectTrigger className="h-8">
-                                        <SelectValue placeholder="Type" />
-                                      </SelectTrigger>
-                                      <SelectContent className="z-[9999]">
-                                        <SelectItem value="боковой">боковой</SelectItem>
-                                        <SelectItem value="прямой">прямой</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
+                                    <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
+                                      {casIndex === 0 ? "боковой" : "прямой"}
+                                    </div>
+                                  </div> */}
                                   <div>
                                     <label className="text-xs text-gray-600">Height</label>
                                     <Input
@@ -1772,8 +1750,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         <SelectValue placeholder="Formula" />
                                       </SelectTrigger>
                                       <SelectContent className="z-[9999]">
-                                        <SelectItem value="formula1">Formula 1</SelectItem>
-                                        <SelectItem value="formula2">Formula 2</SelectItem>
+                                        <SelectItem value="formula1"> 1</SelectItem>
+                                        <SelectItem value="formula2"> 2</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
@@ -1804,22 +1782,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     </Select>
                                   </div>
                                 )}
-                                <div className="flex justify-between items-center mt-1">
+                                {/* <div className="flex justify-between items-center mt-1">
                                   <span className="text-xs font-medium text-green-600">
                                     Total: {(parseFloat(casing.price || 0) * parseInt(casing.quantity || 1)).toFixed(2)}
                                   </span>
-                                  <Button
-                                    onClick={() => {
-                                      const updatedCasings = editingDoor.casings.filter((_: any, i: number) => i !== casIndex);
-                                      handleFieldChange("casings", updatedCasings);
-                                    }}
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                                </div> */}
                               </div>
                             ))}
                           </>
@@ -1898,22 +1865,11 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     />
                                   </div>
                                 </div>
-                                <div className="flex justify-between items-center mt-1">
+                                {/* <div className="flex justify-between items-center mt-1">
                                   <span className="text-xs font-medium text-purple-600">
                                     Total: {(parseFloat(crown.price || 0) * parseInt(crown.quantity || 1)).toFixed(2)}
                                   </span>
-                                  <Button
-                                    onClick={() => {
-                                      const updatedCrowns = editingDoor.crowns.filter((_: any, i: number) => i !== crownIndex);
-                                      handleFieldChange("crowns", updatedCrowns);
-                                    }}
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                                </div> */}
                               </div>
                             ))}
                           </>
@@ -1936,15 +1892,36 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
 
                     {/* Accessories - Inline Sub-table */}
                     <TableCell className="align-top p-2">
-                      <div className="space-y-2 min-w-[500px]">
+                      <div className="space-y-2 min-w-[400px]">
                         {editingIndex === index ? (
                           <>
-                            <div className="bg-blue-100 p-2 rounded text-center">
+                            <div className="bg-blue-100 p-2 rounded text-center flex items-center justify-between">
                               <span className="text-sm font-medium text-gray-700">AKSESSUARLAR</span>
+                              {editingDoor?.accessories?.length > 3 && (
+                                <Button
+                                  onClick={() => {
+                                    setAccessoriesExpanded(prev => ({
+                                      ...prev,
+                                      [index]: !prev[index]
+                                    }));
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                >
+                                  {accessoriesExpanded[index] ? (
+                                    <ChevronUp className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
                             </div>
                             
                             <div className="grid grid-cols-3 gap-2">
-                              {editingDoor?.accessories?.map((accessory: any, accIndex: number) => (
+                              {editingDoor?.accessories
+                                ?.slice(0, accessoriesExpanded[index] ? editingDoor.accessories.length : 3)
+                                .map((accessory: any, accIndex: number) => (
                                 <div key={accIndex} className="bg-orange-50 p-3 rounded border text-center">
                                   {/* Accessory Name Header */}
                                   <div className="mb-3 pb-2 border-b border-orange-200">
@@ -1966,7 +1943,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                           };
                                           handleFieldChange("accessories", updatedAccessories);
                                         }}
-                                        placeholder="dona"
+                                        placeholder="Модель"
                                         onProductSelect={(product) => {
                                           const updatedAccessories = [...editingDoor.accessories];
                                           updatedAccessories[accIndex] = { 
@@ -2032,6 +2009,12 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                 </div>
                               ))}
                             </div>
+                            
+                            {editingDoor?.accessories?.length > 3 && !accessoriesExpanded[index] && (
+                              <div className="text-center text-xs text-gray-500 mt-2">
+                                +{editingDoor.accessories.length - 3} more accessories (click arrow to expand)
+                              </div>
+                            )}
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
