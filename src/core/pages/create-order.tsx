@@ -1703,7 +1703,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Quantity */}
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {editingIndex === index ? (
                         <Input
                           type="number"
@@ -1717,7 +1717,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     </TableCell>
 
                     {/* Height */}
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -1732,7 +1732,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     </TableCell>
 
                     {/* Width */}
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -1747,7 +1747,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     </TableCell>
 
                     {/* Glass Type */}
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.glass_type || ""}
@@ -1772,7 +1772,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     </TableCell>
 
                     {/* Threshold */}
-                    <TableCell className="align-top">
+                    <TableCell className="align-middle">
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.threshold || ""}
@@ -1803,17 +1803,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           <>
                             {editingDoor?.extensions?.map((extension: any, extIndex: number) => (
                               <div key={extIndex} className="bg-blue-50 p-2 rounded border space-y-1">
-                                {/* <div className="text-xs font-medium text-blue-700 mb-1">Extension {extIndex + 1}</div> */}
                                 <div className="grid grid-cols-3 gap-1">
-                                  {/* <div>
-                                    <label className="text-xs text-gray-600">Model</label>
-                                    <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
-                                      {selectedExtensionProduct?.name || "No model selected"}
-                                    </div>
-                                  </div> */}
-
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Qty</label> */}
+                                    {extIndex === 0 && <label className="text-xs text-gray-600">Qty</label>}
                                     <Input
                                       type="number"
                                       value={extension.quantity || ""}
@@ -1825,10 +1817,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       className="h-8"
                                       placeholder="Кol-во"
                                     />
-                                    
                                   </div>
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Height</label> */}
+                                    {extIndex === 0 && <label className="text-xs text-gray-600">Height</label>}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1841,10 +1832,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       className="h-8"
                                       placeholder="Высота"
                                     />
-                                    
                                   </div>
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Width</label> */}
+                                    {extIndex === 0 && <label className="text-xs text-gray-600">Width</label>}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1859,11 +1849,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     />
                                   </div>
                                 </div>
-                                {/* <div className="flex justify-between items-center mt-1">
-                                  <span className="text-xs font-medium text-blue-600">
-                                    Total: {(parseFloat(extension.price || 0) * parseInt(extension.quantity || 1)).toFixed(2)}
-                                  </span>
-                                </div> */}
                               </div>
                             ))}
                           </>
@@ -1893,7 +1878,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                               <div key={casIndex} className="bg-green-50 p-2 rounded border space-y-1">
                                 <div className="grid grid-cols-4 gap-10">
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Qty</label> */}
+                                    {casIndex === 0 && <label className="text-xs text-gray-600">Qty</label>}
                                     <Input
                                       type="number"
                                       value={casing.quantity || ""}
@@ -1906,14 +1891,8 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       placeholder="Кol-во"
                                     />
                                   </div>
-                                  {/* <div>
-                                    <label className="text-xs text-gray-600">Type</label>
-                                    <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
-                                      {casIndex === 0 ? "боковой" : "прямой"}
-                                    </div>
-                                  </div> */}
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Height</label> */}
+                                    {casIndex === 0 && <label className="text-xs text-gray-600">Height</label>}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1929,8 +1908,9 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       disabled={casing.casing_formula === "formula2"}
                                     />
                                   </div>
+                                 
                                   <div>
-                                    {/* <label className="text-xs text-gray-600">Formula</label> */}
+                                    {casIndex === 0 && <label className="text-xs text-gray-600">Formula</label>}
                                     <Select
                                       value={casing.casing_formula || "formula1"}
                                       onValueChange={(value) => {
@@ -1980,11 +1960,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     </Select>
                                   </div>
                                 )}
-                                {/* <div className="flex justify-between items-center mt-1">
-                                  <span className="text-xs font-medium text-green-600">
-                                    Total: {(parseFloat(casing.price || 0) * parseInt(casing.quantity || 1)).toFixed(2)}
-                                  </span>
-                                </div> */}
                               </div>
                             ))}
                           </>
