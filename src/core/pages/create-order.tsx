@@ -1694,7 +1694,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           <>
                             {editingDoor?.casings?.map((casing: any, casIndex: number) => (
                               <div key={casIndex} className="bg-green-50 p-2 rounded border space-y-1">
-                                <div className="grid grid-cols-4 gap-1">
+                                <div className="grid grid-cols-4 gap-10">
                                   <div>
                                     <label className="text-xs text-gray-600">Qty</label>
                                     <Input
