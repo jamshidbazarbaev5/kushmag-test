@@ -1813,7 +1813,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                   </div> */}
 
                                   <div>
-                                    <label className="text-xs text-gray-600">Qty</label>
+                                    {/* <label className="text-xs text-gray-600">Qty</label> */}
                                     <Input
                                       type="number"
                                       value={extension.quantity || ""}
@@ -1823,10 +1823,12 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         handleFieldChange("extensions", updatedExtensions);
                                       }}
                                       className="h-8"
+                                      placeholder="Кol-во"
                                     />
+                                    
                                   </div>
                                   <div>
-                                    <label className="text-xs text-gray-600">Height</label>
+                                    {/* <label className="text-xs text-gray-600">Height</label> */}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1837,10 +1839,12 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         handleFieldChange("extensions", updatedExtensions);
                                       }}
                                       className="h-8"
+                                      placeholder="Высота"
                                     />
+                                    
                                   </div>
                                   <div>
-                                    <label className="text-xs text-gray-600">Width</label>
+                                    {/* <label className="text-xs text-gray-600">Width</label> */}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1851,6 +1855,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         handleFieldChange("extensions", updatedExtensions);
                                       }}
                                       className="h-8"
+                                      placeholder="Ширина"
                                     />
                                   </div>
                                 </div>
@@ -1888,7 +1893,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                               <div key={casIndex} className="bg-green-50 p-2 rounded border space-y-1">
                                 <div className="grid grid-cols-4 gap-10">
                                   <div>
-                                    <label className="text-xs text-gray-600">Qty</label>
+                                    {/* <label className="text-xs text-gray-600">Qty</label> */}
                                     <Input
                                       type="number"
                                       value={casing.quantity || ""}
@@ -1898,6 +1903,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         handleFieldChange("casings", updatedCasings);
                                       }}
                                       className="h-8"
+                                      placeholder="Кol-во"
                                     />
                                   </div>
                                   {/* <div>
@@ -1907,7 +1913,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     </div>
                                   </div> */}
                                   <div>
-                                    <label className="text-xs text-gray-600">Height</label>
+                                    {/* <label className="text-xs text-gray-600">Height</label> */}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -1924,7 +1930,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-xs text-gray-600">Formula</label>
+                                    {/* <label className="text-xs text-gray-600">Formula</label> */}
                                     <Select
                                       value={casing.casing_formula || "formula1"}
                                       onValueChange={(value) => {
@@ -1942,15 +1948,15 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         <SelectValue placeholder="Formula" />
                                       </SelectTrigger>
                                       <SelectContent className="z-[9999]">
-                                        <SelectItem value="formula1"> 1</SelectItem>
-                                        <SelectItem value="formula2"> 2</SelectItem>
+                                        <SelectItem value="formula1">Formula 1</SelectItem>
+                                        <SelectItem value="formula2">Formula 2</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
                                 </div>
                                 {casing.casing_formula === "formula2" && (
                                   <div className="mt-2">
-                                    <label className="text-xs text-gray-600">Casing Range</label>
+                                    <label className="text-xs text-gray-600">Диапазон</label>
                                     <Select
                                       value={casing.casing_range || ""}
                                       onValueChange={(value) => {
@@ -1967,7 +1973,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                       <SelectContent className="z-[9999]">
                                         {fieldOptions.casingRangeOptions?.map((option: any) => (
                                           <SelectItem key={option.value} value={option.value}>
-                                            {option.label} (Size: {option.casing_size})
+                                            {option.label} (Размер: {option.casing_size})
                                           </SelectItem>
                                         ))}
                                       </SelectContent>
@@ -1984,7 +1990,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
-                            {door.casings?.length || 0} items
+                            {door.casings?.length || 0} <span>элементов</span>
                             {door.casings?.length > 0 && (
                               <div className="mt-1 space-y-1">
                                 {door.casings.map((casing: any, i: number) => (
@@ -2006,7 +2012,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                           <>
                             {editingDoor?.crowns?.map((crown: any, crownIndex: number) => (
                               <div key={crownIndex} className="bg-purple-50 p-2 rounded border space-y-1">
-                                <div className="text-xs font-medium text-purple-700 mb-1">Crown {crownIndex + 1}</div>
+                                {/* <div className="text-xs font-medium text-purple-700 mb-1">Crown {crownIndex + 1}</div> */}
                                 <div className="grid grid-cols-3 gap-1">
                                   {/* <div>
                                     <label className="text-xs text-gray-600">Model</label>
@@ -2016,7 +2022,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                   </div> */}
 
                                   <div>
-                                    <label className="text-xs text-gray-600">Qty</label>
+                                    {/* <label className="text-xs text-gray-600">Qty</label> */}
                                     <Input
                                       type="number"
                                       value={crown.quantity || ""}
@@ -2025,25 +2031,13 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], quantity: e.target.value };
                                         handleFieldChange("crowns", updatedCrowns);
                                       }}
+                                      placeholder="Кol-во"
                                       className="h-8"
                                     />
                                   </div>
+                             
                                   <div>
-                                    <label className="text-xs text-gray-600">Height</label>
-                                    <Input
-                                      type="text"
-                                      inputMode="decimal"
-                                      value={crown.height?.toString() || ""}
-                                      onChange={(e) => {
-                                        const updatedCrowns = [...editingDoor.crowns];
-                                        updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], height: e.target.value };
-                                        handleFieldChange("crowns", updatedCrowns);
-                                      }}
-                                      className="h-8"
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="text-xs text-gray-600">Width</label>
+                                    {/* <label className="text-xs text-gray-600">Width</label> */}
                                     <Input
                                       type="text"
                                       inputMode="decimal"
@@ -2053,6 +2047,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                         updatedCrowns[crownIndex] = { ...updatedCrowns[crownIndex], width: e.target.value };
                                         handleFieldChange("crowns", updatedCrowns);
                                       }}
+                                      placeholder="Ширина"
                                       className="h-8"
                                     />
                                   </div>
@@ -2096,7 +2091,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
@@ -2118,7 +2113,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
@@ -2140,7 +2135,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
@@ -2162,7 +2157,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
@@ -2184,7 +2179,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
@@ -2206,7 +2201,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                             }
                           }}
                           className="w-16"
-                          placeholder="0"
+                          placeholder="Кol-во"
                           min="0"
                         />
                       ) : (
