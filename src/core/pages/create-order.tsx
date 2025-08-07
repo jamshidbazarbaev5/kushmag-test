@@ -426,19 +426,19 @@ export default function CreateOrderPage() {
         extensions: door.extensions?.map((ext: any) => ({
           ...ext,
           model: getProductById(productsList, ext.model),
-        })),
+        })).filter((ext: any) => ext.model && ext.model.id && ext.quantity > 0) || [],
         casings: door.casings?.map((casing: any) => ({
           ...casing,
           model: getProductById(productsList, casing.model),
-        })),
+        })).filter((casing: any) => casing.model && casing.model.id && casing.quantity > 0) || [],
         crowns: door.crowns?.map((crown: any) => ({
           ...crown,
           model: getProductById(productsList, crown.model),
-        })),
+        })).filter((crown: any) => crown.model && crown.model.id && crown.quantity > 0) || [],
         accessories: door.accessories?.map((acc: any) => ({
           ...acc,
           model: getProductById(productsList, acc.model),
-        })),
+        })).filter((acc: any) => acc.model && acc.model.id && acc.quantity > 0) || [],
       })),
     };
 
@@ -494,20 +494,7 @@ export default function CreateOrderPage() {
       return;
     }
 
-    // Validate that extensions, casings, crowns have models if they exist
-    const doorsWithIncompleteItems = doors.filter((door: any) => {
-      const incompleteExtensions = door.extensions?.some((ext: any) => !ext.model || ext.model === "");
-      const incompleteCasings = door.casings?.some((casing: any) => !casing.model || casing.model === "");
-      const incompleteCrowns = door.crowns?.some((crown: any) => !crown.model || crown.model === "");
-      const incompleteAccessories = door.accessories?.some((acc: any) => !acc.model || acc.model === "");
-      
-      return incompleteExtensions || incompleteCasings || incompleteCrowns || incompleteAccessories;
-    });
-
-    if (doorsWithIncompleteItems.length > 0) {
-      toast.error(t("messages.incomplete_door_items_error") || "Please ensure all door extensions, casings, crowns, and accessories have models selected");
-      return;
-    }
+    // Note: Extensions, casings, crowns, and accessories without models or with quantity 0 are automatically filtered out
 
     //  const discount = convertToNumber(discount_percentage, 0);
     const orderData = {
@@ -534,19 +521,19 @@ export default function CreateOrderPage() {
         extensions: door.extensions?.map((ext: any) => ({
           ...ext,
           model: getProductById(productsList, ext.model),
-        })),
+        })).filter((ext: any) => ext.model && ext.model.id && ext.quantity > 0) || [],
         casings: door.casings?.map((casing: any) => ({
           ...casing,
           model: getProductById(productsList, casing.model),
-        })),
+        })).filter((casing: any) => casing.model && casing.model.id && casing.quantity > 0) || [],
         crowns: door.crowns?.map((crown: any) => ({
           ...crown,
           model: getProductById(productsList, crown.model),
-        })),
+        })).filter((crown: any) => crown.model && crown.model.id && crown.quantity > 0) || [],
         accessories: door.accessories?.map((acc: any) => ({
           ...acc,
           model: getProductById(productsList, acc.model),
-        })),
+        })).filter((acc: any) => acc.model && acc.model.id && acc.quantity > 0) || [],
       })),
 
       // Add calculated totals
@@ -729,7 +716,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
   const handleAddNewRow = () => {
     // Check if user has selected required products first
     if (!selectedDoorProduct) {
-      toast.error(t("messages.select_door_model_first") || "Please select a door model from the header search first");
+      toast.error(t("messages.select_door_model_first") || "Please select a door model from the header first");
       return;
     }
 
@@ -1252,14 +1239,68 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                 <div className="p-2 bg-green-100 rounded-lg">
                   <DoorOpen className="h-6 w-6 text-green-600" />
                 </div>
-                {t("forms.doors_configuration")} {doors.length > 0 && `#${doors.length + 1}`}
+                {t("forms.doors_configuration")} 
+                {selectedDoorProduct && (
+                  <span className="text-lg font-medium text-blue-600">
+                    - {selectedDoorProduct.name}
+                  </span>
+                )}
                 <Badge variant="secondary" className="ml-3 px-3 py-1">
                   {doors.length} {t("forms.doors_added")}
                 </Badge>
               </CardTitle>
               <p className="text-gray-600 mt-2">
-                {t("forms.add_doors_description")}
+                {selectedDoorProduct 
+                  ? `Adding doors with model: ${selectedDoorProduct.name}` 
+                  : t("forms.add_doors_description")
+                }
               </p>
+              
+              {/* Door Model Selection */}
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      {t("forms.door_model")} *
+                    </label>
+                    <HeaderSearch
+                      value={doorSearch}
+                      onChange={setDoorSearch}
+                      placeholder="Search door models..."
+                      onProductSelect={setSelectedDoorProduct}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      {t("forms.price_type")} *
+                    </label>
+                    <Select
+                      value={doorPriceType}
+                      onValueChange={setDoorPriceType}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Price Type" />
+                      </SelectTrigger>
+                      <SelectContent className="z-[9999]">
+                        {selectedDoorProduct?.salePrices?.map((price: any) => (
+                          <SelectItem key={price.priceType.id} value={price.priceType.id}>
+                            {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {selectedDoorProduct && doorPriceType && (
+                  <div className="mt-2 p-2 bg-white rounded border">
+                    <span className="text-sm text-gray-600">
+                      Selected: <strong>{selectedDoorProduct.name}</strong> - 
+                      {selectedDoorProduct.salePrices?.find((p: any) => p.priceType.id === doorPriceType)?.priceType?.name} 
+                      ({(selectedDoorProduct.salePrices?.find((p: any) => p.priceType.id === doorPriceType)?.value / 100 || 0).toFixed(2)})
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex flex-col items-end gap-2">
               <Button
@@ -1275,9 +1316,46 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                 <Plus className="h-5 w-5" />
                 {t("forms.add_row")}
               </Button>
+              
+              <Button
+                onClick={() => {
+                  // Reset selections to allow choosing a different door model
+                  // This creates a "new section" for different door types
+                  if (doors.length > 0 && selectedDoorProduct) {
+                    const confirmChange = window.confirm(
+                      `You have ${doors.length} doors with model "${selectedDoorProduct.name}". 
+                      Starting a new table will let you add doors with a different model. 
+                      Your current doors will be preserved. Continue?`
+                    );
+                    if (!confirmChange) return;
+                  }
+                  
+                  setSelectedDoorProduct(null);
+                  setDoorPriceType("");
+                  setDoorSearch("");
+                  setSelectedExtensionProduct(null);
+                  setExtensionPriceType("");
+                  setExtensionSearch("");
+                  setSelectedCasingProduct(null);
+                  setCasingPriceType("");
+                  setCasingSearch("");
+                  setSelectedCrownProduct(null);
+                  setCrownPriceType("");
+                  setCrownSearch("");
+                  
+                  toast.info("Ready to select a new door model. Your existing doors are preserved.");
+                }}
+                variant="outline"
+                className="flex items-center gap-2 border-blue-300 text-blue-600 hover:bg-blue-50"
+                disabled={doors.length === 0 && !selectedDoorProduct}
+              >
+                <Package className="h-4 w-4" />
+                {doors.length > 0 ? "Change Door Model" : "Reset Selection"}
+              </Button>
+              
               {(!selectedDoorProduct || !doorPriceType) && (
                 <p className="text-xs text-amber-600 text-right max-w-[200px]">
-                  Select door model and price type from headers first
+                  Select door model and price type first
                 </p>
               )}
             </div>
@@ -1285,42 +1363,34 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Doors Table */}
+          {doors.length > 0 && selectedDoorProduct && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <DoorOpen className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-blue-900">
+                      Current Door Model: {selectedDoorProduct.name}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      {doors.length} door{doors.length > 1 ? 's' : ''} configured with this model
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  Total: {doors.reduce((sum: number, door: any) => sum + (door.quantity || 1), 0)} items
+                </Badge>
+              </div>
+            </div>
+          )}
+          
           <div className="rounded-lg border overflow-x-auto relative">
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-12">#</TableHead>
-                  <TableHead className="min-w-[200px]">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span>{t("forms.model")}</span>
-                        <span className="text-xs text-gray-500">(Search & select first)</span>
-                      </div>
-                      <HeaderSearch
-                        value={doorSearch}
-                        onChange={setDoorSearch}
-                        placeholder="Search door models..."
-                        onProductSelect={setSelectedDoorProduct}
-                      />
-                      <Select
-                        value={doorPriceType}
-                        onValueChange={setDoorPriceType}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
-                        </SelectTrigger>
-                        <SelectContent className="z-[9999]">
-                          {selectedDoorProduct?.salePrices?.map((price: any) => (
-                            <SelectItem key={price.priceType.id} value={price.priceType.id}>
-                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-24">{t("forms.price_type")}</TableHead>
-                  <TableHead className="w-20">{t("forms.price")}</TableHead>
                   <TableHead className="w-16">{t("forms.quantity")}</TableHead>
                   <TableHead className="w-20">{t("forms.height")}</TableHead>
                   <TableHead className="w-20">{t("forms.width")}</TableHead>
@@ -1434,71 +1504,6 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                     className={editingIndex === index ? "bg-blue-50" : ""}
                   >
                     <TableCell className="font-medium">{index + 1}</TableCell>
-
-                    {/* Model */}
-                    <TableCell className="align-top">
-                      {editingIndex === index ? (
-                        <div className="space-y-2">
-                          <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
-                            {selectedDoorProduct?.name || "Select door model from header first"}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Use header search to select door model
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="truncate max-w-[180px]" title={getProductName(door.model)}>
-                          {getProductName(door.model) || t("forms.select_model")}
-                        </div>
-                      )}
-                    </TableCell>
-
-                    {/* Price Type */}
-                    <TableCell className="align-top">
-                      {editingIndex === index ? (
-                        <div className="space-y-1">
-                          <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
-                            {(() => {
-                              if (!selectedDoorProduct || !doorPriceType) return "Select from header";
-                              const priceType = selectedDoorProduct.salePrices?.find((p: any) => p.priceType.id === doorPriceType)?.priceType?.name;
-                              return priceType || "Price type not found";
-                            })()}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Use header to select
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-xs">
-                          {(() => {
-                            if (!door.model || !door.price_type) return "-";
-                            const product = productsList.find((p: any) => p.id === door.model);
-                            const priceType = product?.salePrices?.find((p: any) => p.priceType.id === door.price_type)?.priceType?.name || "-";
-                            return priceType;
-                          })()}
-                        </span>
-                      )}
-                    </TableCell>
-
-                    {/* Price */}
-                    <TableCell className="align-top">
-                      {editingIndex === index ? (
-                        <div className="space-y-1">
-                          <div className="h-8 px-2 text-xs bg-gray-100 border rounded flex items-center">
-                            {(() => {
-                              if (!selectedDoorProduct || !doorPriceType) return "0.00";
-                              const price = selectedDoorProduct.salePrices?.find((p: any) => p.priceType.id === doorPriceType)?.value;
-                              return price ? (price / 100).toFixed(2) : "0.00";
-                            })()}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            From header selection
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-xs">{parseFloat(door.price || 0).toFixed(2)}</span>
-                      )}
-                    </TableCell>
 
                     {/* Quantity */}
                     <TableCell className="align-top">
@@ -1931,52 +1936,58 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
 
                     {/* Accessories - Inline Sub-table */}
                     <TableCell className="align-top p-2">
-                      <div className="space-y-1 min-w-[500px]">
+                      <div className="space-y-2 min-w-[500px]">
                         {editingIndex === index ? (
                           <>
-                            {editingDoor?.accessories?.map((accessory: any, accIndex: number) => (
-                              <div key={accIndex} className="bg-orange-50 p-2 rounded border space-y-2">
-                                <div className="text-xs font-medium text-orange-700 mb-1">
-                                  {accessory.name || accessory.accessory_type}
-                                </div>
-                                <div className="grid grid-cols-1 gap-2">
-                                  {/* Model Selection for this specific accessory */}
-                                  <div>
-                                    <label className="text-xs text-gray-600">Model</label>
-                                    <HeaderSearch
-                                      value={accessory.searchValue || ""}
-                                      onChange={(value) => {
-                                        const updatedAccessories = [...editingDoor.accessories];
-                                        updatedAccessories[accIndex] = { 
-                                          ...updatedAccessories[accIndex], 
-                                          searchValue: value 
-                                        };
-                                        handleFieldChange("accessories", updatedAccessories);
-                                      }}
-                                      placeholder={`Search ${accessory.name || accessory.accessory_type}...`}
-                                      onProductSelect={(product) => {
-                                        const updatedAccessories = [...editingDoor.accessories];
-                                        updatedAccessories[accIndex] = { 
-                                          ...updatedAccessories[accIndex], 
-                                          model: product?.id || "",
-                                          selectedProduct: product,
-                                          price_type: "", // Reset price type when model changes
-                                          price: 0
-                                        };
-                                        handleFieldChange("accessories", updatedAccessories);
-                                      }}
-                                    />
+                            <div className="bg-blue-100 p-2 rounded text-center">
+                              <span className="text-sm font-medium text-gray-700">AKSESSUARLAR</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-2">
+                              {editingDoor?.accessories?.map((accessory: any, accIndex: number) => (
+                                <div key={accIndex} className="bg-orange-50 p-3 rounded border text-center">
+                                  {/* Accessory Name Header */}
+                                  <div className="mb-3 pb-2 border-b border-orange-200">
+                                    <span className="text-xs font-medium text-gray-700 uppercase">
+                                      {accessory.name || accessory.accessory_type}
+                                    </span>
                                   </div>
                                   
-                                  {/* Price Type Selection for this specific accessory */}
-                                  {accessory.selectedProduct && (
+                                  <div className="space-y-3">
+                                    {/* Model Selection */}
                                     <div>
-                                      <label className="text-xs text-gray-600">Price Type</label>
+                                      <HeaderSearch
+                                        value={accessory.searchValue || ""}
+                                        onChange={(value) => {
+                                          const updatedAccessories = [...editingDoor.accessories];
+                                          updatedAccessories[accIndex] = { 
+                                            ...updatedAccessories[accIndex], 
+                                            searchValue: value 
+                                          };
+                                          handleFieldChange("accessories", updatedAccessories);
+                                        }}
+                                        placeholder="dona"
+                                        onProductSelect={(product) => {
+                                          const updatedAccessories = [...editingDoor.accessories];
+                                          updatedAccessories[accIndex] = { 
+                                            ...updatedAccessories[accIndex], 
+                                            model: product?.id || "",
+                                            selectedProduct: product,
+                                            price_type: "", // Reset price type when model changes
+                                            price: 0
+                                          };
+                                          handleFieldChange("accessories", updatedAccessories);
+                                        }}
+                                      />
+                                    </div>
+                                    
+                                    {/* Price Type Selection */}
+                                    <div>
                                       <Select
                                         value={accessory.price_type || ""}
                                         onValueChange={(value) => {
                                           const updatedAccessories = [...editingDoor.accessories];
-                                          const selectedPrice = accessory.selectedProduct.salePrices?.find((p: any) => p.priceType.id === value);
+                                          const selectedPrice = accessory.selectedProduct?.salePrices?.find((p: any) => p.priceType.id === value);
                                           updatedAccessories[accIndex] = { 
                                             ...updatedAccessories[accIndex], 
                                             price_type: value,
@@ -1984,25 +1995,23 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                           };
                                           handleFieldChange("accessories", updatedAccessories);
                                         }}
+                                        disabled={!accessory.selectedProduct}
                                       >
-                                        <SelectTrigger className="h-8 text-xs">
-                                          <SelectValue placeholder="Select Price Type" />
+                                        <SelectTrigger className="h-10 text-sm">
+                                          <SelectValue placeholder="Price Type" />
                                         </SelectTrigger>
                                         <SelectContent className="z-[9999]">
-                                          {accessory.selectedProduct.salePrices?.map((price: any) => (
+                                          {accessory.selectedProduct?.salePrices?.map((price: any) => (
                                             <SelectItem key={price.priceType.id} value={price.priceType.id}>
-                                              {price.priceType.name} - {(price.value / 100).toFixed(2)}
+                                              {price.priceType.name}
                                             </SelectItem>
                                           ))}
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                  )}
-                                  
-                                  {/* Quantity and Total */}
-                                  <div className="grid grid-cols-2 gap-2">
+                                    
+                                    {/* Quantity */}
                                     <div>
-                                      <label className="text-xs text-gray-600">Quantity</label>
                                       <Input
                                         type="number"
                                         value={accessory.quantity || ""}
@@ -2014,19 +2023,15 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                                           };
                                           handleFieldChange("accessories", updatedAccessories);
                                         }}
-                                        className="h-8"
+                                        className="h-10 text-center"
+                                        placeholder="0"
                                         min="0"
                                       />
                                     </div>
-                                    <div className="flex items-end">
-                                      <span className="text-xs font-medium text-orange-600">
-                                        Total: {(parseFloat(accessory.price || 0) * parseInt(accessory.quantity || 0)).toFixed(2)}
-                                      </span>
-                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
@@ -2099,7 +2104,7 @@ function StepTwo({ doors, setDoors, fieldOptions, productsList, orderForm, casin
                 {doors.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={14}
+                      colSpan={11}
                       className="text-center py-8 text-gray-500"
                     >
                       <div className="flex flex-col items-center gap-2">
