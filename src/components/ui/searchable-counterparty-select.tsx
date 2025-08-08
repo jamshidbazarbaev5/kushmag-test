@@ -157,7 +157,7 @@ export function SearchableCounterpartySelect({
     createForm.setValue('name', searchQuery);
     setShowCreateModal(true);
   };
-
+  
   return (
     <>
       <div className={`relative ${className}`}>
