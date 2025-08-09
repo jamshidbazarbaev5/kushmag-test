@@ -806,232 +806,239 @@ function StepOne({
 
   return (
     <div className="w-full">
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Package className="h-6 w-6 text-blue-600" />
-            </div>
-            {t("forms.order_information")}
-          </CardTitle>
-          <p className="text-gray-600 mt-2">
-            {t("forms.basic_order_info_description")}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <ResourceForm
-            fields={orderFields}
-            onSubmit={() => {}}
-            isSubmitting={isLoading}
-            hideSubmitButton={true}
-            form={orderForm}
-            gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
-          />
-
-          {/* Custom Counterparty Select Field */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t("forms.agent")} *
-              </label>
-              <SearchableCounterpartySelect
-                value={orderForm.watch("agent")}
-                onChange={(value) => orderForm.setValue("agent", value)}
-                placeholder={t("placeholders.select_agent")}
-                required={true}
+      <div className="flex gap-6">
+        {/* Left side - Order Information (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+                {t("forms.order_information")}
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                {t("forms.basic_order_info_description")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="grid-cols-1 gap-6"
               />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Global Door Settings Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur mt-6">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <DoorOpen className="h-6 w-6 text-green-600" />
-            </div>
-            {t("forms.global_door_settings")}
-          </CardTitle>
-          <p className="text-gray-600 mt-2">
-            {t("forms.global_door_settings_description")}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Material */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.material")}
-              </label>
-              <Select
-                value={globalDoorSettings.material}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    material: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("placeholders.select_material")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.materialOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Custom Counterparty Select Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  {t("forms.agent")} *
+                </label>
+                <SearchableCounterpartySelect
+                  value={orderForm.watch("agent")}
+                  onChange={(value) => orderForm.setValue("agent", value)}
+                  placeholder={t("placeholders.select_agent")}
+                  required={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            {/* Material Type */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.material_type")}
-              </label>
-              <Select
-                value={globalDoorSettings.material_type}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    material_type: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("placeholders.select_material_type")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.materialTypeOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Right side - Material Settings (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <DoorOpen className="h-6 w-6 text-green-600" />
+                </div>
+                {t("forms.global_door_settings")}
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                {t("forms.global_door_settings_description")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                {/* Material */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.material")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.material}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        material: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_material")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.materialOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Massif */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.massif")}
-              </label>
-              <Select
-                value={globalDoorSettings.massif}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    massif: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("placeholders.select_massif")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.massifOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* Material Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.material_type")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.material_type}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        material_type: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_material_type")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.materialTypeOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Color */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.color")}
-              </label>
-              <Select
-                value={globalDoorSettings.color}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    color: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("placeholders.select_color")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.colorOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* Massif */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.massif")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.massif}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        massif: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_massif")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.massifOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Patina Color */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.patina_color")}
-              </label>
-              <Select
-                value={globalDoorSettings.patina_color}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    patina_color: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("placeholders.select_patina_color")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.patinaColorOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* Color */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.color")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.color}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        color: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_color")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.colorOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Beading Main */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.beading_main")}
-              </label>
-              <Select
-                value={globalDoorSettings.beading_main}
-                onValueChange={(value) =>
-                  setGlobalDoorSettings((prev: any) => ({
-                    ...prev,
-                    beading_main: value,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={t("placeholders.select_beading_main")}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.beadingMainOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                {/* Patina Color */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.patina_color")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.patina_color}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        patina_color: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_patina_color")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.patinaColorOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Glass Type */}
-            {/* <div className="space-y-2">
+                {/* Beading Main */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.beading_main")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.beading_main}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        beading_main: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("placeholders.select_beading_main")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.beadingMainOptions?.map((option: any) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Glass Type */}
+                {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
                 {t("forms.glass_type")}
               </label>
@@ -1052,8 +1059,8 @@ function StepOne({
               </Select>
             </div> */}
 
-            {/* Threshold */}
-            {/* <div className="space-y-2">
+                {/* Threshold */}
+                {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
                 {t("forms.threshold")}
               </label>
@@ -1073,46 +1080,48 @@ function StepOne({
                 </SelectContent>
               </Select>
             </div> */}
-          </div>
-
-          {/* Apply to All Doors Button */}
-          {doors.length > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-sm font-medium text-blue-900">
-                    {t("forms.apply_to_all_doors")}
-                  </h4>
-                  <p className="text-xs text-blue-700 mt-1">
-                    {t("forms.apply_to_all_doors_description")}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const updatedDoors = doors.map((door: any) => ({
-                      ...door,
-                      material: globalDoorSettings.material,
-                      material_type: globalDoorSettings.material_type,
-                      massif: globalDoorSettings.massif,
-                      color: globalDoorSettings.color,
-                      patina_color: globalDoorSettings.patina_color,
-                      beading_main: globalDoorSettings.beading_main,
-                      // glass_type: globalDoorSettings.glass_type,
-                      // threshold: globalDoorSettings.threshold,
-                    }));
-                    setDoors(updatedDoors);
-                  }}
-                  className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                >
-                  {t("forms.apply_to_all")}
-                </Button>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+              {/* Apply to All Doors Button */}
+              {doors.length > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-900">
+                        {t("forms.apply_to_all_doors")}
+                      </h4>
+                      <p className="text-xs text-blue-700 mt-1">
+                        {t("forms.apply_to_all_doors_description")}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const updatedDoors = doors.map((door: any) => ({
+                          ...door,
+                          material: globalDoorSettings.material,
+                          material_type: globalDoorSettings.material_type,
+                          massif: globalDoorSettings.massif,
+                          color: globalDoorSettings.color,
+                          patina_color: globalDoorSettings.patina_color,
+                          beading_main: globalDoorSettings.beading_main,
+                          // glass_type: globalDoorSettings.glass_type,
+                          // threshold: globalDoorSettings.threshold,
+                        }));
+                        setDoors(updatedDoors);
+                      }}
+                      className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                    >
+                      {t("forms.apply_to_all")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

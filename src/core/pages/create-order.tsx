@@ -49,6 +49,10 @@ import {
 } from "../../components/ui/table";
 import { Input } from "../../components/ui/input";
 import {
+
+  createProductSelectHandler,
+} from "../../utils/priceUtils";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -690,66 +694,75 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
 
   return (
     <div className="w-full">
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Package className="h-6 w-6 text-blue-600" />
-            </div>
-            {t("forms.order_information")}
-          </CardTitle>
-          <p className="text-gray-600 mt-2">
-            {t("forms.basic_order_info_description")}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <ResourceForm
-            fields={orderFields}
-            onSubmit={() => {}}
-            isSubmitting={isLoading}
-            hideSubmitButton={true}
-            form={orderForm}
-            gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
-          />
-
-          {/* Custom Counterparty Select Field */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t("forms.agent")} *
-              </label>
-              <SearchableCounterpartySelect
-                value={orderForm.watch("agent")}
-                onChange={(value) => orderForm.setValue("agent", value)}
-                placeholder={t("placeholders.select_agent")}
-                required={true}
+      <div className="flex gap-6">
+        {/* Left side - Order Information (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+                {t("forms.order_information")}
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                {t("forms.basic_order_info_description")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="grid-cols-1 gap-6"
               />
-            </div>
-          </div>
 
-          {/* Material Attributes Section */}
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <div className="p-1 bg-green-100 rounded">
-                <Package className="h-4 w-4 text-green-600" />
+              {/* Custom Counterparty Select Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  {t("forms.agent")} *
+                </label>
+                <SearchableCounterpartySelect
+                  value={orderForm.watch("agent")}
+                  onChange={(value) => orderForm.setValue("agent", value)}
+                  placeholder={t("placeholders.select_agent")}
+                  required={true}
+                />
               </div>
-              {t("forms.material_attributes")} -{" "}
-              {t("forms.applies_to_all_doors")}
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              {t("forms.material_attributes_description")}
-            </p>
-            <ResourceForm
-              fields={materialFields}
-              onSubmit={() => {}}
-              isSubmitting={isLoading}
-              hideSubmitButton={true}
-              form={orderForm}
-              gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
-            />
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side - Material Attributes (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Package className="h-6 w-6 text-green-600" />
+                </div>
+                {t("forms.material_attributes")}
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                {t("forms.material_attributes_description")} -{" "}
+                {t("forms.applies_to_all_doors")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ResourceForm
+                fields={materialFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="grid-cols-1 gap-6"
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
@@ -809,7 +822,7 @@ function StepTwo({
   const [legPriceType, setLegPriceType] = useState<string>("");
   const [glassPriceType, setGlassPriceType] = useState<string>("");
   const [lockPriceType, setLockPriceType] = useState<string>("");
-  const [topsaPriceType, setTopsaPriceType] = useState<string>("");
+  const [topsaPriceType, setTopsaPriceType] = useState<string>();
   const [beadingPriceType, setBeadingPriceType] = useState<string>("");
   console.log("editing door", editingDoor);
   console.log("cube search", selectedCubeProduct);
@@ -1482,15 +1495,18 @@ function StepTwo({
                       <HeaderSearch
                         value={extensionSearch}
                         onChange={setExtensionSearch}
-                        placeholder="Search extensions..."
-                        onProductSelect={setSelectedExtensionProduct}
+                        placeholder={t("forms.search_extensions")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedExtensionProduct,
+                          setExtensionPriceType,
+                        )}
                       />
                       <Select
                         value={extensionPriceType}
                         onValueChange={setExtensionPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedExtensionProduct?.salePrices?.map(
@@ -1517,15 +1533,18 @@ function StepTwo({
                       <HeaderSearch
                         value={casingSearch}
                         onChange={setCasingSearch}
-                        placeholder="Search casings..."
-                        onProductSelect={setSelectedCasingProduct}
+                        placeholder={t("forms.search_casings")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCasingProduct,
+                          setCasingPriceType,
+                        )}
                       />
                       <Select
                         value={casingPriceType}
                         onValueChange={setCasingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCasingProduct?.salePrices?.map(
@@ -1552,15 +1571,18 @@ function StepTwo({
                       <HeaderSearch
                         value={crownSearch}
                         onChange={setCrownSearch}
-                        placeholder="Search crowns..."
-                        onProductSelect={setSelectedCrownProduct}
+                        placeholder={t("forms.search_crowns")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCrownProduct,
+                          setCrownPriceType,
+                        )}
                       />
                       <Select
                         value={crownPriceType}
                         onValueChange={setCrownPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCrownProduct?.salePrices?.map(
@@ -1586,15 +1608,18 @@ function StepTwo({
                       <HeaderSearch
                         value={cubeSearch}
                         onChange={setCubeSearch}
-                        placeholder="Search cubes..."
-                        onProductSelect={setSelectedCubeProduct}
+                        placeholder={t("forms.search_cubes")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCubeProduct,
+                          setCubePriceType,
+                        )}
                       />
                       <Select
                         value={cubePriceType}
                         onValueChange={setCubePriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCubeProduct?.salePrices?.map(
@@ -1620,15 +1645,18 @@ function StepTwo({
                       <HeaderSearch
                         value={legSearch}
                         onChange={setLegSearch}
-                        placeholder="Search legs..."
-                        onProductSelect={setSelectedLegProduct}
+                        placeholder={t("forms.search_legs")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLegProduct,
+                          setLegPriceType,
+                        )}
                       />
                       <Select
                         value={legPriceType}
                         onValueChange={setLegPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLegProduct?.salePrices?.map((price: any) => (
@@ -1652,15 +1680,18 @@ function StepTwo({
                       <HeaderSearch
                         value={glassSearch}
                         onChange={setGlassSearch}
-                        placeholder="Search glass..."
-                        onProductSelect={setSelectedGlassProduct}
+                        placeholder={t("forms.search_glass")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedGlassProduct,
+                          setGlassPriceType,
+                        )}
                       />
                       <Select
                         value={glassPriceType}
                         onValueChange={setGlassPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedGlassProduct?.salePrices?.map(
@@ -1686,15 +1717,18 @@ function StepTwo({
                       <HeaderSearch
                         value={lockSearch}
                         onChange={setLockSearch}
-                        placeholder="Search locks..."
-                        onProductSelect={setSelectedLockProduct}
+                        placeholder={t("forms.search_locks")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLockProduct,
+                          setLockPriceType,
+                        )}
                       />
                       <Select
                         value={lockPriceType}
                         onValueChange={setLockPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLockProduct?.salePrices?.map(
@@ -1720,15 +1754,18 @@ function StepTwo({
                       <HeaderSearch
                         value={topsaSearch}
                         onChange={setTopsaSearch}
-                        placeholder="Search topsa..."
-                        onProductSelect={setSelectedTopsaProduct}
+                        placeholder={t("forms.search_topsas")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedTopsaProduct,
+                          setTopsaPriceType,
+                        )}
                       />
                       <Select
                         value={topsaPriceType}
                         onValueChange={setTopsaPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedTopsaProduct?.salePrices?.map(
@@ -1754,15 +1791,18 @@ function StepTwo({
                       <HeaderSearch
                         value={beadingSearch}
                         onChange={setBeadingSearch}
-                        placeholder="Search beading..."
-                        onProductSelect={setSelectedBeadingProduct}
+                        placeholder={t("forms.search_beading")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedBeadingProduct,
+                          setBeadingPriceType,
+                        )}
                       />
                       <Select
                         value={beadingPriceType}
                         onValueChange={setBeadingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder={t("forms.price_type")} />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedBeadingProduct?.salePrices?.map(
@@ -1792,23 +1832,35 @@ function StepTwo({
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Door Model */}
-                    <TableCell className="align-top p-2">
+                    <TableCell className="align-middle p-2">
                       {editingIndex === index ? (
                         <div className="space-y-2">
                           <HeaderSearch
                             value={doorSearch}
                             onChange={setDoorSearch}
-                            placeholder="Search door models..."
+                            placeholder={t("forms.search_door_model")}
                             onProductSelect={(product) => {
                               setTempSelectedDoorProduct(product);
                               handleFieldChange("model", product?.id || "");
-                              handleFieldChange("price_type", "");
-                              handleFieldChange("price", 0);
+                              // Find 'продаж цена' price type
+                              const salePrice = product?.salePrices?.find(
+                                (p: any) => p.priceType.name === "продаж цена",
+                              );
+                              handleFieldChange(
+                                "price_type",
+                                salePrice ? salePrice.priceType.id : "",
+                              );
+                              handleFieldChange(
+                                "price",
+                                salePrice ? salePrice.value / 100 : 0,
+                              );
                               // Update last selected door model for future rows
                               if (product) {
                                 setLastSelectedDoorModel({
                                   ...product,
-                                  lastPriceType: "",
+                                  lastPriceType: salePrice
+                                    ? salePrice.priceType.id
+                                    : "",
                                 });
                               }
                             }}
@@ -1836,7 +1888,9 @@ function StepTwo({
                               }}
                             >
                               <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder="Price Type" />
+                                <SelectValue
+                                  placeholder={t("forms.price_type")}
+                                />
                               </SelectTrigger>
                               <SelectContent className="z-[9999]">
                                 {tempSelectedDoorProduct?.salePrices?.map(
@@ -1853,14 +1907,6 @@ function StepTwo({
                               </SelectContent>
                             </Select>
                           )}
-                          {editingDoor?.price_type &&
-                            tempSelectedDoorProduct && (
-                              <div className="text-xs p-1 bg-white rounded border">
-                                <span className="text-gray-600">
-                                  Price: {(editingDoor.price || 0).toFixed(2)}
-                                </span>
-                              </div>
-                            )}
                         </div>
                       ) : (
                         <div className="space-y-1">

@@ -107,6 +107,17 @@
     "branch": "Филиал",
     "moy_sklad_id": "Мой склад ID",
     "admin":"Администратор",
+    "search_topsas": "Поиск топс",
+    "search_door_model": "Поиск модели двери",
+
+  "search_glass": "Поиск стёкла",
+    
+    "search_locks": "Поиск замоков",
+    "search_beading": "Поиск штапика",
+    "search_casings": "Поиск наличников",
+    "search_crowns": "Поиск корон",
+    "search_accessories": "Поиск аксессуаров",
+    "search_extensions": "Поиск доборов",
     "item_total": "Всего",
     "apply_to_all_doors": "Применить ко всем дверям",
     "apply_to_all": "Применить ко всем",

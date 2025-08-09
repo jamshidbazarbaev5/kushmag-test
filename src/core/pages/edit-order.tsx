@@ -607,18 +607,35 @@ export default function CreateOrderPage() {
       doors: doors.map((door: any) => ({
         ...door,
         model: getProductById(productsList, door.model),
-        extensions: door.extensions?.map((ext: any) => ({
-          ...ext,
-          model: getProductById(productsList, ext.model),
-        })),
-        casings: door.casings?.map((casing: any) => ({
-          ...casing,
-          model: getProductById(productsList, casing.model),
-        })),
-        crowns: door.crowns?.map((crown: any) => ({
-          ...crown,
-          model: getProductById(productsList, crown.model),
-        })),
+        extensions:
+          door.extensions
+            ?.map((ext: any) => ({
+              ...ext,
+              model: getProductById(productsList, ext.model),
+            }))
+            .filter(
+              (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
+            ) || [],
+        casings:
+          door.casings
+            ?.map((casing: any) => ({
+              ...casing,
+              model: getProductById(productsList, casing.model),
+            }))
+            .filter(
+              (casing: any) =>
+                casing.model && casing.model.id && casing.quantity > 0,
+            ) || [],
+        crowns:
+          door.crowns
+            ?.map((crown: any) => ({
+              ...crown,
+              model: getProductById(productsList, crown.model),
+            }))
+            .filter(
+              (crown: any) =>
+                crown.model && crown.model.id && crown.quantity > 0,
+            ) || [],
         accessories:
           door.accessories
             ?.map((acc: any) => ({
@@ -789,44 +806,50 @@ function StepOne({
 
   return (
     <div className="w-full">
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Package className="h-6 w-6 text-blue-600" />
-            </div>
-            {t("forms.order_information")}
-          </CardTitle>
-          <p className="text-gray-600 mt-2">
-            {t("forms.basic_order_info_description")}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <ResourceForm
-            fields={orderFields}
-            onSubmit={() => {}}
-            isSubmitting={isLoading}
-            hideSubmitButton={true}
-            form={orderForm}
-            gridClassName="md:grid-cols-2 lg:grid-cols-3 gap-6"
-          />
-
-          {/* Custom Counterparty Select Field */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {t("forms.agent")} *
-              </label>
-              <SearchableCounterpartySelect
-                value={orderForm.watch("agent")}
-                onChange={(value) => orderForm.setValue("agent", value)}
-                placeholder={t("placeholders.select_agent")}
-                required={true}
+      <div className="flex gap-6">
+        {/* Left side - Order Information (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader className="pb-6">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+                {t("forms.order_information")}
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                {t("forms.basic_order_info_description")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="grid-cols-1 gap-6"
               />
-            </div>
-          </div>
-          {/* Global Door Settings Card */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur mt-6">
+
+              {/* Custom Counterparty Select Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  {t("forms.agent")} *
+                </label>
+                <SearchableCounterpartySelect
+                  value={orderForm.watch("agent")}
+                  onChange={(value) => orderForm.setValue("agent", value)}
+                  placeholder={t("placeholders.select_agent")}
+                  required={true}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right side - Material Settings (50%) */}
+        <div className="flex-1">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -839,7 +862,7 @@ function StepOne({
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {/* Material */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none">
@@ -1096,8 +1119,8 @@ function StepOne({
               )}
             </CardContent>
           </Card>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
