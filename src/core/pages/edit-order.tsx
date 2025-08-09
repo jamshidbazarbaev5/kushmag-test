@@ -194,31 +194,74 @@ export default function CreateOrderPage() {
             : "",
           threshold: measureDoor.threshold ? String(measureDoor.threshold) : "",
           // Pre-populate accessories from measure data
-          extensions:
-            measureDoor.extensions?.map((ext: any) => ({
-              model: ext.model?.id ? String(ext.model.id) : "",
-              price: ext.price || 0,
-              quantity: ext.quantity || 1,
-              height: ext.height || 0,
-              width: ext.width || 0,
-              // Keep reference to original measure data
-              measureExtension: ext,
-            })) || [],
-          casings:
-            measureDoor.casings?.map((casing: any) => ({
-              model: casing.model?.id ? String(casing.model.id) : "",
-              price: casing.price || 0,
-              quantity: casing.quantity || 1,
-              height: casing.height || 0,
-              width: casing.width || 0,
-              casing_type: casing.casing_type || "",
-              casing_formula: casing.casing_formula || "",
-              casing_range: casing.casing_range?.id
-                ? String(casing.casing_range.id)
-                : "",
-              // Keep reference to original measure data
-              measureCasing: casing,
-            })) || [],
+          extensions: (() => {
+            const measureExtensions =
+              measureDoor.extensions?.map((ext: any) => ({
+                model: ext.model?.id ? String(ext.model.id) : "",
+                price: ext.price || 0,
+                quantity: ext.quantity || 1,
+                height: ext.height || 0,
+                width: ext.width || 0,
+                // Keep reference to original measure data
+                measureExtension: ext,
+              })) || [];
+
+            // Ensure at least 2 extensions
+            while (measureExtensions.length < 2) {
+              measureExtensions.push({
+                model: "",
+                price: 0,
+                quantity: 1,
+                height: 0,
+                width: 0,
+              });
+            }
+            return measureExtensions;
+          })(),
+          casings: (() => {
+            const measureCasings =
+              measureDoor.casings?.map((casing: any) => ({
+                model: casing.model?.id ? String(casing.model.id) : "",
+                price: casing.price || 0,
+                quantity: casing.quantity || 1,
+                height: casing.height || 0,
+                width: casing.width || 0,
+                casing_type: casing.casing_type || "",
+                casing_formula: casing.casing_formula || "",
+                casing_range: casing.casing_range?.id
+                  ? String(casing.casing_range.id)
+                  : "",
+                // Keep reference to original measure data
+                measureCasing: casing,
+              })) || [];
+
+            // Ensure at least 2 casings with proper types
+            while (measureCasings.length < 2) {
+              const isFirst = measureCasings.length === 0;
+              measureCasings.push({
+                model: "",
+                price: 0,
+                quantity: 1,
+                height: 0,
+                width: 0,
+                casing_type: isFirst ? "боковой" : "прямой",
+                casing_formula: "formula1",
+                casing_range: "",
+              });
+            }
+
+            // Ensure proper casing types for first two items
+            if (measureCasings.length >= 1) {
+              measureCasings[0].casing_type =
+                measureCasings[0].casing_type || "боковой";
+            }
+            if (measureCasings.length >= 2) {
+              measureCasings[1].casing_type =
+                measureCasings[1].casing_type || "прямой";
+            }
+
+            return measureCasings;
+          })(),
           crowns:
             measureDoor.crowns?.map((crown: any) => ({
               model: crown.model?.id ? String(crown.model.id) : "",
@@ -576,10 +619,15 @@ export default function CreateOrderPage() {
           ...crown,
           model: getProductById(productsList, crown.model),
         })),
-        accessories: door.accessories?.map((acc: any) => ({
-          ...acc,
-          model: getProductById(productsList, acc.model),
-        })),
+        accessories:
+          door.accessories
+            ?.map((acc: any) => ({
+              ...acc,
+              model: getProductById(productsList, acc.model),
+            }))
+            .filter(
+              (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
+            ) || [],
       })),
       // Add calculated totals
       discount_percentage: discountPercentageForAPI,
@@ -1069,6 +1117,9 @@ function StepTwo({
 
   // Search states for each section
   const [doorSearch, setDoorSearch] = useState<string>("");
+  const [tempSelectedDoorProduct, setTempSelectedDoorProduct] =
+    useState<any>(null);
+  const [lastSelectedDoorModel, setLastSelectedDoorModel] = useState<any>(null);
   const [extensionSearch, setExtensionSearch] = useState<string>("");
   const [casingSearch, setCasingSearch] = useState<string>("");
   const [crownSearch, setCrownSearch] = useState<string>("");
@@ -1081,8 +1132,7 @@ function StepTwo({
   const [topsaSearch, setTopsaSearch] = useState<string>("");
   const [beadingSearch, setBeadingSearch] = useState<string>("");
 
-  // Selected products and price types for each section
-  const [selectedDoorProduct, setSelectedDoorProduct] = useState<any>(null);
+  // Selected products and price types for each section (header level)
   const [selectedExtensionProduct, setSelectedExtensionProduct] =
     useState<any>(null);
   const [selectedCasingProduct, setSelectedCasingProduct] = useState<any>(null);
@@ -1097,8 +1147,7 @@ function StepTwo({
   const [selectedBeadingProduct, setSelectedBeadingProduct] =
     useState<any>(null);
 
-  // Price types for each section
-  const [doorPriceType, setDoorPriceType] = useState<string>("");
+  // Price types for each section (header level)
   const [extensionPriceType, setExtensionPriceType] = useState<string>("");
   const [casingPriceType, setCasingPriceType] = useState<string>("");
   const [crownPriceType, setCrownPriceType] = useState<string>("");
@@ -1110,27 +1159,24 @@ function StepTwo({
   const [lockPriceType, setLockPriceType] = useState<string>("");
   const [topsaPriceType, setTopsaPriceType] = useState<string>("");
   const [beadingPriceType, setBeadingPriceType] = useState<string>("");
+  console.log("editing door", editingDoor);
+  console.log("editing door extensions:", editingDoor?.extensions);
+  console.log("editing door casings:", editingDoor?.casings);
+  console.log("cube search", selectedCubeProduct);
 
   const handleAddNewRow = () => {
-    // Check if user has selected required products first
-    if (!selectedDoorProduct) {
-      toast.error(
-        t("messages.select_door_model_first") ||
-          "Please select a door model from the header first",
-      );
-      return;
-    }
-
-    if (!doorPriceType) {
-      toast.error(
-        t("messages.select_door_price_type_first") ||
-          "Please select a price type for the door from the header first",
-      );
-      return;
-    }
-
     // Get material attributes from the order form to apply to all doors
     const orderData = orderForm.getValues();
+
+    // Use last selected door model as default for new rows
+    const defaultDoorModel = lastSelectedDoorModel?.id || "";
+    const defaultDoorPriceType = lastSelectedDoorModel?.lastPriceType || "";
+    const defaultDoorPrice =
+      lastSelectedDoorModel && lastSelectedDoorModel.lastPriceType
+        ? (lastSelectedDoorModel.salePrices?.find(
+            (p: any) => p.priceType.id === lastSelectedDoorModel.lastPriceType,
+          )?.value || 0) / 100
+        : 0;
 
     // Create 2 default extensions (dobors) - with selected product if available, otherwise empty entries
     const defaultExtensions = [
@@ -1298,12 +1344,9 @@ function StepTwo({
     ];
 
     const newDoor = {
-      model: selectedDoorProduct.id,
-      price_type: doorPriceType,
-      price:
-        (selectedDoorProduct.salePrices?.find(
-          (p: any) => p.priceType.id === doorPriceType,
-        )?.value || 0) / 100,
+      model: defaultDoorModel,
+      price_type: defaultDoorPriceType,
+      price: defaultDoorPrice,
       quantity: 1,
       height: 0,
       width: 0,
@@ -1322,10 +1365,25 @@ function StepTwo({
       accessories: defaultAccessories,
     };
 
+    console.log("Created defaultExtensions:", defaultExtensions);
+    console.log("Created defaultCasings:", defaultCasings);
+    console.log("Created newDoor with defaults:", newDoor);
+
     const newIndex = doors.length;
     setDoors([...doors, newDoor]);
     setEditingIndex(newIndex);
     setEditingDoor({ ...newDoor });
+
+    console.log("Set editingDoor to:", { ...newDoor });
+
+    // If we have a default door model, set it as temp selected product and search text
+    if (lastSelectedDoorModel) {
+      setTempSelectedDoorProduct(lastSelectedDoorModel);
+      setDoorSearch(lastSelectedDoorModel.name || "");
+    } else {
+      setDoorSearch("");
+      setTempSelectedDoorProduct(null);
+    }
   };
 
   // Effect to update all doors when material attributes change in order form
@@ -1378,43 +1436,21 @@ function StepTwo({
 
   const handleEditDoor = (index: number) => {
     setEditingIndex(index);
-
-    const door = doors[index];
-
-    // Ensure the door has at least 2 extensions
-    const extensions = door.extensions || [];
-    while (extensions.length < 2) {
-      extensions.push({
-        model: "",
-        price_type: "",
-        price: 0,
-        quantity: 1,
-        height: 0,
-        width: 0,
+    setEditingDoor({ ...doors[index] });
+    // Set temp selected product based on current door model
+    const currentDoorProduct = productsList.find(
+      (p: any) => p.id === doors[index].model,
+    );
+    if (currentDoorProduct) {
+      setDoorSearch(currentDoorProduct.name || "");
+      setTempSelectedDoorProduct({
+        ...currentDoorProduct,
+        lastPriceType: doors[index].price_type,
       });
+    } else {
+      setDoorSearch("");
+      setTempSelectedDoorProduct(null);
     }
-
-    // Ensure the door has at least 2 casings
-    const casings = door.casings || [];
-    while (casings.length < 2) {
-      casings.push({
-        model: "",
-        price_type: "",
-        price: 0,
-        quantity: 1,
-        casing_type: casings.length === 0 ? "боковой" : "прямой",
-        casing_formula: "formula1",
-        casing_range: "",
-        height: 0,
-        width: casingSize,
-      });
-    }
-
-    setEditingDoor({
-      ...door,
-      extensions,
-      casings,
-    });
   };
 
   const handleSaveDoor = () => {
@@ -1434,18 +1470,23 @@ function StepTwo({
         return defaultValue;
       };
 
-      // Apply selected products from headers to the door being saved
+      // Validate door model and price type
+      if (!editingDoor.model) {
+        toast.error("Please select a door model");
+        return;
+      }
+      if (!editingDoor.price_type) {
+        toast.error("Please select a price type for the door");
+        return;
+      }
+
+      // Apply door data being saved
       const updatedDoor = {
         ...editingDoor,
-        // Apply main door model and price from header selection
-        model: selectedDoorProduct?.id || editingDoor.model,
-        price_type: doorPriceType || editingDoor.price_type,
-        price:
-          selectedDoorProduct && doorPriceType
-            ? (selectedDoorProduct.salePrices?.find(
-                (p: any) => p.priceType.id === doorPriceType,
-              )?.value || 0) / 100
-            : convertToNumber(editingDoor.price, 0),
+        // Keep individual door model and price type selections
+        model: editingDoor.model,
+        price_type: editingDoor.price_type,
+        price: convertToNumber(editingDoor.price, 0),
         quantity: parseInt(editingDoor.quantity || 1),
         height: convertToNumber(editingDoor.height, 0),
         width: convertToNumber(editingDoor.width, 0),
@@ -1509,6 +1550,9 @@ function StepTwo({
       setDoors(updatedDoors);
       setEditingIndex(null);
       setEditingDoor(null);
+      // Reset temporary states
+      setDoorSearch("");
+      setTempSelectedDoorProduct(null);
       toast.success(t("forms.door_updated_successfully"));
     }
   };
@@ -1520,6 +1564,9 @@ function StepTwo({
     }
     setEditingIndex(null);
     setEditingDoor(null);
+    // Reset temporary states
+    setDoorSearch("");
+    setTempSelectedDoorProduct(null);
   };
 
   const handleRemoveDoor = (index: number) => {
@@ -1694,7 +1741,6 @@ function StepTwo({
     casingSize: number,
   ) => {
     if (!doorData) return casing;
-
     // Helper function to convert string with comma to number
     const convertToNumber = (value: any, defaultValue: number = 0) => {
       if (typeof value === "number") return value;
@@ -1768,201 +1814,35 @@ function StepTwo({
                   <DoorOpen className="h-6 w-6 text-green-600" />
                 </div>
                 {t("forms.doors_configuration")}
-                {selectedDoorProduct && (
-                  <span className="text-lg font-medium text-blue-600">
-                    - {selectedDoorProduct.name}
-                  </span>
-                )}
                 <Badge variant="secondary" className="ml-3 px-3 py-1">
                   {doors.length} {t("forms.doors_added")}
                 </Badge>
               </CardTitle>
               <p className="text-gray-600 mt-2">
-                {selectedDoorProduct
-                  ? `Adding doors with model: ${selectedDoorProduct.name}`
-                  : t("forms.add_doors_description")}
+                {t("forms.add_doors_description")}
               </p>
-
-              {/* Door Model Selection */}
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      {t("forms.door_model")} *
-                    </label>
-                    <HeaderSearch
-                      value={doorSearch}
-                      onChange={setDoorSearch}
-                      placeholder="Search door models..."
-                      onProductSelect={setSelectedDoorProduct}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      {t("forms.price_type")} *
-                    </label>
-                    <Select
-                      value={doorPriceType}
-                      onValueChange={setDoorPriceType}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Price Type" />
-                      </SelectTrigger>
-                      <SelectContent className="z-[9999]">
-                        {selectedDoorProduct?.salePrices?.map((price: any) => (
-                          <SelectItem
-                            key={price.priceType.id}
-                            value={price.priceType.id}
-                          >
-                            {price.priceType.name} -{" "}
-                            {(price.value / 100).toFixed(2)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                {selectedDoorProduct && doorPriceType && (
-                  <div className="mt-2 p-2 bg-white rounded border">
-                    <span className="text-sm text-gray-600">
-                      Selected: <strong>{selectedDoorProduct.name}</strong> -
-                      {
-                        selectedDoorProduct.salePrices?.find(
-                          (p: any) => p.priceType.id === doorPriceType,
-                        )?.priceType?.name
-                      }
-                      (
-                      {(
-                        selectedDoorProduct.salePrices?.find(
-                          (p: any) => p.priceType.id === doorPriceType,
-                        )?.value / 100 || 0
-                      ).toFixed(2)}
-                      )
-                    </span>
-                  </div>
-                )}
-              </div>
             </div>
             <div className="flex flex-col items-end gap-2">
               <Button
                 onClick={handleAddNewRow}
-                className={`flex items-center gap-2 ${
-                  !selectedDoorProduct || !doorPriceType
-                    ? "bg-gray-400 hover:bg-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                }`}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
                 size="lg"
-                disabled={!selectedDoorProduct || !doorPriceType}
               >
                 <Plus className="h-5 w-5" />
                 {t("forms.add_row")}
               </Button>
-
-              <Button
-                onClick={() => {
-                  // Reset selections to allow choosing a different door model
-                  // This creates a "new section" for different door types
-                  if (doors.length > 0 && selectedDoorProduct) {
-                    const confirmChange = window.confirm(
-                      `You have ${doors.length} doors with model "${selectedDoorProduct.name}".
-                      Starting a new table will let you add doors with a different model.
-                      Your current doors will be preserved. Continue?`,
-                    );
-                    if (!confirmChange) return;
-                  }
-
-                  setSelectedDoorProduct(null);
-                  setDoorPriceType("");
-                  setDoorSearch("");
-                  setSelectedExtensionProduct(null);
-                  setExtensionPriceType("");
-                  setExtensionSearch("");
-                  setSelectedCasingProduct(null);
-                  setCasingPriceType("");
-                  setCasingSearch("");
-                  setSelectedCrownProduct(null);
-                  setCrownPriceType("");
-                  setCrownSearch("");
-
-                  // Reset accessories
-                  setSelectedCubeProduct(null);
-                  setCubePriceType("");
-                  setCubeSearch("");
-                  setSelectedLegProduct(null);
-                  setLegPriceType("");
-                  setLegSearch("");
-                  setSelectedGlassProduct(null);
-                  setGlassPriceType("");
-                  setGlassSearch("");
-                  setSelectedLockProduct(null);
-                  setLockPriceType("");
-                  setLockSearch("");
-                  setSelectedTopsaProduct(null);
-                  setTopsaPriceType("");
-                  setTopsaSearch("");
-                  setSelectedBeadingProduct(null);
-                  setBeadingPriceType("");
-                  setBeadingSearch("");
-
-                  toast.info(
-                    "Ready to select a new door model. Your existing doors are preserved.",
-                  );
-                }}
-                variant="outline"
-                className="flex items-center gap-2 border-blue-300 text-blue-600 hover:bg-blue-50"
-                disabled={doors.length === 0 && !selectedDoorProduct}
-              >
-                <Package className="h-4 w-4" />
-                {doors.length > 0 ? "Change Door Model" : "Reset Selection"}
-              </Button>
-
-              {(!selectedDoorProduct || !doorPriceType) && (
-                <p className="text-xs text-amber-600 text-right max-w-[200px]">
-                  Select door model and price type first
-                </p>
-              )}
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Doors Table */}
-          {doors.length > 0 && selectedDoorProduct && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <DoorOpen className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-blue-900">
-                      Current Door Model: {selectedDoorProduct.name}
-                    </p>
-                    <p className="text-sm text-blue-700">
-                      {doors.length} door{doors.length > 1 ? "s" : ""}{" "}
-                      configured with this model
-                    </p>
-                  </div>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 text-blue-800"
-                >
-                  Total:{" "}
-                  {doors.reduce(
-                    (sum: number, door: any) => sum + (door.quantity || 1),
-                    0,
-                  )}{" "}
-                  items
-                </Badge>
-              </div>
-            </div>
-          )}
-
           <div className="rounded-lg border overflow-x-auto relative">
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-12">#</TableHead>
+                  <TableHead className="min-w-[250px]">
+                    {t("forms.door_model")}
+                  </TableHead>
                   <TableHead className="w-16">{t("forms.quantity")}</TableHead>
                   <TableHead className="w-20">{t("forms.height")}</TableHead>
                   <TableHead className="w-20">{t("forms.width")}</TableHead>
@@ -2005,7 +1885,7 @@ function StepTwo({
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[400px]">
+                  <TableHead className="min-w-[500px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1">
                         <span>{t("forms.casings")}</span>
@@ -2287,6 +2167,111 @@ function StepTwo({
                     className={editingIndex === index ? "bg-blue-50" : ""}
                   >
                     <TableCell className="font-medium">{index + 1}</TableCell>
+
+                    {/* Door Model */}
+                    <TableCell className="align-top p-2">
+                      {editingIndex === index ? (
+                        <div className="space-y-2">
+                          <HeaderSearch
+                            value={doorSearch}
+                            onChange={setDoorSearch}
+                            placeholder="Search door models..."
+                            onProductSelect={(product) => {
+                              setTempSelectedDoorProduct(product);
+                              handleFieldChange("model", product?.id || "");
+                              handleFieldChange("price_type", "");
+                              handleFieldChange("price", 0);
+                              // Update last selected door model for future rows
+                              if (product) {
+                                setLastSelectedDoorModel({
+                                  ...product,
+                                  lastPriceType: "",
+                                });
+                              }
+                            }}
+                          />
+                          {tempSelectedDoorProduct && (
+                            <Select
+                              value={editingDoor?.price_type || ""}
+                              onValueChange={(value) => {
+                                const selectedPrice =
+                                  tempSelectedDoorProduct?.salePrices?.find(
+                                    (p: any) => p.priceType.id === value,
+                                  );
+                                handleFieldChange("price_type", value);
+                                handleFieldChange(
+                                  "price",
+                                  selectedPrice ? selectedPrice.value / 100 : 0,
+                                );
+                                // Update last selected price type for future rows
+                                if (tempSelectedDoorProduct) {
+                                  setLastSelectedDoorModel({
+                                    ...tempSelectedDoorProduct,
+                                    lastPriceType: value,
+                                  });
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue placeholder="Price Type" />
+                              </SelectTrigger>
+                              <SelectContent className="z-[9999]">
+                                {tempSelectedDoorProduct?.salePrices?.map(
+                                  (price: any) => (
+                                    <SelectItem
+                                      key={price.priceType.id}
+                                      value={price.priceType.id}
+                                    >
+                                      {price.priceType.name} -{" "}
+                                      {(price.value / 100).toFixed(2)}
+                                    </SelectItem>
+                                  ),
+                                )}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          {editingDoor?.price_type &&
+                            tempSelectedDoorProduct && (
+                              <div className="text-xs p-1 bg-white rounded border">
+                                <span className="text-gray-600">
+                                  Price: {(editingDoor.price || 0).toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <div className="text-xs font-medium">
+                            {getProductName(door.model) || "No model selected"}
+                          </div>
+                          {door.price_type && (
+                            <div className="text-xs text-gray-600">
+                              {productsList
+                                .find((p: any) => p.id === door.model)
+                                ?.salePrices?.find(
+                                  (p: any) =>
+                                    p.priceType.id === door.price_type,
+                                )?.priceType?.name || door.price_type}
+                            </div>
+                          )}
+                          {door.price && (
+                            <div className="text-xs text-gray-600">
+                              Price: {(door.price || 0).toFixed(2)}
+                            </div>
+                          )}
+                          <Button
+                            onClick={() => {
+                              handleEditDoor(index);
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs"
+                          >
+                            Change Model
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
 
                     {/* Quantity */}
                     <TableCell className="align-middle">
@@ -2615,9 +2600,7 @@ function StepTwo({
                                         }}
                                         className="h-8"
                                         placeholder="Auto-calc"
-                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${
-                                          2 * casingSize
-                                        }`}
+                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
                                         disabled={
                                           casing.casing_formula === "formula2"
                                         }
@@ -2673,56 +2656,56 @@ function StepTwo({
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                  </div>
-                                  {casing.casing_formula === "formula2" && (
-                                    <div className="mt-2">
-                                      <label className="text-xs text-gray-600">
-                                        Диапазон
-                                      </label>
-                                      <Select
-                                        value={casing.casing_range || ""}
-                                        onValueChange={(value) => {
-                                          const updatedCasings = [
-                                            ...editingDoor.casings,
-                                          ];
-                                          const updatedCasing = {
-                                            ...updatedCasings[casIndex],
-                                            casing_range: value,
-                                          };
-                                          const recalculatedCasing =
-                                            calculateCasingDimensions(
-                                              updatedCasing,
-                                              editingDoor,
-                                              fieldOptions,
-                                              casingSize,
+                                    {casing.casing_formula === "formula2" && (
+                                      <div className="mt-2">
+                                        <label className="text-xs text-gray-600">
+                                          Диапазон
+                                        </label>
+                                        <Select
+                                          value={casing.casing_range || ""}
+                                          onValueChange={(value) => {
+                                            const updatedCasings = [
+                                              ...editingDoor.casings,
+                                            ];
+                                            const updatedCasing = {
+                                              ...updatedCasings[casIndex],
+                                              casing_range: value,
+                                            };
+                                            const recalculatedCasing =
+                                              calculateCasingDimensions(
+                                                updatedCasing,
+                                                editingDoor,
+                                                fieldOptions,
+                                                casingSize,
+                                              );
+                                            updatedCasings[casIndex] =
+                                              recalculatedCasing;
+                                            handleFieldChange(
+                                              "casings",
+                                              updatedCasings,
                                             );
-                                          updatedCasings[casIndex] =
-                                            recalculatedCasing;
-                                          handleFieldChange(
-                                            "casings",
-                                            updatedCasings,
-                                          );
-                                        }}
-                                      >
-                                        <SelectTrigger className="h-8">
-                                          <SelectValue placeholder="Select range" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
-                                          {fieldOptions.casingRangeOptions?.map(
-                                            (option: any) => (
-                                              <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                              >
-                                                {option.label} (Размер:{" "}
-                                                {option.casing_size})
-                                              </SelectItem>
-                                            ),
-                                          )}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  )}
+                                          }}
+                                        >
+                                          <SelectTrigger className="h-8">
+                                            <SelectValue placeholder="Select range" />
+                                          </SelectTrigger>
+                                          <SelectContent className="z-[9999]">
+                                            {fieldOptions.casingRangeOptions?.map(
+                                              (option: any) => (
+                                                <SelectItem
+                                                  key={option.value}
+                                                  value={option.value}
+                                                >
+                                                  {option.casing_size}
+                                                </SelectItem>
+                                              ),
+                                            )}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                    )}
+                                  </div>
+
                                   {/* <div className="flex justify-between items-center mt-1">
                                   <span className="text-xs font-medium text-green-600">
                                     Total: {(parseFloat(casing.price || 0) * parseInt(casing.quantity || 1)).toFixed(2)}
@@ -2869,18 +2852,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[0]) {
-                              updatedAccessories[0] = {
-                                ...updatedAccessories[0],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[0] = {
+                              model: selectedCubeProduct
+                                ? selectedCubeProduct.id
+                                : updatedAccessories[0]?.model || "",
+                              price_type:
+                                cubePriceType ||
+                                updatedAccessories[0]?.price_type ||
+                                "",
+                              price:
+                                selectedCubeProduct && cubePriceType
+                                  ? (selectedCubeProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === cubePriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[0]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "cube",
+                              name: "Кубик",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -2901,18 +2908,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[1]) {
-                              updatedAccessories[1] = {
-                                ...updatedAccessories[1],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[1] = {
+                              model: selectedLegProduct
+                                ? selectedLegProduct.id
+                                : updatedAccessories[1]?.model || "",
+                              price_type:
+                                legPriceType ||
+                                updatedAccessories[1]?.price_type ||
+                                "",
+                              price:
+                                selectedLegProduct && legPriceType
+                                  ? (selectedLegProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === legPriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[1]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "leg",
+                              name: "Ножка",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -2933,18 +2964,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[2]) {
-                              updatedAccessories[2] = {
-                                ...updatedAccessories[2],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[2] = {
+                              model: selectedGlassProduct
+                                ? selectedGlassProduct.id
+                                : updatedAccessories[2]?.model || "",
+                              price_type:
+                                glassPriceType ||
+                                updatedAccessories[2]?.price_type ||
+                                "",
+                              price:
+                                selectedGlassProduct && glassPriceType
+                                  ? (selectedGlassProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === glassPriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[2]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "glass",
+                              name: "Стекло",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -2965,18 +3020,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[3]) {
-                              updatedAccessories[3] = {
-                                ...updatedAccessories[3],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[3] = {
+                              model: selectedLockProduct
+                                ? selectedLockProduct.id
+                                : updatedAccessories[3]?.model || "",
+                              price_type:
+                                lockPriceType ||
+                                updatedAccessories[3]?.price_type ||
+                                "",
+                              price:
+                                selectedLockProduct && lockPriceType
+                                  ? (selectedLockProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === lockPriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[3]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "lock",
+                              name: "Замок",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -2997,18 +3076,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[4]) {
-                              updatedAccessories[4] = {
-                                ...updatedAccessories[4],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[4] = {
+                              model: selectedTopsaProduct
+                                ? selectedTopsaProduct.id
+                                : updatedAccessories[4]?.model || "",
+                              price_type:
+                                topsaPriceType ||
+                                updatedAccessories[4]?.price_type ||
+                                "",
+                              price:
+                                selectedTopsaProduct && topsaPriceType
+                                  ? (selectedTopsaProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === topsaPriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[4]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "topsa",
+                              name: "Топса",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -3029,18 +3132,42 @@ function StepTwo({
                             const updatedAccessories = [
                               ...(editingDoor.accessories || []),
                             ];
-                            if (updatedAccessories[5]) {
-                              updatedAccessories[5] = {
-                                ...updatedAccessories[5],
-                                quantity: parseInt(e.target.value) || 0,
-                              };
-                              handleFieldChange(
-                                "accessories",
-                                updatedAccessories,
-                              );
+                            // Ensure array has enough elements
+                            while (updatedAccessories.length < 6) {
+                              updatedAccessories.push({
+                                model: "",
+                                price_type: "",
+                                price: 0,
+                                quantity: 0,
+                                accessory_type: "",
+                                name: "",
+                              });
                             }
+                            updatedAccessories[5] = {
+                              model: selectedBeadingProduct
+                                ? selectedBeadingProduct.id
+                                : updatedAccessories[5]?.model || "",
+                              price_type:
+                                beadingPriceType ||
+                                updatedAccessories[5]?.price_type ||
+                                "",
+                              price:
+                                selectedBeadingProduct && beadingPriceType
+                                  ? (selectedBeadingProduct.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.id === beadingPriceType,
+                                    )?.value || 0) / 100
+                                  : updatedAccessories[5]?.price || 0,
+                              quantity: parseInt(e.target.value) || 0,
+                              accessory_type: "beading",
+                              name: "Шпингалет",
+                            };
+                            handleFieldChange(
+                              "accessories",
+                              updatedAccessories,
+                            );
                           }}
-                          className="w-16"
+                          className="w-45"
                           placeholder="Кol-во"
                           min="0"
                         />
@@ -3100,7 +3227,7 @@ function StepTwo({
                 {doors.length === 0 && (
                   <TableRow>
                     <TableCell
-                      colSpan={17}
+                      colSpan={18}
                       className="text-center py-8 text-gray-500"
                     >
                       <div className="flex flex-col items-center gap-2">
