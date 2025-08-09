@@ -109,9 +109,10 @@
     "admin":"Администратор",
     "search_topsas": "Поиск топс",
     "search_door_model": "Поиск модели двери",
-
-  "search_glass": "Поиск стёкла",
-    
+    "search_legs": "Поиск ножек",
+    "search_doors":"Поиск двери",
+    "search_glass": "Поиск стёкла",
+    "search_cubes":"Поиск куба",
     "search_locks": "Поиск замоков",
     "search_beading": "Поиск штапика",
     "search_casings": "Поиск наличников",

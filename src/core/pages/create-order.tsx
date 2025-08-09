@@ -48,10 +48,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Input } from "../../components/ui/input";
-import {
-
-  createProductSelectHandler,
-} from "../../utils/priceUtils";
+import { createProductSelectHandler } from "../../utils/priceUtils";
 import {
   Select,
   SelectContent,
@@ -1840,11 +1837,12 @@ function StepTwo({
                             onChange={setDoorSearch}
                             placeholder={t("forms.search_door_model")}
                             onProductSelect={(product) => {
+                            
                               setTempSelectedDoorProduct(product);
                               handleFieldChange("model", product?.id || "");
                               // Find 'продаж цена' price type
                               const salePrice = product?.salePrices?.find(
-                                (p: any) => p.priceType.name === "продаж цена",
+                                (p: any) => p.priceType.name === "Цена продажи",
                               );
                               handleFieldChange(
                                 "price_type",
@@ -1901,7 +1899,7 @@ function StepTwo({
                                     >
                                       {price.priceType.name} -{" "}
                                       {(price.value / 100).toFixed(2)}
-                                    </SelectItem>
+                                  </SelectItem>
                                   ),
                                 )}
                               </SelectContent>
@@ -1925,7 +1923,7 @@ function StepTwo({
                           )}
                           {door.price && (
                             <div className="text-xs text-gray-600">
-                              Price: {(door.price || 0).toFixed(2)}
+                              Цена {(door.price || 0).toFixed(2)}
                             </div>
                           )}
                           <Button
@@ -1936,7 +1934,7 @@ function StepTwo({
                             variant="outline"
                             className="h-6 px-2 text-xs"
                           >
-                            Change Model
+                         Сменить модель
                           </Button>
                         </div>
                       )}
@@ -2087,7 +2085,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2113,7 +2111,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Height
+                                          Высота
                                         </label>
                                       )}
                                       <Input
@@ -2142,7 +2140,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Width
+                                          Ширина
                                         </label>
                                       )}
                                       <Input
@@ -2214,7 +2212,7 @@ function StepTwo({
                                     <div>
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2247,7 +2245,7 @@ function StepTwo({
                                       {/* <label className="text-xs text-gray-600">Height</label> */}
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Height
+                                          Высота
                                         </label>
                                       )}
                                       <Input
@@ -2429,7 +2427,7 @@ function StepTwo({
                                       {/* <label className="text-xs text-gray-600">Qty</label> */}
                                       {crownIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2456,7 +2454,7 @@ function StepTwo({
                                     <div>
                                       {crownIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Width
+                                          Ширина
                                         </label>
                                       )}
                                       <Input
@@ -3020,7 +3018,7 @@ function HeaderSearch({
         {value.length >= 1 && products.length > 0 && !isOpen && (
           <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
             <div
-              className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+              className="w-2.5 h-2.5   bg-blue-500 rounded-full animate-bounce"
               title={`${products.length} results available`}
             ></div>
           </div>
@@ -3096,187 +3094,242 @@ function StepThree({
 
   return (
     <div className="w-full">
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Calculator className="h-6 w-6 text-purple-600" />
-            </div>
-            {t("forms.order_review")}
-            {/* Calculate Button */}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Order Details Summary */}
-          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-            <div>
-              <p className="text-sm text-gray-600">{t("forms.doors_count")}</p>
-              <p className="font-semibold">{doors.length}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">{t("forms.total_items")}</p>
-              <p className="font-semibold">
-                {doors.reduce(
-                  (total: number, door: any) =>
-                    total +
-                    1 +
-                    (door.extensions?.length || 0) +
-                    (door.casings?.length || 0) +
-                    (door.crowns?.length || 0) +
-                    (door.accessories?.length || 0),
-                  0,
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* Price Breakdown */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-blue-600" />
-              {t("forms.price_breakdown")}
-            </h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>{t("forms.doors_subtotal")}</span>
-                <span className="font-semibold">
-                  {priceBreakdown.doors.toFixed(2)} сум
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("forms.extensions_subtotal")}</span>
-                <span>{priceBreakdown.extensions.toFixed(2)} сум</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("forms.casings_subtotal")}</span>
-                <span>{priceBreakdown.casings.toFixed(2)} сум</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("forms.crowns_subtotal")}</span>
-                <span>{priceBreakdown.crowns.toFixed(2)} сум</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t("forms.accessories_subtotal")}</span>
-                <span>{priceBreakdown.accessories.toFixed(2)} сум</span>
-              </div>
-              <div className="flex justify-between border-t pt-2 mt-2">
-                <span className="font-bold">{t("forms.subtotal")}</span>
-                <span className="font-bold">
-                  {totals.total_sum.toFixed(2)} сум
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Door Details */}
-          <div className="space-y-4">
-            <h4 className="font-semibold text-gray-800">
-              {t("forms.door_details")}
-            </h4>
-            {doors.map((door: any, index: number) => (
-              <div key={index} className="p-4 border rounded-lg bg-white">
-                <h5 className="font-medium mb-2">
-                  {t("forms.door")} {index + 1}
-                </h5>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p>
-                    {t("forms.dimensions")}: {parseFloat(door.width || 0)} x{" "}
-                    {parseFloat(door.height || 0)}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Side - Order Review (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Calculator className="h-6 w-6 text-purple-600" />
+                </div>
+                {t("forms.order_review")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Order Details Summary */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("forms.doors_count")}
                   </p>
-                  <p>
-                    {t("forms.quantity")}: {parseInt(door.quantity || 1)}
+                  <p className="font-semibold">{doors.length}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    {t("forms.total_items")}
                   </p>
-                  <p>
-                    {t("forms.price")}: {parseFloat(door.price || 0).toFixed(2)}{" "}
-                    сум
+                  <p className="font-semibold">
+                    {doors.reduce(
+                      (total: number, door: any) =>
+                        total +
+                        1 +
+                        (door.extensions?.length || 0) +
+                        (door.casings?.length || 0) +
+                        (door.crowns?.length || 0) +
+                        (door.accessories?.length || 0),
+                      0,
+                    )}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Pricing Summary & Actions */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {t("forms.pricing_summary")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Discount and Payment Fields */}
-          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-gray-800">
-                {t("forms.discount")} & {t("forms.advance_payment")}
-              </h4>
-              <div className="ml-auto">
+              {/* Price Breakdown */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-blue-600" />
+                  {t("forms.price_breakdown")}
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>{t("forms.doors_subtotal")}</span>
+                    <span className="font-semibold">
+                      {priceBreakdown.doors.toFixed(2)} сум
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.extensions_subtotal")}</span>
+                    <span>{priceBreakdown.extensions.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.casings_subtotal")}</span>
+                    <span>{priceBreakdown.casings.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.crowns_subtotal")}</span>
+                    <span>{priceBreakdown.crowns.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t("forms.accessories_subtotal")}</span>
+                    <span>{priceBreakdown.accessories.toFixed(2)} сум</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2 mt-2">
+                    <span className="font-bold">{t("forms.subtotal")}</span>
+                    <span className="font-bold">
+                      {totals.total_sum.toFixed(2)} сум
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Door Details */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-800">
+                  {t("forms.door_details")}
+                </h4>
+                {doors.map((door: any, index: number) => (
+                  <div key={index} className="p-4 border rounded-lg bg-white">
+                    <h5 className="font-medium mb-2">
+                      {t("forms.door")} {index + 1}
+                    </h5>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>
+                        {t("forms.dimensions")}: {parseFloat(door.width || 0)} x{" "}
+                        {parseFloat(door.height || 0)}
+                      </p>
+                      <p>
+                        {t("forms.quantity")}: {parseInt(door.quantity || 1)}
+                      </p>
+                      <p>
+                        {t("forms.price")}:{" "}
+                        {parseFloat(door.price || 0).toFixed(2)} сум
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Side - Price Summary (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8 h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <span>{t("forms.pricing_summary")}</span>
                 <Button
                   onClick={onCalculate}
                   disabled={isCalculating || doors.length === 0}
                   className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                  size="lg"
+                  size="sm"
                 >
-                  <Calculator className="h-5 w-5" />
+                  <Calculator className="h-4 w-4" />
                   {isCalculating
                     ? t("forms.calculating")
                     : t("forms.calculate")}
                 </Button>
-              </div>
-            </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Discount and Payment Fields */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-800">
+                  {t("forms.discount")} & {t("forms.advance_payment")}
+                </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {t("forms.discount")}
-                </label>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="0"
-                      value={discountAmountInput || ""}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      onChange={(e) => {
-                        let value = e.target.value;
-                        // Handle comma as decimal separator
-                        if (typeof value === "string") {
-                          let cleanedValue = value
-                            .replace(/,/g, ".")
-                            .replace(/[^\d.]/g, "");
-                          const parts = cleanedValue.split(".");
-                          if (parts.length > 2) {
-                            cleanedValue =
-                              parts[0] + "." + parts.slice(1).join("");
-                          }
-                          value = cleanedValue;
-                        }
-                        const amount = parseFloat(value) || 0;
-                        setDiscountAmountInput(amount);
-                        // Update percentage for display purposes
-                        const percentage =
-                          totals.total_sum > 0
-                            ? (amount / totals.total_sum) * 100
-                            : 0;
-                        orderForm.setValue(
-                          "discount_percentage",
-                          percentage.toFixed(2),
-                        );
-                      }}
-                    />
-                    <span className="text-xs text-gray-500 mt-1 block">
-                      {t("forms.discount_amount")}
-                    </span>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t("forms.discount")}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={discountAmountInput || ""}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Handle comma as decimal separator
+                            if (typeof value === "string") {
+                              let cleanedValue = value
+                                .replace(/,/g, ".")
+                                .replace(/[^\d.]/g, "");
+                              const parts = cleanedValue.split(".");
+                              if (parts.length > 2) {
+                                cleanedValue =
+                                  parts[0] + "." + parts.slice(1).join("");
+                              }
+                              value = cleanedValue;
+                            }
+                            const amount = parseFloat(value) || 0;
+                            setDiscountAmountInput(amount);
+                            // Update percentage for display purposes
+                            const percentage =
+                              totals.total_sum > 0
+                                ? (amount / totals.total_sum) * 100
+                                : 0;
+                            orderForm.setValue(
+                              "discount_percentage",
+                              percentage.toFixed(2),
+                            );
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          {t("forms.discount_amount")}
+                        </span>
+                      </div>
+                      <div className="w-20">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                          {...orderForm.register("discount_percentage", {
+                            onChange: (e: any) => {
+                              let value = e.target.value;
+                              // Handle comma as decimal separator
+                              if (typeof value === "string") {
+                                let cleanedValue = value
+                                  .replace(/,/g, ".")
+                                  .replace(/[^\d.]/g, "");
+                                const parts = cleanedValue.split(".");
+                                if (parts.length > 2) {
+                                  cleanedValue =
+                                    parts[0] + "." + parts.slice(1).join("");
+                                }
+                                value = cleanedValue;
+                              }
+                              const percentage = parseFloat(value) || 0;
+                              const amount =
+                                totals.total_sum * (percentage / 100);
+                              setDiscountAmountInput(amount);
+                            },
+                          })}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block text-center">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    {(discount_percentage > 0 || discountAmountInput > 0) && (
+                      <p className="text-sm text-green-600">
+                        {t("forms.discount_amount")}:{" "}
+                        {discountAmountInput > 0
+                          ? discountAmountInput.toFixed(0)
+                          : (
+                              totals.total_sum *
+                              (discount_percentage / 100)
+                            ).toFixed(0)}{" "}
+                        сум
+                        {discount_percentage > 0 &&
+                          ` (${discount_percentage}%)`}
+                      </p>
+                    )}
                   </div>
-                  <div className="w-20">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("forms.advance_payment")}
+                    </label>
                     <input
                       type="text"
                       inputMode="decimal"
                       placeholder="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-                      {...orderForm.register("discount_percentage", {
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      {...orderForm.register("advance_payment", {
                         onChange: (e: any) => {
                           let value = e.target.value;
                           // Handle comma as decimal separator
@@ -3289,109 +3342,62 @@ function StepThree({
                               cleanedValue =
                                 parts[0] + "." + parts.slice(1).join("");
                             }
-                            value = cleanedValue;
+                            e.target.value = cleanedValue;
                           }
-                          const percentage = parseFloat(value) || 0;
-                          const amount = totals.total_sum * (percentage / 100);
-                          setDiscountAmountInput(amount);
                         },
                       })}
                     />
-                    <span className="text-xs text-gray-500 mt-1 block text-center">
-                      %
-                    </span>
                   </div>
                 </div>
-                {(discount_percentage > 0 || discountAmountInput > 0) && (
-                  <p className="text-sm text-green-600">
-                    {t("forms.discount_amount")}:{" "}
-                    {discountAmountInput > 0
-                      ? discountAmountInput.toFixed(0)
-                      : (
-                          totals.total_sum *
-                          (discount_percentage / 100)
-                        ).toFixed(0)}{" "}
-                    сум
-                    {discount_percentage > 0 && ` (${discount_percentage}%)`}
-                  </p>
-                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {t("forms.advance_payment")}
-                </label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  {...orderForm.register("advance_payment", {
-                    onChange: (e: any) => {
-                      let value = e.target.value;
-                      // Handle comma as decimal separator
-                      if (typeof value === "string") {
-                        let cleanedValue = value
-                          .replace(/,/g, ".")
-                          .replace(/[^\d.]/g, "");
-                        const parts = cleanedValue.split(".");
-                        if (parts.length > 2) {
-                          cleanedValue =
-                            parts[0] + "." + parts.slice(1).join("");
-                        }
-                        e.target.value = cleanedValue;
-                      }
-                    },
-                  })}
-                />
+
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">{t("forms.subtotal")}</span>
+                  <span className="font-semibold">
+                    {totals.total_sum.toFixed(0)} сум
+                  </span>
+                </div>
+                <div className="flex justify-between text-green-600">
+                  <span>
+                    {t("forms.discount")} ({discount_percentage || 0}%)
+                  </span>
+                  <span>{totals.discountAmount.toFixed(0)} сум</span>
+                </div>
+                <div className="flex justify-between text-red-600">
+                  <span>{t("forms.advance_payment")}</span>
+                  <span>{advance.toFixed(0)} сум</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-xl font-bold text-blue-600">
+                  <span>{t("forms.remaining_balance")}</span>
+                  <span>{totals.remainingBalance.toFixed(0)} сум</span>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t("forms.subtotal")}</span>
-              <span className="font-semibold">
-                {totals.total_sum.toFixed(0)} сум
-              </span>
-            </div>
-            <div className="flex justify-between text-green-600">
-              <span>
-                {t("forms.discount")} ({discount_percentage || 0}%)
-              </span>
-              <span>{totals.discountAmount.toFixed(0)} сум</span>
-            </div>
-            <div className="flex justify-between text-red-600">
-              <span>{t("forms.advance_payment")}</span>
-              <span>{advance.toFixed(0)} сум</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between text-xl font-bold text-blue-600">
-              <span>{t("forms.remaining_balance")}</span>
-              <span>{totals.remainingBalance.toFixed(0)} сум</span>
-            </div>
-          </div>
-
-          <div className="pt-4">
-            <Button
-              onClick={orderForm.handleSubmit(onSubmit)}
-              disabled={isLoading}
-              className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              size="lg"
-            >
-              {isLoading
-                ? `${t("common.creating")}...`
-                : t("common.create_order")}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {}}
-              className="w-full hidden"
-            >
-               {t("common.back_to_doors")}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <div className="pt-4">
+                <Button
+                  onClick={orderForm.handleSubmit(onSubmit)}
+                  disabled={isLoading}
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  size="lg"
+                >
+                  {isLoading
+                    ? `${t("common.creating")}...`
+                    : t("common.create_order")}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {}}
+                  className="w-full hidden"
+                >
+                  {t("common.back_to_doors")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

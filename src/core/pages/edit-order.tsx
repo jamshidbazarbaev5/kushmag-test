@@ -2290,7 +2290,7 @@ function StepTwo({
                             variant="outline"
                             className="h-6 px-2 text-xs"
                           >
-                            Change Model
+                            Сменить модель
                           </Button>
                         </div>
                       )}
@@ -3463,15 +3463,21 @@ function StepThree({
     }
   };
 
+  // Handle advance payment change
+  const handleAdvancePaymentChange = (value: string) => {
+    const payment = parseFloat(value) || 0;
+    setAdvancePayment(payment);
+  };
+
   // Calculate detailed subtotals
   // Now using API response data instead of client-side calculation
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        {/* Order Summary */}
-        <div className="lg:col-span-2">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Side - Order Review (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -3510,12 +3516,10 @@ function StepThree({
 
               {/* Price Breakdown */}
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold text-blue-700 flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-blue-600" />
-                    {t("forms.price_breakdown")}
-                  </h4>
-                </div>
+                <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-blue-600" />
+                  {t("forms.price_breakdown")}
+                </h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
@@ -3578,14 +3582,12 @@ function StepThree({
           </Card>
         </div>
 
-        {/* Pricing Summary & Actions */}
-        <div className="space-y-6">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
+        {/* Right Side - Price Summary (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8 h-full">
             <CardHeader>
-              <div className="flex justify-between mb-4">
-                <CardTitle className="text-xl">
-                  {t("forms.pricing_summary")}
-                </CardTitle>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <span>{t("forms.pricing_summary")}</span>
                 <Button
                   onClick={onCalculate}
                   disabled={doors.length === 0 || isCalculating}
@@ -3604,76 +3606,9 @@ function StepThree({
                     </>
                   )}
                 </Button>
-              </div>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Discount and Payment Inputs */}
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold text-gray-800">
-                  {t("forms.discount_and_payment")}
-                </h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Discount Amount */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.discount_amount")}
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={discountAmount}
-                      onChange={(e) =>
-                        handleDiscountAmountChange(e.target.value)
-                      }
-                      placeholder="0"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500">
-                      {t("forms.enter_discount_amount_note")}
-                    </p>
-                  </div>
-
-                  {/* Discount Percentage */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.discount_percentage")}
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={discountPercentage}
-                      onChange={(e) =>
-                        handleDiscountPercentageChange(e.target.value)
-                      }
-                      placeholder="0"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500">
-                      {t("forms.enter_discount_percentage_note")}
-                    </p>
-                  </div>
-
-                  {/* Advance Payment */}
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.advance_payment")}
-                    </label>
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={advancePayment}
-                      onChange={(e) => setAdvancePayment(e.target.value)}
-                      placeholder="0"
-                      className="w-full"
-                    />
-                    <p className="text-xs text-gray-500">
-                      {t("forms.enter_advance_payment_note")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
@@ -3681,21 +3616,89 @@ function StepThree({
                     {totals.total_sum.toFixed(0)} сум
                   </span>
                 </div>
-                <div className="flex justify-between text-green-600">
-                  <span>
-                    {t("forms.discount")} (
-                    {displayDiscountPercentage.toFixed(1)}%)
-                  </span>
-                  <span>{totals.discountAmount.toFixed(0)} сум</span>
+
+                {/* Discount Section */}
+                <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-green-700">
+                    {t("forms.discount")}
+                  </h4>
+
+                  {/* Discount Amount Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_amount")} (сум)
+                    </label>
+                    <Input
+                      type="number"
+                      value={discountAmount || ""}
+                      onChange={(e) =>
+                        handleDiscountAmountChange(e.target.value)
+                      }
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Discount Percentage Input */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.discount_percentage")} (%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={discountPercentage || ""}
+                      onChange={(e) =>
+                        handleDiscountPercentageChange(e.target.value)
+                      }
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Discount Summary */}
+                  {(discountAmount > 0 || discountPercentage > 0) && (
+                    <div className="flex justify-between text-green-600 font-medium pt-2 border-t border-green-200">
+                      <span>
+                        {t("forms.discount")} ({discountPercentage.toFixed(1)}%)
+                      </span>
+                      <span>{totals.discountAmount.toFixed(0)} сум</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between text-red-600">
-                  <span>{t("forms.advance_payment")}</span>
-                  <span>
-                    {convertToNumber(advancePayment, 0).toFixed(0)} сум
-                  </span>
+
+                {/* Advance Payment Section */}
+                <div className="bg-orange-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-orange-700">
+                    {t("forms.advance_payment")}
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.advance_payment")} (сум)
+                    </label>
+                    <Input
+                      type="number"
+                      value={advancePayment || ""}
+                      onChange={(e) =>
+                        handleAdvancePaymentChange(e.target.value)
+                      }
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+
+                  {advancePayment > 0 && (
+                    <div className="flex justify-between text-orange-600 font-medium pt-2 border-t border-orange-200">
+                      <span>{t("forms.advance_payment")}</span>
+                      <span>{advancePayment.toFixed(0)} сум</span>
+                    </div>
+                  )}
                 </div>
+
                 <Separator />
-                <div className="flex justify-between text-xl font-bold text-blue-600">
+
+                {/* Final Remaining Balance */}
+                <div className="flex justify-between text-xl font-bold text-purple-600 bg-purple-50 p-4 rounded-lg">
                   <span>{t("forms.remaining_balance")}</span>
                   <span>{totals.remainingBalance.toFixed(0)} сум</span>
                 </div>
@@ -3709,11 +3712,11 @@ function StepThree({
                   size="lg"
                 >
                   {isLoading
-                    ? `${t("common.creating")}...`
+                    ? `${t("common.creating")}...`
                     : t("common.create_order")}
                 </Button>
                 <Button variant="outline" onClick={onBack} className="w-full">
-                   {t("common.back_to_doors")}
+                  {t("common.back_to_doors")}
                 </Button>
               </div>
             </CardContent>

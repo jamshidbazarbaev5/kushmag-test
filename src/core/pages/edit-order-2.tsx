@@ -1186,6 +1186,41 @@ function StepTwo({
   console.log("editing door", editingDoor);
   console.log("cube search", selectedCubeProduct);
 
+  // Helper function to update accessories by type instead of hardcoded index
+  const updateAccessoryByType = (
+    currentAccessories: any[],
+    accessoryType: string,
+    updates: any,
+  ) => {
+    const updatedAccessories = [...(currentAccessories || [])];
+
+    // Find existing accessory of this type
+    const existingIndex = updatedAccessories.findIndex(
+      (acc: any) => acc.accessory_type === accessoryType,
+    );
+
+    if (existingIndex >= 0) {
+      // Update existing accessory
+      updatedAccessories[existingIndex] = {
+        ...updatedAccessories[existingIndex],
+        ...updates,
+        accessory_type: accessoryType,
+      };
+    } else {
+      // Add new accessory
+      updatedAccessories.push({
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        ...updates,
+        accessory_type: accessoryType,
+      });
+    }
+
+    return updatedAccessories;
+  };
+
   const handleAddNewRow = () => {
     // Get material attributes from the order form to apply to all doors
     const orderData = orderForm.getValues();
@@ -1471,15 +1506,18 @@ function StepTwo({
     // Populate accessory search fields from existing accessory data
     const accessories = doors[index].accessories || [];
 
-    // Cube (index 0)
-    if (accessories[0] && accessories[0].model) {
+    // Cube - find by accessory_type
+    const cubeAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "cube",
+    );
+    if (cubeAccessory && cubeAccessory.model) {
       const cubeProduct = productsList.find(
-        (p: any) => p.id === accessories[0].model,
+        (p: any) => p.id === cubeAccessory.model,
       );
       if (cubeProduct) {
         setCubeSearch(cubeProduct.name || "");
         setSelectedCubeProduct(cubeProduct);
-        setCubePriceType(accessories[0].price_type || "");
+        setCubePriceType(cubeAccessory.price_type || "");
       }
     } else {
       setCubeSearch("");
@@ -1487,15 +1525,18 @@ function StepTwo({
       setCubePriceType("");
     }
 
-    // Leg (index 1)
-    if (accessories[1] && accessories[1].model) {
+    // Leg - find by accessory_type
+    const legAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "leg",
+    );
+    if (legAccessory && legAccessory.model) {
       const legProduct = productsList.find(
-        (p: any) => p.id === accessories[1].model,
+        (p: any) => p.id === legAccessory.model,
       );
       if (legProduct) {
         setLegSearch(legProduct.name || "");
         setSelectedLegProduct(legProduct);
-        setLegPriceType(accessories[1].price_type || "");
+        setLegPriceType(legAccessory.price_type || "");
       }
     } else {
       setLegSearch("");
@@ -1503,15 +1544,18 @@ function StepTwo({
       setLegPriceType("");
     }
 
-    // Glass (index 2)
-    if (accessories[2] && accessories[2].model) {
+    // Glass - find by accessory_type
+    const glassAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "glass",
+    );
+    if (glassAccessory && glassAccessory.model) {
       const glassProduct = productsList.find(
-        (p: any) => p.id === accessories[2].model,
+        (p: any) => p.id === glassAccessory.model,
       );
       if (glassProduct) {
         setGlassSearch(glassProduct.name || "");
         setSelectedGlassProduct(glassProduct);
-        setGlassPriceType(accessories[2].price_type || "");
+        setGlassPriceType(glassAccessory.price_type || "");
       }
     } else {
       setGlassSearch("");
@@ -1519,15 +1563,18 @@ function StepTwo({
       setGlassPriceType("");
     }
 
-    // Lock (index 3)
-    if (accessories[3] && accessories[3].model) {
+    // Lock - find by accessory_type
+    const lockAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "lock",
+    );
+    if (lockAccessory && lockAccessory.model) {
       const lockProduct = productsList.find(
-        (p: any) => p.id === accessories[3].model,
+        (p: any) => p.id === lockAccessory.model,
       );
       if (lockProduct) {
         setLockSearch(lockProduct.name || "");
         setSelectedLockProduct(lockProduct);
-        setLockPriceType(accessories[3].price_type || "");
+        setLockPriceType(lockAccessory.price_type || "");
       }
     } else {
       setLockSearch("");
@@ -1535,15 +1582,18 @@ function StepTwo({
       setLockPriceType("");
     }
 
-    // Topsa (index 4)
-    if (accessories[4] && accessories[4].model) {
+    // Topsa - find by accessory_type
+    const topsaAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "topsa",
+    );
+    if (topsaAccessory && topsaAccessory.model) {
       const topsaProduct = productsList.find(
-        (p: any) => p.id === accessories[4].model,
+        (p: any) => p.id === topsaAccessory.model,
       );
       if (topsaProduct) {
         setTopsaSearch(topsaProduct.name || "");
         setSelectedTopsaProduct(topsaProduct);
-        setTopsaPriceType(accessories[4].price_type || "");
+        setTopsaPriceType(topsaAccessory.price_type || "");
       }
     } else {
       setTopsaSearch("");
@@ -1551,15 +1601,18 @@ function StepTwo({
       setTopsaPriceType("");
     }
 
-    // Beading (index 5)
-    if (accessories[5] && accessories[5].model) {
+    // Beading - find by accessory_type
+    const beadingAccessory = accessories.find(
+      (acc: any) => acc.accessory_type === "beading",
+    );
+    if (beadingAccessory && beadingAccessory.model) {
       const beadingProduct = productsList.find(
-        (p: any) => p.id === accessories[5].model,
+        (p: any) => p.id === beadingAccessory.model,
       );
       if (beadingProduct) {
         setBeadingSearch(beadingProduct.name || "");
         setSelectedBeadingProduct(beadingProduct);
-        setBeadingPriceType(accessories[5].price_type || "");
+        setBeadingPriceType(beadingAccessory.price_type || "");
       }
     } else {
       setBeadingSearch("");
@@ -2032,7 +2085,7 @@ function StepTwo({
                       <HeaderSearch
                         value={extensionSearch}
                         onChange={setExtensionSearch}
-                        placeholder="Search extensions..."
+                        placeholder={t("forms.search_extensions")}
                         onProductSelect={setSelectedExtensionProduct}
                       />
                       <Select
@@ -2040,7 +2093,7 @@ function StepTwo({
                         onValueChange={setExtensionPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedExtensionProduct?.salePrices?.map(
@@ -2067,7 +2120,7 @@ function StepTwo({
                       <HeaderSearch
                         value={casingSearch}
                         onChange={setCasingSearch}
-                        placeholder="Search casings..."
+                        placeholder={t("forms.search_casings")}
                         onProductSelect={setSelectedCasingProduct}
                       />
                       <Select
@@ -2075,7 +2128,7 @@ function StepTwo({
                         onValueChange={setCasingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCasingProduct?.salePrices?.map(
@@ -2102,7 +2155,7 @@ function StepTwo({
                       <HeaderSearch
                         value={crownSearch}
                         onChange={setCrownSearch}
-                        placeholder="Search crowns..."
+                        placeholder={t("forms.search_crowns")}
                         onProductSelect={setSelectedCrownProduct}
                       />
                       <Select
@@ -2110,7 +2163,7 @@ function StepTwo({
                         onValueChange={setCrownPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCrownProduct?.salePrices?.map(
@@ -2136,7 +2189,7 @@ function StepTwo({
                       <HeaderSearch
                         value={cubeSearch}
                         onChange={setCubeSearch}
-                        placeholder="Search cubes..."
+                        placeholder={t("forms.search_cubes")}
                         onProductSelect={setSelectedCubeProduct}
                       />
                       <Select
@@ -2144,7 +2197,7 @@ function StepTwo({
                         onValueChange={setCubePriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCubeProduct?.salePrices?.map(
@@ -2170,7 +2223,7 @@ function StepTwo({
                       <HeaderSearch
                         value={legSearch}
                         onChange={setLegSearch}
-                        placeholder="Search legs..."
+                        placeholder={t("forms.search_legs")}
                         onProductSelect={setSelectedLegProduct}
                       />
                       <Select
@@ -2178,7 +2231,7 @@ function StepTwo({
                         onValueChange={setLegPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLegProduct?.salePrices?.map((price: any) => (
@@ -2202,7 +2255,7 @@ function StepTwo({
                       <HeaderSearch
                         value={glassSearch}
                         onChange={setGlassSearch}
-                        placeholder="Search glass..."
+                        placeholder={t("forms.search_glass")}
                         onProductSelect={setSelectedGlassProduct}
                       />
                       <Select
@@ -2210,7 +2263,7 @@ function StepTwo({
                         onValueChange={setGlassPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedGlassProduct?.salePrices?.map(
@@ -2236,7 +2289,7 @@ function StepTwo({
                       <HeaderSearch
                         value={lockSearch}
                         onChange={setLockSearch}
-                        placeholder="Search locks..."
+                        placeholder={t("forms.search_locks")}
                         onProductSelect={setSelectedLockProduct}
                       />
                       <Select
@@ -2244,7 +2297,7 @@ function StepTwo({
                         onValueChange={setLockPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLockProduct?.salePrices?.map(
@@ -2270,7 +2323,7 @@ function StepTwo({
                       <HeaderSearch
                         value={topsaSearch}
                         onChange={setTopsaSearch}
-                        placeholder="Search topsa..."
+                        placeholder={t("forms.search_topsas")}
                         onProductSelect={setSelectedTopsaProduct}
                       />
                       <Select
@@ -2278,7 +2331,7 @@ function StepTwo({
                         onValueChange={setTopsaPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedTopsaProduct?.salePrices?.map(
@@ -2304,7 +2357,7 @@ function StepTwo({
                       <HeaderSearch
                         value={beadingSearch}
                         onChange={setBeadingSearch}
-                        placeholder="Search beading..."
+                        placeholder={t("forms.search_beading")}
                         onProductSelect={setSelectedBeadingProduct}
                       />
                       <Select
@@ -2312,7 +2365,7 @@ function StepTwo({
                         onValueChange={setBeadingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип Цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedBeadingProduct?.salePrices?.map(
@@ -2348,7 +2401,7 @@ function StepTwo({
                           <HeaderSearch
                             value={doorSearch}
                             onChange={setDoorSearch}
-                            placeholder="Search door models..."
+                            placeholder={t("forms.search_doors")}
                             onProductSelect={(product) => {
                               setTempSelectedDoorProduct(product);
                               handleFieldChange("model", product?.id || "");
@@ -2386,7 +2439,7 @@ function StepTwo({
                               }}
                             >
                               <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder="Price Type" />
+                                <SelectValue placeholder="Тип цены" />
                               </SelectTrigger>
                               <SelectContent className="z-[9999]">
                                 {tempSelectedDoorProduct?.salePrices?.map(
@@ -2432,7 +2485,7 @@ function StepTwo({
                             variant="outline"
                             className="h-6 px-2 text-xs"
                           >
-                            Change Model
+                            Сменить модел
                           </Button>
                         </div>
                       )}
@@ -2583,7 +2636,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2609,7 +2662,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Height
+                                          Высота
                                         </label>
                                       )}
                                       <Input
@@ -2638,7 +2691,7 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Width
+                                          Ширина
                                         </label>
                                       )}
                                       <Input
@@ -2710,7 +2763,7 @@ function StepTwo({
                                     <div>
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2743,7 +2796,7 @@ function StepTwo({
                                       {/* <label className="text-xs text-gray-600">Height</label> */}
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Height
+                                          Высота
                                         </label>
                                       )}
                                       <Input
@@ -2925,7 +2978,7 @@ function StepTwo({
                                       {/* <label className="text-xs text-gray-600">Qty</label> */}
                                       {crownIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Qty
+                                          Кол-во
                                         </label>
                                       )}
                                       <Input
@@ -2952,7 +3005,7 @@ function StepTwo({
                                     <div>
                                       {crownIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Width
+                                          Ширина
                                         </label>
                                       )}
                                       <Input
@@ -3012,41 +3065,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[0]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "cube",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[0] = {
-                              model: selectedCubeProduct
-                                ? selectedCubeProduct.id
-                                : updatedAccessories[0]?.model || "",
-                              price_type:
-                                cubePriceType ||
-                                updatedAccessories[0]?.price_type ||
-                                "",
-                              price:
-                                selectedCubeProduct && cubePriceType
-                                  ? (selectedCubeProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === cubePriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[0]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "cube",
-                              name: "Кубик",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "cube",
+                              {
+                                model: selectedCubeProduct
+                                  ? selectedCubeProduct.id
+                                  : "",
+                                price_type: cubePriceType || "",
+                                price:
+                                  selectedCubeProduct && cubePriceType
+                                    ? (selectedCubeProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === cubePriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Кубик",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3058,7 +3101,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[0]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "cube",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3068,41 +3113,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[1]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "leg",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[1] = {
-                              model: selectedLegProduct
-                                ? selectedLegProduct.id
-                                : updatedAccessories[1]?.model || "",
-                              price_type:
-                                legPriceType ||
-                                updatedAccessories[1]?.price_type ||
-                                "",
-                              price:
-                                selectedLegProduct && legPriceType
-                                  ? (selectedLegProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === legPriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[1]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "leg",
-                              name: "Ножка",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "leg",
+                              {
+                                model: selectedLegProduct
+                                  ? selectedLegProduct.id
+                                  : "",
+                                price_type: legPriceType || "",
+                                price:
+                                  selectedLegProduct && legPriceType
+                                    ? (selectedLegProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === legPriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Ножка",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3114,7 +3149,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[1]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "leg",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3124,41 +3161,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[2]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "glass",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[2] = {
-                              model: selectedGlassProduct
-                                ? selectedGlassProduct.id
-                                : updatedAccessories[2]?.model || "",
-                              price_type:
-                                glassPriceType ||
-                                updatedAccessories[2]?.price_type ||
-                                "",
-                              price:
-                                selectedGlassProduct && glassPriceType
-                                  ? (selectedGlassProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === glassPriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[2]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "glass",
-                              name: "Стекло",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "glass",
+                              {
+                                model: selectedGlassProduct
+                                  ? selectedGlassProduct.id
+                                  : "",
+                                price_type: glassPriceType || "",
+                                price:
+                                  selectedGlassProduct && glassPriceType
+                                    ? (selectedGlassProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === glassPriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Стекло",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3170,7 +3197,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[2]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "glass",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3180,41 +3209,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[3]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "lock",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[3] = {
-                              model: selectedLockProduct
-                                ? selectedLockProduct.id
-                                : updatedAccessories[3]?.model || "",
-                              price_type:
-                                lockPriceType ||
-                                updatedAccessories[3]?.price_type ||
-                                "",
-                              price:
-                                selectedLockProduct && lockPriceType
-                                  ? (selectedLockProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === lockPriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[3]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "lock",
-                              name: "Замок",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "lock",
+                              {
+                                model: selectedLockProduct
+                                  ? selectedLockProduct.id
+                                  : "",
+                                price_type: lockPriceType || "",
+                                price:
+                                  selectedLockProduct && lockPriceType
+                                    ? (selectedLockProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === lockPriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Замок",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3226,7 +3245,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[3]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "lock",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3236,41 +3257,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[4]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "topsa",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[4] = {
-                              model: selectedTopsaProduct
-                                ? selectedTopsaProduct.id
-                                : updatedAccessories[4]?.model || "",
-                              price_type:
-                                topsaPriceType ||
-                                updatedAccessories[4]?.price_type ||
-                                "",
-                              price:
-                                selectedTopsaProduct && topsaPriceType
-                                  ? (selectedTopsaProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === topsaPriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[4]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "topsa",
-                              name: "Топса",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "topsa",
+                              {
+                                model: selectedTopsaProduct
+                                  ? selectedTopsaProduct.id
+                                  : "",
+                                price_type: topsaPriceType || "",
+                                price:
+                                  selectedTopsaProduct && topsaPriceType
+                                    ? (selectedTopsaProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === topsaPriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Топса",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3282,7 +3293,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[4]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "topsa",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3292,41 +3305,31 @@ function StepTwo({
                       {editingIndex === index ? (
                         <Input
                           type="number"
-                          value={editingDoor?.accessories?.[5]?.quantity || ""}
+                          value={
+                            editingDoor?.accessories?.find(
+                              (acc: any) => acc.accessory_type === "beading",
+                            )?.quantity || ""
+                          }
                           onChange={(e) => {
-                            const updatedAccessories = [
-                              ...(editingDoor.accessories || []),
-                            ];
-                            // Ensure array has enough elements
-                            while (updatedAccessories.length < 6) {
-                              updatedAccessories.push({
-                                model: "",
-                                price_type: "",
-                                price: 0,
-                                quantity: 0,
-                                accessory_type: "",
-                                name: "",
-                              });
-                            }
-                            updatedAccessories[5] = {
-                              model: selectedBeadingProduct
-                                ? selectedBeadingProduct.id
-                                : updatedAccessories[5]?.model || "",
-                              price_type:
-                                beadingPriceType ||
-                                updatedAccessories[5]?.price_type ||
-                                "",
-                              price:
-                                selectedBeadingProduct && beadingPriceType
-                                  ? (selectedBeadingProduct.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.id === beadingPriceType,
-                                    )?.value || 0) / 100
-                                  : updatedAccessories[5]?.price || 0,
-                              quantity: parseInt(e.target.value) || 0,
-                              accessory_type: "beading",
-                              name: "Шпингалет",
-                            };
+                            const updatedAccessories = updateAccessoryByType(
+                              editingDoor.accessories,
+                              "beading",
+                              {
+                                model: selectedBeadingProduct
+                                  ? selectedBeadingProduct.id
+                                  : "",
+                                price_type: beadingPriceType || "",
+                                price:
+                                  selectedBeadingProduct && beadingPriceType
+                                    ? (selectedBeadingProduct.salePrices?.find(
+                                        (p: any) =>
+                                          p.priceType.id === beadingPriceType,
+                                      )?.value || 0) / 100
+                                    : 0,
+                                quantity: parseInt(e.target.value) || 0,
+                                name: "Шпингалет",
+                              },
+                            );
                             handleFieldChange(
                               "accessories",
                               updatedAccessories,
@@ -3338,7 +3341,9 @@ function StepTwo({
                         />
                       ) : (
                         <span className="text-xs">
-                          {door.accessories?.[5]?.quantity || 0}
+                          {door.accessories?.find(
+                            (acc: any) => acc.accessory_type === "beading",
+                          )?.quantity || 0}
                         </span>
                       )}
                     </TableCell>
@@ -3604,10 +3609,10 @@ function StepThree({
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        {/* Order Summary */}
-        <div className="lg:col-span-2">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Side - Order Review (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -3646,12 +3651,10 @@ function StepThree({
 
               {/* Price Breakdown */}
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-semibold text-blue-700 flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-blue-600" />
-                    {t("forms.price_breakdown")}
-                  </h4>
-                </div>
+                <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-blue-600" />
+                  {t("forms.price_breakdown")}
+                </h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
@@ -3714,14 +3717,12 @@ function StepThree({
           </Card>
         </div>
 
-        {/* Pricing Summary & Actions */}
-        <div className="space-y-6">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8">
+        {/* Right Side - Price Summary (50%) */}
+        <div className="flex-1 lg:w-1/2">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur sticky top-8 h-full">
             <CardHeader>
-              <div className="flex  justify-between mb-4">
-                <CardTitle className="text-xl">
-                  {t("forms.pricing_summary")}
-                </CardTitle>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <span>{t("forms.pricing_summary")}</span>
                 <Button
                   onClick={onCalculate}
                   disabled={doors.length === 0 || isCalculating}
@@ -3740,7 +3741,7 @@ function StepThree({
                     </>
                   )}
                 </Button>
-              </div>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
@@ -3846,11 +3847,11 @@ function StepThree({
                   size="lg"
                 >
                   {isLoading
-                    ? `${t("common.creating")}...`
+                    ? `${t("common.creating")}...`
                     : t("common.create_order")}
                 </Button>
                 <Button variant="outline" onClick={onBack} className="w-full">
-                   {t("common.back_to_doors")}
+                  {t("common.back_to_doors")}
                 </Button>
               </div>
             </CardContent>
