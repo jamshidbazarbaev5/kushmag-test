@@ -3100,11 +3100,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "cube",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const cubeAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "cube",
+                            );
+                            return cubeAccessory?.quantity > 0 ? (
+                              <div className="bg-blue-50 p-1 rounded">
+                                {getProductName(cubeAccessory.model)} (x
+                                {cubeAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3148,11 +3158,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "leg",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const legAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "leg",
+                            );
+                            return legAccessory?.quantity > 0 ? (
+                              <div className="bg-orange-50 p-1 rounded">
+                                {getProductName(legAccessory.model)} (x
+                                {legAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3196,11 +3216,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "glass",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const glassAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "glass",
+                            );
+                            return glassAccessory?.quantity > 0 ? (
+                              <div className="bg-cyan-50 p-1 rounded">
+                                {getProductName(glassAccessory.model)} (x
+                                {glassAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3244,11 +3274,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "lock",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const lockAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "lock",
+                            );
+                            return lockAccessory?.quantity > 0 ? (
+                              <div className="bg-red-50 p-1 rounded">
+                                {getProductName(lockAccessory.model)} (x
+                                {lockAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3292,11 +3332,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "topsa",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const topsaAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "topsa",
+                            );
+                            return topsaAccessory?.quantity > 0 ? (
+                              <div className="bg-indigo-50 p-1 rounded">
+                                {getProductName(topsaAccessory.model)} (x
+                                {topsaAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3340,11 +3390,21 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.find(
-                            (acc: any) => acc.accessory_type === "beading",
-                          )?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {(() => {
+                            const beadingAccessory = door.accessories?.find(
+                              (acc: any) => acc.accessory_type === "beading",
+                            );
+                            return beadingAccessory?.quantity > 0 ? (
+                              <div className="bg-yellow-50 p-1 rounded">
+                                {getProductName(beadingAccessory.model)} (x
+                                {beadingAccessory.quantity})
+                              </div>
+                            ) : (
+                              <span>0</span>
+                            );
+                          })()}
+                        </div>
                       )}
                     </TableCell>
 

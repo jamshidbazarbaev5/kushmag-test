@@ -69,6 +69,7 @@ import api from "../api/api";
 import { useGetMeasure } from "../api/measure";
 import React from "react";
 import { useGetZamershiks } from "../api/staff";
+import { createProductSelectHandler } from "@/utils/priceUtils";
 
 // Helper function to get the full object for a selected ID
 const getMetaById = (list: any, id: any) => {
@@ -1882,15 +1883,18 @@ function StepTwo({
                       <HeaderSearch
                         value={extensionSearch}
                         onChange={setExtensionSearch}
-                        placeholder="Search extensions..."
-                        onProductSelect={setSelectedExtensionProduct}
+                        placeholder={t("forms.search_extensions")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedExtensionProduct,
+                          setExtensionPriceType,
+                        )}
                       />
                       <Select
                         value={extensionPriceType}
                         onValueChange={setExtensionPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedExtensionProduct?.salePrices?.map(
@@ -1908,7 +1912,7 @@ function StepTwo({
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[350px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1">
                         <span>{t("forms.casings")}</span>
@@ -1917,15 +1921,18 @@ function StepTwo({
                       <HeaderSearch
                         value={casingSearch}
                         onChange={setCasingSearch}
-                        placeholder="Search casings..."
-                        onProductSelect={setSelectedCasingProduct}
+                        placeholder={t("forms.search_casings")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCasingProduct,
+                          setCasingPriceType,
+                        )}
                       />
                       <Select
                         value={casingPriceType}
                         onValueChange={setCasingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCasingProduct?.salePrices?.map(
@@ -1952,15 +1959,18 @@ function StepTwo({
                       <HeaderSearch
                         value={crownSearch}
                         onChange={setCrownSearch}
-                        placeholder="Search crowns..."
-                        onProductSelect={setSelectedCrownProduct}
+                        placeholder={t("forms.search_crowns")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCrownProduct,
+                          setCrownPriceType,
+                        )}
                       />
                       <Select
                         value={crownPriceType}
                         onValueChange={setCrownPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCrownProduct?.salePrices?.map(
@@ -1986,15 +1996,18 @@ function StepTwo({
                       <HeaderSearch
                         value={cubeSearch}
                         onChange={setCubeSearch}
-                        placeholder="Search cubes..."
-                        onProductSelect={setSelectedCubeProduct}
+                        placeholder={t("forms.search_cubes")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCubeProduct,
+                          setCubePriceType,
+                        )}
                       />
                       <Select
                         value={cubePriceType}
                         onValueChange={setCubePriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedCubeProduct?.salePrices?.map(
@@ -2020,15 +2033,18 @@ function StepTwo({
                       <HeaderSearch
                         value={legSearch}
                         onChange={setLegSearch}
-                        placeholder="Search legs..."
-                        onProductSelect={setSelectedLegProduct}
+                        placeholder={t("forms.search_legs")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLegProduct,
+                          setLegPriceType,
+                        )}
                       />
                       <Select
                         value={legPriceType}
                         onValueChange={setLegPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLegProduct?.salePrices?.map((price: any) => (
@@ -2052,15 +2068,18 @@ function StepTwo({
                       <HeaderSearch
                         value={glassSearch}
                         onChange={setGlassSearch}
-                        placeholder="Search glass..."
-                        onProductSelect={setSelectedGlassProduct}
+                        placeholder={t("forms.search_glass")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedGlassProduct,
+                          setGlassPriceType,
+                        )}
                       />
                       <Select
                         value={glassPriceType}
                         onValueChange={setGlassPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedGlassProduct?.salePrices?.map(
@@ -2086,15 +2105,18 @@ function StepTwo({
                       <HeaderSearch
                         value={lockSearch}
                         onChange={setLockSearch}
-                        placeholder="Search locks..."
-                        onProductSelect={setSelectedLockProduct}
+                        placeholder={t("forms.search_locks")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLockProduct,
+                          setLockPriceType,
+                        )}
                       />
                       <Select
                         value={lockPriceType}
                         onValueChange={setLockPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedLockProduct?.salePrices?.map(
@@ -2120,15 +2142,18 @@ function StepTwo({
                       <HeaderSearch
                         value={topsaSearch}
                         onChange={setTopsaSearch}
-                        placeholder="Search topsa..."
-                        onProductSelect={setSelectedTopsaProduct}
+                        placeholder={t("forms.search_tops")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedTopsaProduct,
+                          setTopsaPriceType,
+                        )}
                       />
                       <Select
                         value={topsaPriceType}
                         onValueChange={setTopsaPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedTopsaProduct?.salePrices?.map(
@@ -2154,15 +2179,18 @@ function StepTwo({
                       <HeaderSearch
                         value={beadingSearch}
                         onChange={setBeadingSearch}
-                        placeholder="Search beading..."
-                        onProductSelect={setSelectedBeadingProduct}
+                        placeholder={t("forms.search_beading")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedBeadingProduct,
+                          setBeadingPriceType,
+                        )}
                       />
                       <Select
                         value={beadingPriceType}
                         onValueChange={setBeadingPriceType}
                       >
                         <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Price Type" />
+                          <SelectValue placeholder="Тип цены" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                           {selectedBeadingProduct?.salePrices?.map(
@@ -2198,12 +2226,23 @@ function StepTwo({
                           <HeaderSearch
                             value={doorSearch}
                             onChange={setDoorSearch}
-                            placeholder="Search door models..."
+                            placeholder={t("forms.search_door_model")}
                             onProductSelect={(product) => {
                               setTempSelectedDoorProduct(product);
                               handleFieldChange("model", product?.id || "");
                               handleFieldChange("price_type", "");
                               handleFieldChange("price", 0);
+                              const salePrice = product?.salePrices?.find(
+                                (p: any) => p.priceType.name === "Цена продажи",
+                              );
+                              handleFieldChange(
+                                "price_type",
+                                salePrice ? salePrice.priceType.id : "",
+                              );
+                              handleFieldChange(
+                                "price",
+                                salePrice ? salePrice.value / 100 : 0,
+                              );
                               // Update last selected door model for future rows
                               if (product) {
                                 setLastSelectedDoorModel({
@@ -2236,7 +2275,7 @@ function StepTwo({
                               }}
                             >
                               <SelectTrigger className="h-8 text-xs">
-                                <SelectValue placeholder="Price Type" />
+                                <SelectValue placeholder="Тип цены" />
                               </SelectTrigger>
                               <SelectContent className="z-[9999]">
                                 {tempSelectedDoorProduct?.salePrices?.map(
@@ -2253,19 +2292,11 @@ function StepTwo({
                               </SelectContent>
                             </Select>
                           )}
-                          {editingDoor?.price_type &&
-                            tempSelectedDoorProduct && (
-                              <div className="text-xs p-1 bg-white rounded border">
-                                <span className="text-gray-600">
-                                  Price: {(editingDoor.price || 0).toFixed(2)}
-                                </span>
-                              </div>
-                            )}
                         </div>
                       ) : (
                         <div className="space-y-1">
                           <div className="text-xs font-medium">
-                            {getProductName(door.model) || "No model selected"}
+                            {getProductName(door.model) || "Модель не выбрана"}
                           </div>
                           {door.price_type && (
                             <div className="text-xs text-gray-600">
@@ -2279,7 +2310,7 @@ function StepTwo({
                           )}
                           {door.price && (
                             <div className="text-xs text-gray-600">
-                              Price: {(door.price || 0).toFixed(2)}
+                              Цена:{(door.price || 0).toFixed(0)}
                             </div>
                           )}
                           <Button
@@ -2623,110 +2654,8 @@ function StepTwo({
                                         }}
                                         className="h-8"
                                         placeholder="Auto-calc"
-                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                        disabled={
-                                          casing.casing_formula === "formula2"
-                                        }
                                       />
                                     </div>
-                                    <div>
-                                      {/* <label className="text-xs text-gray-600">Formula</label> */}
-                                      {casIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Formula
-                                        </label>
-                                      )}
-                                      <Select
-                                        value={
-                                          casing.casing_formula || "formula1"
-                                        }
-                                        onValueChange={(value) => {
-                                          const updatedCasings = [
-                                            ...editingDoor.casings,
-                                          ];
-                                          const updatedCasing = {
-                                            ...updatedCasings[casIndex],
-                                            casing_formula: value,
-                                          };
-                                          if (value === "formula1") {
-                                            updatedCasing.casing_range = "";
-                                          }
-                                          const recalculatedCasing =
-                                            calculateCasingDimensions(
-                                              updatedCasing,
-                                              editingDoor,
-                                              fieldOptions,
-                                              casingSize,
-                                            );
-                                          updatedCasings[casIndex] =
-                                            recalculatedCasing;
-                                          handleFieldChange(
-                                            "casings",
-                                            updatedCasings,
-                                          );
-                                        }}
-                                      >
-                                        <SelectTrigger className="h-8">
-                                          <SelectValue placeholder="Formula" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
-                                          <SelectItem value="formula1">
-                                            Formula 1
-                                          </SelectItem>
-                                          <SelectItem value="formula2">
-                                            Formula 2
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    {casing.casing_formula === "formula2" && (
-                                      <div className="mt-2">
-                                        <label className="text-xs text-gray-600">
-                                          Диапазон
-                                        </label>
-                                        <Select
-                                          value={casing.casing_range || ""}
-                                          onValueChange={(value) => {
-                                            const updatedCasings = [
-                                              ...editingDoor.casings,
-                                            ];
-                                            const updatedCasing = {
-                                              ...updatedCasings[casIndex],
-                                              casing_range: value,
-                                            };
-                                            const recalculatedCasing =
-                                              calculateCasingDimensions(
-                                                updatedCasing,
-                                                editingDoor,
-                                                fieldOptions,
-                                                casingSize,
-                                              );
-                                            updatedCasings[casIndex] =
-                                              recalculatedCasing;
-                                            handleFieldChange(
-                                              "casings",
-                                              updatedCasings,
-                                            );
-                                          }}
-                                        >
-                                          <SelectTrigger className="h-8">
-                                            <SelectValue placeholder="Select range" />
-                                          </SelectTrigger>
-                                          <SelectContent className="z-[9999]">
-                                            {fieldOptions.casingRangeOptions?.map(
-                                              (option: any) => (
-                                                <SelectItem
-                                                  key={option.value}
-                                                  value={option.value}
-                                                >
-                                                  {option.casing_size}
-                                                </SelectItem>
-                                              ),
-                                            )}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    )}
                                   </div>
 
                                   {/* <div className="flex justify-between items-center mt-1">
@@ -2915,9 +2844,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[0]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[0]?.quantity > 0 ? (
+                            <div className="bg-blue-50 p-1 rounded">
+                              {getProductName(door.accessories[0].model)} (x
+                              {door.accessories[0].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2971,9 +2907,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[1]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[1]?.quantity > 0 ? (
+                            <div className="bg-orange-50 p-1 rounded">
+                              {getProductName(door.accessories[1].model)} (x
+                              {door.accessories[1].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3027,9 +2970,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[2]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[2]?.quantity > 0 ? (
+                            <div className="bg-cyan-50 p-1 rounded">
+                              {getProductName(door.accessories[2].model)} (x
+                              {door.accessories[2].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3083,9 +3033,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[3]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[3]?.quantity > 0 ? (
+                            <div className="bg-red-50 p-1 rounded">
+                              {getProductName(door.accessories[3].model)} (x
+                              {door.accessories[3].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3139,9 +3096,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[4]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[4]?.quantity > 0 ? (
+                            <div className="bg-indigo-50 p-1 rounded">
+                              {getProductName(door.accessories[4].model)} (x
+                              {door.accessories[4].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3195,9 +3159,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[5]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[5]?.quantity > 0 ? (
+                            <div className="bg-yellow-50 p-1 rounded">
+                              {getProductName(door.accessories[5].model)} (x
+                              {door.accessories[5].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -3429,21 +3400,10 @@ function StepThree({
 }: any) {
   const { t } = useTranslation();
 
-  // Helper function to convert values with comma to number for display
-  const convertToNumber = (value: any, defaultValue: number = 0) => {
-    if (typeof value === "number") return value;
-    if (typeof value === "string") {
-      const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
-      if (normalized === "" || normalized === ".") return defaultValue;
-      const parsed = parseFloat(normalized);
-      return isNaN(parsed) ? defaultValue : parsed;
-    }
-    return defaultValue;
-  };
+
 
   // Calculate discount percentage for display
-  const displayDiscountPercentage =
-    totals.total_sum > 0 ? (totals.discountAmount / totals.total_sum) * 100 : 0;
+ 
 
   // Handle discount amount input change
   const handleDiscountAmountChange = (value: string) => {

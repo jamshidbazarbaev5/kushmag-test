@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ResourceTable } from '../helpers/ResourceTable';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
-import { useGetCasingRanges, useUpdateCasingRange, useDeleteCasingRange } from '../api/casingRange'
+import { useGetCasingRanges, useUpdateCasingRange } from '../api/casingRange'
 import type { CasingRange } from '../api/types';
 
 const casingRangeFields = (t: any) => [
@@ -51,7 +50,6 @@ const columns = (t: any) => [
 ];
 
 export default function CasingRangesPage() {
-  const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRange, setEditingRange] = useState<CasingRange | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,7 +70,6 @@ export default function CasingRangesPage() {
   }));
 
   const { mutate: updateRange, isPending: isUpdating } = useUpdateCasingRange();
-  const { mutate: deleteRange } = useDeleteCasingRange();
 
   const handleEdit = (range: CasingRange) => {
     setEditingRange(range);
@@ -95,12 +92,7 @@ export default function CasingRangesPage() {
     );
   };
 
-  const handleDelete = (id: number) => {
-    deleteRange(id, {
-      onSuccess: () => toast.success(t('messages.success.deleted', { item: t('navigation.casing_ranges') })),
-      onError: () => toast.error(t('messages.error.delete', { item: t('navigation.casing_ranges') })),
-    });
-  };
+  
 
   return (
     <div className="container mx-auto py-6">
@@ -122,8 +114,8 @@ export default function CasingRangesPage() {
         columns={columns(t)}
         isLoading={isLoading}
         onEdit={handleEdit}
-        onDelete={handleDelete}
-        onAdd={() => navigate('/create-casing-range')}
+        // onDelete={handleDelete}
+        // onAdd={() => navigate('/create-casing-range')}
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

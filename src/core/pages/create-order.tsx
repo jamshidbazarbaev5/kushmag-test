@@ -1837,7 +1837,6 @@ function StepTwo({
                             onChange={setDoorSearch}
                             placeholder={t("forms.search_door_model")}
                             onProductSelect={(product) => {
-                            
                               setTempSelectedDoorProduct(product);
                               handleFieldChange("model", product?.id || "");
                               // Find 'продаж цена' price type
@@ -1899,7 +1898,7 @@ function StepTwo({
                                     >
                                       {price.priceType.name} -{" "}
                                       {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
+                                    </SelectItem>
                                   ),
                                 )}
                               </SelectContent>
@@ -1934,7 +1933,7 @@ function StepTwo({
                             variant="outline"
                             className="h-6 px-2 text-xs"
                           >
-                         Сменить модель
+                            Сменить модель
                           </Button>
                         </div>
                       )}
@@ -2559,9 +2558,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[0]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[0]?.quantity > 0 ? (
+                            <div className="bg-blue-50 p-1 rounded">
+                              {getProductName(door.accessories[0].model)} (x
+                              {door.accessories[0].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2615,9 +2621,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[1]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[1]?.quantity > 0 ? (
+                            <div className="bg-orange-50 p-1 rounded">
+                              {getProductName(door.accessories[1].model)} (x
+                              {door.accessories[1].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2671,9 +2684,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[2]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[2]?.quantity > 0 ? (
+                            <div className="bg-cyan-50 p-1 rounded">
+                              {getProductName(door.accessories[2].model)} (x
+                              {door.accessories[2].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2727,9 +2747,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[3]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[3]?.quantity > 0 ? (
+                            <div className="bg-red-50 p-1 rounded">
+                              {getProductName(door.accessories[3].model)} (x
+                              {door.accessories[3].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2783,9 +2810,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[4]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[4]?.quantity > 0 ? (
+                            <div className="bg-indigo-50 p-1 rounded">
+                              {getProductName(door.accessories[4].model)} (x
+                              {door.accessories[4].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
@@ -2839,9 +2873,16 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <span className="text-xs">
-                          {door.accessories?.[5]?.quantity || 0}
-                        </span>
+                        <div className="text-xs text-gray-600">
+                          {door.accessories?.[5]?.quantity > 0 ? (
+                            <div className="bg-yellow-50 p-1 rounded">
+                              {getProductName(door.accessories[5].model)} (x
+                              {door.accessories[5].quantity})
+                            </div>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
 
