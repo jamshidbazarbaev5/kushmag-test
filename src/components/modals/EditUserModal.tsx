@@ -37,6 +37,7 @@ import {
   useGetYearlyPlans,
   useUpdateYearlyPlan,
   useCreateYearlyPlan,
+  type YearlyPlan,
 } from "@/core/api/yearlyPlan";
 
 interface SalesPlanDetail {
@@ -52,12 +53,7 @@ interface SalesPlanDetail {
   sales_count_percentage?: number;
 }
 
-interface YearlyPlanData {
-  id?: number;
-  user: number;
-  year: number;
-  details: SalesPlanDetail[];
-}
+
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -118,7 +114,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   const plansList = Array.isArray(yearlyPlans)
     ? yearlyPlans
     : yearlyPlans?.results || [];
-  const userPlans = plansList.filter((plan) => plan.user === user?.id);
+  const userPlans = plansList.filter((plan) => plan.user.id === user?.id);
 
   useEffect(() => {
     if (user) {
@@ -203,12 +199,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   };
 
   // Yearly plan functions
-  const getYearPlan = (year: number): YearlyPlanData | null => {
+  const getYearPlan = (year: number): YearlyPlan | null => {
     return userPlans.find((plan) => plan.year === year) || null;
   };
 
   const getSalesPlanForMonth = (
-    plan: YearlyPlanData | null,
+    plan: YearlyPlan | null,
     month: number,
     field: string,
   ): string => {
@@ -261,7 +257,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
       updateYearlyPlan({
         id: existingPlan.id!,
-        user: user.id,
+        user: { id: user.id!, full_name: user.full_name },
         year: editingCell.year,
         details: updatedDetails.map((detail) => ({
           month: detail.month,
