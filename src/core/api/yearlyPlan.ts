@@ -1,0 +1,62 @@
+import { createResourceApiHooks } from "../helpers/createResourceApi";
+
+export interface YearlyPlanDetail {
+  month: number;
+  sales_plan: string | number;
+  clients_plan: string | number;
+  sales_count_plan: string | number;
+  sales?: number;
+  clients?: number;
+  sales_count?: number;
+  sales_percentage?: number;
+  clients_percentage?: number;
+  sales_count_percentage?: number;
+}
+
+export interface YearlyPlan {
+  id?: number;
+  user: {
+    id: number;
+    full_name: string;
+  };
+  year: number;
+  details: YearlyPlanDetail[];
+}
+
+export interface CreateYearlyPlanRequest {
+  user: number;
+  year: number;
+  details: {
+    month: number;
+    sales_plan: number;
+    clients_plan: number;
+    sales_count_plan: number;
+  }[];
+}
+
+const YEARLY_PLAN_URL = "yearly-plans/";
+
+export const {
+  useGetResources: useGetYearlyPlans,
+  useGetResource: useGetYearlyPlan,
+  useUpdateResource: useUpdateYearlyPlan,
+  useDeleteResource: useDeleteYearlyPlan,
+} = createResourceApiHooks<YearlyPlan>(YEARLY_PLAN_URL, "yearly-plans");
+
+// Custom create hook that uses the proper request interface
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "./api";
+
+export const useCreateYearlyPlan = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (newPlan: CreateYearlyPlanRequest) => {
+      const response = await api.post<YearlyPlan>(YEARLY_PLAN_URL, newPlan);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["yearly-plans"] });
+    },
+  });
+};

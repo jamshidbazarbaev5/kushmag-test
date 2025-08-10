@@ -13,6 +13,7 @@ import {
   //   BanknoteIcon,
   LogOut,
   User,
+  Calendar,
 } from "lucide-react";
 import { useGetMeasures } from "../api/measure";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -326,29 +327,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               )}
             </a>
-            {(currentUser?.role === "ZAMERSHIK" || currentUser?.role === "PRODAVEC" || currentUser?.role === "OPERATOR" || currentUser?.role === "SOTRUDNIK")  && (
+            {(currentUser?.role === "ZAMERSHIK" ||
+              currentUser?.role === "PRODAVEC" ||
+              currentUser?.role === "OPERATOR" ||
+              currentUser?.role === "SOTRUDNIK") && (
               <a
-              href="/salary-overview"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/salary-overview");
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                location.pathname === "/measures"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-gray-50"
-              }`}
-            >
-              <Package
-                size={16}
-                className={
+                href="/salary-overview"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/salary-overview");
+                }}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   location.pathname === "/measures"
-                    ? "text-emerald-500"
-                    : "text-gray-500"
-                }
-              />
-              <span className="font-medium">
-                {t("navigation.sales_overview")}
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground hover:bg-gray-50"
+                }`}
+              >
+                <Package
+                  size={16}
+                  className={
+                    location.pathname === "/measures"
+                      ? "text-emerald-500"
+                      : "text-gray-500"
+                  }
+                />
+                <span className="font-medium">
+                  {t("navigation.sales_overview")}
                 </span>
               </a>
             )}
@@ -747,6 +751,33 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </a>
                       </>
                     ) : null}
+
+                    {/* Yearly Plans - available for all roles */}
+                    <a
+                      href="/yearly-plans"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setMobileMenuOpen(false);
+                        navigate("/yearly-plans");
+                      }}
+                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
+                        location.pathname === "/yearly-plans"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground hover:bg-gray-50"
+                      }`}
+                    >
+                      <Calendar
+                        size={18}
+                        className={
+                          location.pathname === "/yearly-plans"
+                            ? "text-emerald-500"
+                            : "text-gray-500"
+                        }
+                      />
+                      <span className="font-medium">
+                        {t("navigation.yearly_plans")}
+                      </span>
+                    </a>
 
                     {/* Measures - available for all roles */}
                     <a
@@ -1288,6 +1319,33 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </>
                       ) : null}
 
+                      {/* Yearly Plans - available for all roles */}
+                      <a
+                        href="/yearly-plans"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/yearly-plans");
+                        }}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                          location.pathname === "/yearly-plans"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-gray-50"
+                        }`}
+                      >
+                        <Calendar
+                          size={18}
+                          className={
+                            location.pathname === "/yearly-plans"
+                              ? "text-emerald-500"
+                              : "text-gray-500"
+                          }
+                        />
+                        <span className="font-medium">
+                          {t("navigation.yearly_plans")}
+                        </span>
+                      </a>
+
                       {/* Measures - available for all roles */}
                       <a
                         href="/measures"
@@ -1321,7 +1379,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       </a>
 
                       {/* Salary Overview - for specific roles */}
-                      {(currentUser?.role === "ZAMERSHIK" || currentUser?.role === "PRODAVEC" || currentUser?.role === "OPERATOR" || currentUser?.role === "SOTRUDNIK") && (
+                      {(currentUser?.role === "ZAMERSHIK" ||
+                        currentUser?.role === "PRODAVEC" ||
+                        currentUser?.role === "OPERATOR" ||
+                        currentUser?.role === "SOTRUDNIK") && (
                         <a
                           href="/salary-overview"
                           onClick={(e) => {

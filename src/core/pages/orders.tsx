@@ -4,24 +4,39 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
 import type { Order } from "../api/order";
-import { 
-  useGetProjects, 
-  useGetStores, 
-  useGetCounterparties, 
-  useGetOrganizations, 
-  useGetSalesChannels, 
-  useGetSellers, 
-  useGetOperators 
+import {
+  useGetProjects,
+  useGetStores,
+  useGetCounterparties,
+  useGetOrganizations,
+  useGetSalesChannels,
+  useGetSellers,
+  useGetOperators,
 } from "../api/references";
 import { useGetUsers } from "../api/user";
-import { Pencil, Trash, Filter, X, ChevronLeft, ChevronRight, SendHorizontal } from "lucide-react";
+import {
+  Pencil,
+  Trash,
+  Filter,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  SendHorizontal,
+  Download,
+} from "lucide-react";
 import api from "../api/api";
 
 // import { format } from 'date-fns';
@@ -135,20 +150,20 @@ export default function OrdersPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
-    project: '',
-    store: '',
-    agent: '',
-    organization: '',
-    salesChannel: '',
-    seller: '',
-    operator: '',
-    order_status: '',
-    order_date_after: '',
-    order_date_before: '',
-    deadline_date_after: '',
-    deadline_date_before: '',
-    zamershik: '',
-    admin: ''
+    project: "",
+    store: "",
+    agent: "",
+    organization: "",
+    salesChannel: "",
+    seller: "",
+    operator: "",
+    order_status: "",
+    order_date_after: "",
+    order_date_before: "",
+    deadline_date_after: "",
+    deadline_date_before: "",
+    zamershik: "",
+    admin: "",
   });
 
   // Fetch filter options
@@ -178,43 +193,50 @@ export default function OrdersPage() {
   const { mutate: deleteOrder } = useDeleteOrder();
 
   const ordersData = Array.isArray(orders) ? orders : orders?.results || [];
-  const totalPages = !Array.isArray(orders) && orders?.count ? Math.ceil(orders.count / 20) : 1;
+  const totalPages =
+    !Array.isArray(orders) && orders?.count ? Math.ceil(orders.count / 20) : 1;
 
   const handleFilterChange = (key: string, value: string) => {
     // Convert "all" back to empty string for API
-    const apiValue = value === 'all' ? '' : value;
-    setFilters(prev => ({ ...prev, [key]: apiValue }));
+    const apiValue = value === "all" ? "" : value;
+    setFilters((prev) => ({ ...prev, [key]: apiValue }));
     setCurrentPage(1); // Reset to first page when filtering
   };
 
   const clearFilters = () => {
     setFilters({
-      project: '',
-      store: '',
-      agent: '',
-      organization: '',
-      salesChannel: '',
-      seller: '',
-      operator: '',
-      order_status: '',
-      order_date_after: '',
-      order_date_before: '',
-      deadline_date_after: '',
-      deadline_date_before: '',
-      zamershik: '',
-      admin: ''
+      project: "",
+      store: "",
+      agent: "",
+      organization: "",
+      salesChannel: "",
+      seller: "",
+      operator: "",
+      order_status: "",
+      order_date_after: "",
+      order_date_before: "",
+      deadline_date_after: "",
+      deadline_date_before: "",
+      zamershik: "",
+      admin: "",
     });
     setCurrentPage(1);
   };
 
   // Get filtered users based on role
-  const zamershikUsers = !Array.isArray(users) && users?.results ? 
-    users.results.filter((user: any) => user.role === 'ZAMERSHIK') : 
-    (Array.isArray(users) ? users.filter((user: any) => user.role === 'ZAMERSHIK') : []);
-  
-  const adminUsers = !Array.isArray(users) && users?.results ? 
-    users.results.filter((user: any) => user.role === 'ADMIN') : 
-    (Array.isArray(users) ? users.filter((user: any) => user.role === 'ADMIN') : []);
+  const zamershikUsers =
+    !Array.isArray(users) && users?.results
+      ? users.results.filter((user: any) => user.role === "ZAMERSHIK")
+      : Array.isArray(users)
+        ? users.filter((user: any) => user.role === "ZAMERSHIK")
+        : [];
+
+  const adminUsers =
+    !Array.isArray(users) && users?.results
+      ? users.results.filter((user: any) => user.role === "ADMIN")
+      : Array.isArray(users)
+        ? users.filter((user: any) => user.role === "ADMIN")
+        : [];
 
   // const handleEditClick = (order: Order) => {
   //   setEditingOrder(order);
@@ -244,7 +266,9 @@ export default function OrdersPage() {
           toast.success(t("messages.order_deleted_successfully"));
         },
         onError: () => {
-          toast.error(t("messages.error.delete", { item: t("navigation.orders") }));
+          toast.error(
+            t("messages.error.delete", { item: t("navigation.orders") }),
+          );
         },
       });
     }
@@ -270,16 +294,26 @@ export default function OrdersPage() {
     });
   };
 
-
   const handleSendToMoySklad = (order: Order) => {
     if (!order.id) return;
 
-    api.post(`orders/${order.id}/moy_sklad/`, {}).then(() => {
-      toast.success(t("messages.order_sent_to_moy_sklad"));
-    }).catch(() => {
-      toast.error(t("messages.error_sending_order_to_moy_sklad"));
-    });
-  
+    api
+      .post(`orders/${order.id}/moy_sklad/`, {})
+      .then(() => {
+        toast.success(t("messages.order_sent_to_moy_sklad"));
+      })
+      .catch(() => {
+        toast.error(t("messages.error_sending_order_to_moy_sklad"));
+      });
+  };
+
+  const handleExportOrder = (order: Order) => {
+    if (!order.id) return;
+
+    const exportUrl = `https://kushmag.uz/api/orders/${order.id}/export/`;
+
+    // Open the export URL in a new tab to trigger download
+    window.open(exportUrl, "_blank");
   };
 
   // ...expanded row logic removed...
@@ -296,6 +330,7 @@ export default function OrdersPage() {
             <Filter className="h-4 w-4 mr-2" />
             {t("common.filters")}
           </Button>
+
           <Button onClick={() => navigate("/orders/create")}>
             {t("common.create")}
           </Button>
@@ -311,14 +346,24 @@ export default function OrdersPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
               {/* Project Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.project")}</label>
-                <Select value={filters.project || 'all'} onValueChange={(value) => handleFilterChange('project', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.project")}
+                </label>
+                <Select
+                  value={filters.project || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("project", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_project")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(projects) ? projects : projects?.results || []).map((project: any) => (
+                    {(Array.isArray(projects)
+                      ? projects
+                      : projects?.results || []
+                    ).map((project: any) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
                       </SelectItem>
@@ -329,14 +374,22 @@ export default function OrdersPage() {
 
               {/* Store Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.store")}</label>
-                <Select value={filters.store || 'all'} onValueChange={(value) => handleFilterChange('store', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.store")}
+                </label>
+                <Select
+                  value={filters.store || "all"}
+                  onValueChange={(value) => handleFilterChange("store", value)}
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_store")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(stores) ? stores : stores?.results || []).map((store: any) => (
+                    {(Array.isArray(stores)
+                      ? stores
+                      : stores?.results || []
+                    ).map((store: any) => (
                       <SelectItem key={store.id} value={store.id}>
                         {store.name}
                       </SelectItem>
@@ -347,14 +400,22 @@ export default function OrdersPage() {
 
               {/* Agent Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.agent")}</label>
-                <Select value={filters.agent || 'all'} onValueChange={(value) => handleFilterChange('agent', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.agent")}
+                </label>
+                <Select
+                  value={filters.agent || "all"}
+                  onValueChange={(value) => handleFilterChange("agent", value)}
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_agent")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(agents) ? agents : agents?.results || []).map((agent: any) => (
+                    {(Array.isArray(agents)
+                      ? agents
+                      : agents?.results || []
+                    ).map((agent: any) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.name}
                       </SelectItem>
@@ -365,14 +426,24 @@ export default function OrdersPage() {
 
               {/* Organization Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.organization")}</label>
-                <Select value={filters.organization || 'all'} onValueChange={(value) => handleFilterChange('organization', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.organization")}
+                </label>
+                <Select
+                  value={filters.organization || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("organization", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_organization")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(organizations) ? organizations : organizations?.results || []).map((org: any) => (
+                    {(Array.isArray(organizations)
+                      ? organizations
+                      : organizations?.results || []
+                    ).map((org: any) => (
                       <SelectItem key={org.id} value={org.id}>
                         {org.name}
                       </SelectItem>
@@ -383,14 +454,26 @@ export default function OrdersPage() {
 
               {/* Sales Channel Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.sales_channel")}</label>
-                <Select value={filters.salesChannel || 'all'} onValueChange={(value) => handleFilterChange('salesChannel', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.sales_channel")}
+                </label>
+                <Select
+                  value={filters.salesChannel || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("salesChannel", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_sales_channel")} />
+                    <SelectValue
+                      placeholder={t("forms.select_sales_channel")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(salesChannels) ? salesChannels : salesChannels?.results || []).map((channel: any) => (
+                    {(Array.isArray(salesChannels)
+                      ? salesChannels
+                      : salesChannels?.results || []
+                    ).map((channel: any) => (
                       <SelectItem key={channel.id} value={channel.id}>
                         {channel.name}
                       </SelectItem>
@@ -401,14 +484,22 @@ export default function OrdersPage() {
 
               {/* Seller Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.seller")}</label>
-                <Select value={filters.seller || 'all'} onValueChange={(value) => handleFilterChange('seller', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.seller")}
+                </label>
+                <Select
+                  value={filters.seller || "all"}
+                  onValueChange={(value) => handleFilterChange("seller", value)}
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_seller")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(sellers) ? sellers : sellers?.results || []).map((seller: any) => (
+                    {(Array.isArray(sellers)
+                      ? sellers
+                      : sellers?.results || []
+                    ).map((seller: any) => (
                       <SelectItem key={seller.id} value={seller.id}>
                         {seller.name}
                       </SelectItem>
@@ -419,14 +510,24 @@ export default function OrdersPage() {
 
               {/* Operator Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.operator")}</label>
-                <Select value={filters.operator || 'all'} onValueChange={(value) => handleFilterChange('operator', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.operator")}
+                </label>
+                <Select
+                  value={filters.operator || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("operator", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_operator")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(operators) ? operators : operators?.results || []).map((operator: any) => (
+                    {(Array.isArray(operators)
+                      ? operators
+                      : operators?.results || []
+                    ).map((operator: any) => (
                       <SelectItem key={operator.id} value={operator.id}>
                         {operator.name}
                       </SelectItem>
@@ -437,24 +538,44 @@ export default function OrdersPage() {
 
               {/* Order Status Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.order_status")}</label>
-                <Select value={filters.order_status || 'all'} onValueChange={(value) => handleFilterChange('order_status', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.order_status")}
+                </label>
+                <Select
+                  value={filters.order_status || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("order_status", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_status")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="draft">{t("order_status.draft")}</SelectItem>
-                    <SelectItem value="moy_sklad">{t("order_status.moy_sklad")}</SelectItem>
-                    <SelectItem value="cancelled">{t("order_status.cancelled")}</SelectItem>
+                    <SelectItem value="draft">
+                      {t("order_status.draft")}
+                    </SelectItem>
+                    <SelectItem value="moy_sklad">
+                      {t("order_status.moy_sklad")}
+                    </SelectItem>
+                    <SelectItem value="cancelled">
+                      {t("order_status.cancelled")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Zamershik Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.zamershik")}</label>
-                <Select value={filters.zamershik || 'all'} onValueChange={(value) => handleFilterChange('zamershik', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.zamershik")}
+                </label>
+                <Select
+                  value={filters.zamershik || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange("zamershik", value)
+                  }
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_zamershik")} />
                   </SelectTrigger>
@@ -471,8 +592,13 @@ export default function OrdersPage() {
 
               {/* Admin Filter */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.admin")}</label>
-                <Select value={filters.admin || 'all'} onValueChange={(value) => handleFilterChange('admin', value)}>
+                <label className="text-sm font-medium">
+                  {t("forms.admin")}
+                </label>
+                <Select
+                  value={filters.admin || "all"}
+                  onValueChange={(value) => handleFilterChange("admin", value)}
+                >
                   <SelectTrigger className="h-9 min-w-[200px]">
                     <SelectValue placeholder={t("forms.select_admin")} />
                   </SelectTrigger>
@@ -489,45 +615,61 @@ export default function OrdersPage() {
 
               {/* Order Date After */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.order_date_after")}</label>
+                <label className="text-sm font-medium">
+                  {t("forms.order_date_after")}
+                </label>
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
                   value={filters.order_date_after}
-                  onChange={(e) => handleFilterChange('order_date_after', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("order_date_after", e.target.value)
+                  }
                 />
               </div>
 
               {/* Order Date Before */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.order_date_before")}</label>
+                <label className="text-sm font-medium">
+                  {t("forms.order_date_before")}
+                </label>
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
                   value={filters.order_date_before}
-                  onChange={(e) => handleFilterChange('order_date_before', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("order_date_before", e.target.value)
+                  }
                 />
               </div>
 
               {/* Deadline Date After */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.deadline_date_after")}</label>
+                <label className="text-sm font-medium">
+                  {t("forms.deadline_date_after")}
+                </label>
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
                   value={filters.deadline_date_after}
-                  onChange={(e) => handleFilterChange('deadline_date_after', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("deadline_date_after", e.target.value)
+                  }
                 />
               </div>
 
               {/* Deadline Date Before */}
               <div className="space-y-1">
-                <label className="text-sm font-medium">{t("forms.deadline_date_before")}</label>
+                <label className="text-sm font-medium">
+                  {t("forms.deadline_date_before")}
+                </label>
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
                   value={filters.deadline_date_before}
-                  onChange={(e) => handleFilterChange('deadline_date_before', e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("deadline_date_before", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -546,14 +688,28 @@ export default function OrdersPage() {
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead>
             <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">№</th>
-                            <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.order_status")}</th>
-                                          <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.moy_sklad_id")}</th>
+              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                №
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.order_status")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.moy_sklad_id")}
+              </th>
 
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.created_at")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.deadline")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.counterparty")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.organization")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.created_at")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.deadline")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                {t("forms.counterparty")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                {t("forms.organization")}
+              </th>
               <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                 {t("forms.total_amount")}
               </th>
@@ -566,98 +722,160 @@ export default function OrdersPage() {
               <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                 {t("forms.remaining_balance")}
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.project")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.store")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("forms.description")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.seller")}</th>
-                            <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.zamershik")}</th>
-                                          <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.admin")}</th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">{t("forms.operator")}</th>
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">{t("common.actions")}</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.project")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.store")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                {t("forms.description")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.seller")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.zamershik")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.admin")}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                {t("forms.operator")}
+              </th>
+              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                {t("common.actions")}
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {ordersData.map((order: any, index: number) => (
-              <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-150">
+              <tr
+                key={order.id}
+                className="hover:bg-gray-50 transition-colors duration-150"
+              >
                 <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
                   {(currentPage - 1) * 20 + index + 1}
                 </td>
-                  <td className="px-3 py-2 text-xs text-gray-600">
+                <td className="px-3 py-2 text-xs text-gray-600">
                   <div className="truncate" title={formatDate(order.status)}>
-                    {order.order_status ? t(`order_status.${order.order_status}`) : '-'}  
-                  </div>
-                </td>
-                 <td className="px-3 py-2 text-xs text-gray-600">
-                  <div className="truncate" title={order.name}>
-                    {order.name || '-'}
+                    {order.order_status
+                      ? t(`order_status.${order.order_status}`)
+                      : "-"}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-xs text-gray-600">
-                  <div className="truncate" title={formatDate(order.created_at)}>
+                  <div className="truncate" title={order.name}>
+                    {order.name || "-"}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-xs text-gray-600">
+                  <div
+                    className="truncate"
+                    title={formatDate(order.created_at)}
+                  >
                     {formatDate(order.created_at)}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-xs text-gray-600">
-                  <div className="truncate" title={formatDate(order.deadline_date)}>
+                  <div
+                    className="truncate"
+                    title={formatDate(order.deadline_date)}
+                  >
                     {formatDate(order.deadline_date)}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate font-medium text-gray-900" title={order.agent?.name}>
-                    {order.agent?.name || '-'}
+                  <div
+                    className="truncate font-medium text-gray-900"
+                    title={order.agent?.name}
+                  >
+                    {order.agent?.name || "-"}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.organization?.name}>
-                    {order.organization?.name || '-'}
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.organization?.name}
+                  >
+                    {order.organization?.name || "-"}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
-                  {order.total_amount ? Number(order.total_amount).toLocaleString() : '0'}
+                  {order.total_amount
+                    ? Number(order.total_amount).toLocaleString()
+                    : "0"}
                 </td>
                 <td className="px-3 py-2 text-right text-sm text-blue-600">
-                  {order.advance_payment ? Number(order.advance_payment).toLocaleString() : '0'}
+                  {order.advance_payment
+                    ? Number(order.advance_payment).toLocaleString()
+                    : "0"}
                 </td>
                 <td className="px-3 py-2 text-right text-sm text-orange-600">
-                  {order.discount_amount ? Number(order.discount_amount).toLocaleString() : '0'}
+                  {order.discount_amount
+                    ? Number(order.discount_amount).toLocaleString()
+                    : "0"}
                 </td>
                 <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
-                  {order.remaining_balance ? Number(order.remaining_balance).toLocaleString() : '0'}
+                  {order.remaining_balance
+                    ? Number(order.remaining_balance).toLocaleString()
+                    : "0"}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.project?.name}>
-                    {order.project?.name || '-'}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.store?.name}>
-                    {order.store?.name || '-'}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-600" title={order?.description}>
-                    {order?.description || '-'}
-                  </div>
-                </td>
-               
-                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.seller?.name}>
-                    {order.seller?.name || '-'}
-                  </div>
-                </td>
-                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.seller?.name}>
-                    {order.admin?.name || '-'}
-                  </div>
-                </td>
-                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.seller?.name}>
-                    {order.zamershik?.name || '-'}
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.project?.name}
+                  >
+                    {order.project?.name || "-"}
                   </div>
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  <div className="truncate text-gray-700" title={order.operator?.name}>
-                    {order.operator?.name || '-'}
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.store?.name}
+                  >
+                    {order.store?.name || "-"}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div
+                    className="truncate text-gray-600"
+                    title={order?.description}
+                  >
+                    {order?.description || "-"}
+                  </div>
+                </td>
+
+                <td className="px-3 py-2 text-sm">
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.seller?.name}
+                  >
+                    {order.seller?.name || "-"}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.seller?.name}
+                  >
+                    {order.admin?.name || "-"}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.seller?.name}
+                  >
+                    {order.zamershik?.name || "-"}
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  <div
+                    className="truncate text-gray-700"
+                    title={order.operator?.name}
+                  >
+                    {order.operator?.name || "-"}
                   </div>
                 </td>
                 <td className="px-3 py-2">
@@ -669,7 +887,7 @@ export default function OrdersPage() {
                       onClick={() => navigate(`/orders/edit/${order.id}`)}
                       title={t("common.edit_advanced")}
                     >
-                      <Pencil/>
+                      <Pencil />
                     </Button>
                     <Button
                       size="sm"
@@ -678,16 +896,25 @@ export default function OrdersPage() {
                       onClick={() => handleDeleteClick(order)}
                       title={t("common.delete")}
                     >
-                      <Trash/>
+                      <Trash />
                     </Button>
-                        <Button
+                    <Button
                       size="sm"
-                      variant='link'
+                      variant="link"
                       className="h-7 px-2 text-xs"
                       onClick={() => handleSendToMoySklad(order)}
                       title={t("common.send_to_moy_sklad")}
                     >
-                      <SendHorizontal/>
+                      <SendHorizontal />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => handleExportOrder(order)}
+                      title={t("common.export")}
+                    >
+                      <Download />
                     </Button>
                   </div>
                 </td>
@@ -701,13 +928,14 @@ export default function OrdersPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            {t("pagination.page")} {currentPage} {t("pagination.of")} {totalPages}
+            {t("pagination.page")} {currentPage} {t("pagination.of")}{" "}
+            {totalPages}
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -716,7 +944,9 @@ export default function OrdersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
             >
               {t("pagination.next")}

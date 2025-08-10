@@ -37,6 +37,20 @@
     "operator": "Operator",
     "sotrudnik": "Xızmetker"
   },
+  "months": {
+    "january": "Yanvar",
+    "february": "Fevral",
+    "march": "Mart",
+    "april": "Aprel",
+    "may": "May",
+    "june": "Iyun",
+    "july": "Iyul",
+    "august": "Avgust",
+    "september": "Sentyabr",
+    "october": "Oktyabr",
+    "november": "Noyabr",
+    "december": "Dekabr"
+  },
   "navigation": {
     "orders": "Buyırtpalar",
     "beadings": "Bidingter",
@@ -55,7 +69,46 @@
     "monthly_salaries": "Aylıq maashlar",
     "staff_member": "Xızmetker",
     "measures": "Ólshemler",
-    "create_measure": "Ólshem jasaw"
+    "create_measure": "Ólshem jasaw",
+    "yearly_plans": "Jıllıq planlar"
+  },
+  "yearly_plans": {
+    "add_yearly_plan": "Jıllıq plan qosıw",
+    "edit_yearly_plan": "Jıllıq plannı redaktırlaw",
+    "monthly_plans": "Aylıq planlar",
+    "user": "Paydalanıwshı",
+    "year": "Jıl",
+    "month": "Ay",
+    "sales_plan": "Satıw planı",
+    "sales_actual": "Haqıyqıy satıw",
+    "sales_percentage": "Satıw %",
+    "clients_plan": "Klientler planı",
+    "clients_actual": "Haqıyqıy klientler",
+    "clients_percentage": "Klientler %",
+    "sales_count_plan": "Satıw sanı planı",
+    "sales_count_actual": "Haqıyqıy satıw sanı",
+    "sales_count_percentage": "Satıw sanı %",
+    "all_users": "Barsha paydalanıwshılar",
+    "all_years": "Barsha jıllar",
+    "select_user": "Paydalanıwshınی tańlań",
+    "no_yearly_plans_found": "Jıllıq planlar tabılmadı",
+    "please_select_user": "Paydalanıwshınی tańlań",
+    "yearly_plan_created_successfully": "Jıllıq plan sátli jaratıldı",
+    "yearly_plan_updated_successfully": "Jıllıq plan sátli jańartıldı",
+    "yearly_plan_deleted_successfully": "Jıllıq plan sátli óshirildi",
+    "failed_to_create_yearly_plan": "Jıllıq plan jaratıw sátsiz boldı",
+    "failed_to_update_yearly_plan": "Jıllıq plan jańartıw sátsiz boldı",
+    "failed_to_delete_yearly_plan": "Jıllıq plan óshiriw sátsiz boldı",
+    "confirm_delete_yearly_plan": "Usı jıllıq plannı óshirgińiz keledi ma?",
+    "saving": "Saqlaw...",
+    "no_data": "Maǵlıwmatlar tabılmadı",
+    "add_first_plan": "Birinshi plannı qosıw",
+    "sales_plans_all_users": "Satıw planları - Barsha paydalanıwshılar",
+    "add_user_plan": "Paydalanıwshı planın qosıw",
+    "total": "Jámi",
+    "add_new_plan": "Jańa plan qosıw",
+    "edit_plan": "Plannı redaktırlaw",
+    "view_plan": "Plannı kóriw"
   },
   "status": {
     "new": "Jańa",
@@ -248,7 +301,7 @@
     "export_excel": "Excel-ke eksport",
     "export": "Eksport"
   },
- 
+
   "placeholders": {
     "select_currency": "Valyutanı tańlań",
     "select_store": "Skladtı tańlań",
@@ -331,7 +384,7 @@
     "unknown_product": "Belgisiz mahsulat",
     "manage_extensions": "Doborları basqarıw",
     "manage_casings": "Qutshalarını basqarıw",
-    "manage_crowns": "Koronalarını basqarıw", 
+    "manage_crowns": "Koronalarını basqarıw",
     "manage_accessories": "Aksessuarlarını basqarıw",
     "no_extensions_added": "Doborlar qosılmadı",
     "no_casings_added": "Qutshalar qosılmadı",

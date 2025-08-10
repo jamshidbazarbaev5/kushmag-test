@@ -36,6 +36,10 @@ import CreateOrderPage from "./core/pages/create-order";
 import EditOrderPage from "./core/pages/edit-order";
 import EditOrder2Page from "./core/pages/edit-order-2";
 import RoleBasedRedirect from "./core/components/RoleBasedRedirect";
+import YearlyPlansPage from "./core/pages/yearly-plans";
+import DailyPlansPage from "./core/pages/daily-plans";
+import YearlyPlanDemo from "./components/YearlyPlanDemo";
+import YearlyPlanApiExample from "./components/YearlyPlanApiExample";
 
 const queryClient = new QueryClient();
 function App() {
@@ -43,57 +47,89 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Routes>
-          
           <Route path="/login" element={<LoginPage />} />
-             <Route element={<Layout><Outlet /></Layout>}>
-             
-             <Route path="/" element={<RoleBasedRedirect />} />
-                 <Route path="/materials" element={<MaterialsPage />} />
-                 <Route path="/create-material" element={<CreateMaterialPage />} />
-                 
-                 <Route path="/material-types" element={<MaterialTypesPage />} />
-                 <Route path="/create-material-type" element={<CreateMaterialTypePage />} />
-                 
-                 <Route path="/massifs" element={<MassifsPage />} />
-                 <Route path="/create-massif" element={<CreateMassifPage />} />
-                 
-                 <Route path="/orders" element={<OrdersPage />} />
-                 <Route path="/orders/create" element={<CreateOrderPage />} />
-                 <Route path="/orders/edit/:id" element={<EditOrder2Page />} />
-                 <Route path="/orders/create-from-measure/:measureId" element={<EditOrderPage />} />
-                 
-                 <Route path="/colors" element={<ColorsPage />} />
-                 <Route path="/create-color" element={<CreateColorPage />} />
-                 
-                 <Route path="/patina-colors" element={<PatinaColorsPage />} />
-                 <Route path="/create-patina-color" element={<CreatePatinaColorPage />} />
-                 
-                 <Route path="/beadings" element={<BeadingsPage />} />
-                 <Route path="/create-beading" element={<CreateBeadingPage />} />
-                 
-                 <Route path="/glass-types" element={<GlassTypesPage />} />
-                 <Route path="/create-glass-type" element={<CreateGlassTypePage />} />
-                 
-                 <Route path="/thresholds" element={<ThresholdsPage />} />
-                 <Route path="/create-threshold" element={<CreateThresholdPage />} />
+          <Route
+            element={
+              <Layout>
+                <Outlet />
+              </Layout>
+            }
+          >
+            <Route path="/" element={<RoleBasedRedirect />} />
+            <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/create-material" element={<CreateMaterialPage />} />
 
-                  <Route path="/users" element={<UsersPage />} />
-                 <Route path="/create-user" element={<CreateUserPage />} />
-                 
-                 <Route path="/monthly-salaries" element={<MonthlySalariesPage />} />
-                 <Route path="/salary-overview" element={<SalaryOverviewPage />} />
-                  
-                  {/* Measures routes */}
-                  <Route path="/measures" element={<MeasuresPage />} />
-                  <Route path="/measures/create" element={<CreateMeasurePage />} />
-                  <Route path="/measures/:id/edit" element={<EditMeasurePage />} />
-                  
-                  <Route path="/attribute-settings" element={<AttributeSettingsPage />} />
+            <Route path="/material-types" element={<MaterialTypesPage />} />
+            <Route
+              path="/create-material-type"
+              element={<CreateMaterialTypePage />}
+            />
 
-                  <Route path="/casing-ranges" element={<CasingRangesPage />} />
-                  <Route path="/create-casing-range" element={<CreateCasingRangePage />} /> 
+            <Route path="/massifs" element={<MassifsPage />} />
+            <Route path="/create-massif" element={<CreateMassifPage />} />
 
-               </Route>
+            <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/orders/create" element={<CreateOrderPage />} />
+            <Route path="/orders/edit/:id" element={<EditOrder2Page />} />
+            <Route
+              path="/orders/create-from-measure/:measureId"
+              element={<EditOrderPage />}
+            />
+
+            <Route path="/colors" element={<ColorsPage />} />
+            <Route path="/create-color" element={<CreateColorPage />} />
+
+            <Route path="/patina-colors" element={<PatinaColorsPage />} />
+            <Route
+              path="/create-patina-color"
+              element={<CreatePatinaColorPage />}
+            />
+
+            <Route path="/beadings" element={<BeadingsPage />} />
+            <Route path="/create-beading" element={<CreateBeadingPage />} />
+
+            <Route path="/glass-types" element={<GlassTypesPage />} />
+            <Route
+              path="/create-glass-type"
+              element={<CreateGlassTypePage />}
+            />
+
+            <Route path="/thresholds" element={<ThresholdsPage />} />
+            <Route path="/create-threshold" element={<CreateThresholdPage />} />
+
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/create-user" element={<CreateUserPage />} />
+
+            <Route path="/monthly-salaries" element={<MonthlySalariesPage />} />
+            <Route path="/salary-overview" element={<SalaryOverviewPage />} />
+
+            {/* Measures routes */}
+            <Route path="/measures" element={<MeasuresPage />} />
+            <Route path="/measures/create" element={<CreateMeasurePage />} />
+            <Route path="/measures/:id/edit" element={<EditMeasurePage />} />
+
+            <Route
+              path="/attribute-settings"
+              element={<AttributeSettingsPage />}
+            />
+
+            <Route path="/casing-ranges" element={<CasingRangesPage />} />
+            <Route
+              path="/create-casing-range"
+              element={<CreateCasingRangePage />}
+            />
+
+            <Route path="/casing-ranges" element={<CasingRangesPage />} />
+            <Route
+              path="/create-casing-range"
+              element={<CreateCasingRangePage />}
+            />
+
+            <Route path="/yearly-plans" element={<YearlyPlansPage />} />
+            <Route path="/daily-plans" element={<DailyPlansPage />} />
+            <Route path="/yearly-plan-demo" element={<YearlyPlanDemo />} />
+            <Route path="/yearly-plan-api" element={<YearlyPlanApiExample />} />
+          </Route>
         </Routes>
         <Toaster position="top-right" richColors />
       </AuthProvider>
