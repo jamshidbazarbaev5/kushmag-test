@@ -117,6 +117,7 @@ export default function CreateOrderPage() {
     color: "",
     patina_color: "",
     beading_main: "",
+    beading_additional: "2",
     glass_type: "",
     threshold: "",
   });
@@ -1038,6 +1039,72 @@ function StepOne({
                   </Select>
                 </div>
 
+                {/* Beading Additional */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.beading_additional")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.beading_additional}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        beading_additional: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t(
+                          "placeholders.select_beading_additional",
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.beadingAdditionalOptions?.map(
+                        (option: any) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Beading Additional */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.beading_additional")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.beading_additional}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        beading_additional: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t(
+                          "placeholders.select_beading_additional",
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.beadingAdditionalOptions?.map(
+                        (option: any) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Glass Type */}
                 {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
@@ -1106,6 +1173,8 @@ function StepOne({
                           color: globalDoorSettings.color,
                           patina_color: globalDoorSettings.patina_color,
                           beading_main: globalDoorSettings.beading_main,
+                          beading_additional:
+                            globalDoorSettings.beading_additional,
                           // glass_type: globalDoorSettings.glass_type,
                           // threshold: globalDoorSettings.threshold,
                         }));
@@ -1380,7 +1449,7 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: "",
+      beading_additional: orderData.beading_additional || "2",
       glass_type: "",
       threshold: "",
       extensions: defaultExtensions,
@@ -1418,6 +1487,7 @@ function StepTwo({
     "color",
     "patina_color",
     "beading_main",
+    "beading_additional",
   ]);
 
   useEffect(() => {
@@ -1429,6 +1499,7 @@ function StepTwo({
         color,
         patina_color,
         beading_main,
+        beading_additional,
       ] = materialAttributes;
 
       const updatedDoors = doors.map((door: any) => ({
@@ -1439,6 +1510,7 @@ function StepTwo({
         color: color || "",
         patina_color: patina_color || "",
         beading_main: beading_main || "",
+        beading_additional: beading_additional || "",
       }));
 
       setDoors(updatedDoors);
@@ -1453,6 +1525,7 @@ function StepTwo({
           color: color || "",
           patina_color: patina_color || "",
           beading_main: beading_main || "",
+          beading_additional: beading_additional || "",
         });
       }
     }
@@ -3400,10 +3473,7 @@ function StepThree({
 }: any) {
   const { t } = useTranslation();
 
-
-
   // Calculate discount percentage for display
- 
 
   // Handle discount amount input change
   const handleDiscountAmountChange = (value: string) => {

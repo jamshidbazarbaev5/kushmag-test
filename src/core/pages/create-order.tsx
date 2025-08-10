@@ -132,6 +132,7 @@ export default function CreateOrderPage() {
   const recoveryProcessed = useRef(false);
   const orderForm = useForm();
   const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
+  const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
 
   // Auto-save functionality
   const { getOrderDraft, clearAllDrafts, hasDraftData, STORAGE_KEYS } =
@@ -181,6 +182,8 @@ export default function CreateOrderPage() {
         toast.success(t("forms.draft_recovered"));
       } else {
         clearAllDrafts();
+        // Set default value for beading_additional
+        orderForm.setValue("beading_additional", "2");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -403,6 +406,13 @@ export default function CreateOrderPage() {
       options: fieldOptions.beadingMainOptions,
       placeholder: t("placeholders.select_beading_main"),
     },
+    {
+      name: "beading_additional",
+      label: t("forms.beading_additional"),
+      type: "searchable-select",
+      options: fieldOptions.beadingAdditionalOptions,
+      placeholder: t("placeholders.select_beading_additional"),
+    },
   ];
 
   // --- API-based Calculation Function ---
@@ -605,6 +615,8 @@ export default function CreateOrderPage() {
       discount_amount: discountAmount.toFixed(2),
       // discount_percentage:Number(discount_percentage.toFixed(2)),
       remaining_balance: remainingBalance.toFixed(2),
+      agreement_amount: agreementAmountInput.toFixed(2),
+      beading_additional: data.beading_additional,
     };
 
     createOrder(orderData, {
@@ -678,6 +690,8 @@ export default function CreateOrderPage() {
             advance_payment={advance_payment}
             discountAmountInput={discountAmountInput}
             setDiscountAmountInput={setDiscountAmountInput}
+            agreementAmountInput={agreementAmountInput}
+            setAgreementAmountInput={setAgreementAmountInput}
           />
         </div>
       </div>
@@ -1016,7 +1030,7 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: "",
+      beading_additional: orderData.beading_additional || "2",
       glass_type: "",
       threshold: "",
       extensions: defaultExtensions,
@@ -1048,6 +1062,7 @@ function StepTwo({
     "color",
     "patina_color",
     "beading_main",
+    "beading_additional",
   ]);
 
   useEffect(() => {
@@ -1059,6 +1074,7 @@ function StepTwo({
         color,
         patina_color,
         beading_main,
+        beading_additional,
       ] = materialAttributes;
 
       const updatedDoors = doors.map((door: any) => ({
@@ -1069,6 +1085,7 @@ function StepTwo({
         color: color || "",
         patina_color: patina_color || "",
         beading_main: beading_main || "",
+        beading_additional: beading_additional || "2",
       }));
 
       setDoors(updatedDoors);
@@ -1083,6 +1100,7 @@ function StepTwo({
           color: color || "",
           patina_color: patina_color || "",
           beading_main: beading_main || "",
+          beading_additional: beading_additional || "2",
         });
       }
     }
@@ -1521,7 +1539,7 @@ function StepTwo({
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[570px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1">
                         <span>{t("forms.casings")}</span>
@@ -2323,7 +2341,7 @@ function StepTwo({
                                       </Select>
                                     </div>
                                     {casing.casing_formula === "formula2" && (
-                                      <div className="mt-2">
+                                      <div>
                                         <label className="text-xs text-gray-600">
                                           Диапазон
                                         </label>
@@ -2353,7 +2371,7 @@ function StepTwo({
                                           }}
                                         >
                                           <SelectTrigger className="h-8">
-                                            <SelectValue placeholder="Select range" />
+                                            <SelectValue placeholder="Диапазон" />
                                           </SelectTrigger>
                                           <SelectContent className="z-[9999]">
                                             {fieldOptions.casingRangeOptions?.map(
@@ -3107,6 +3125,8 @@ function StepThree({
   advance_payment,
   discountAmountInput,
   setDiscountAmountInput,
+  agreementAmountInput,
+  setAgreementAmountInput,
 }: any) {
   const { t } = useTranslation();
 
@@ -3266,7 +3286,7 @@ function StepThree({
               {/* Discount and Payment Fields */}
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-800">
-                  {t("forms.discount")} & {t("forms.advance_payment")}
+                  {t("forms.discount")} & {t("forms.advance_payment")} & Additional Agreement Discount
                 </h4>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -3389,6 +3409,69 @@ function StepThree({
                       })}
                     />
                   </div>
+
+                  {/* Agreement Amount Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Additional Agreement Discount
+                    </label>
+                    <div>
+                      <div>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={agreementAmountInput || ""}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Handle comma as decimal separator
+                            if (typeof value === "string") {
+                              let cleanedValue = value
+                                .replace(/,/g, ".")
+                                .replace(/[^\d.]/g, "");
+                              const parts = cleanedValue.split(".");
+                              if (parts.length > 2) {
+                                cleanedValue =
+                                  parts[0] + "." + parts.slice(1).join("");
+                              }
+                              value = cleanedValue;
+                            }
+                            const amount = parseFloat(value) || 0;
+                            setAgreementAmountInput(amount);
+
+                            // When user enters agreement amount, ADD it to existing discount
+                            // Example: if total is 2,800,000, existing discount is 140,000 (5%), and user enters 14,000
+                            // then total discount = 140,000 + 14,000 = 154,000
+                            // and new discount percentage = (154,000 / 2,800,000) * 100 = 5.5%
+                            const existingDiscountAmount = discountAmountInput || 0;
+                            const totalDiscountAmount = existingDiscountAmount + amount;
+                            const newDiscountPercentage =
+                              totals.total_sum > 0
+                                ? (totalDiscountAmount / totals.total_sum) * 100
+                                : 0;
+
+                            // Update discount fields
+                            setDiscountAmountInput(totalDiscountAmount);
+                            orderForm.setValue("discount_percentage", newDiscountPercentage.toFixed(2));
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          Additional Discount (сум)
+                        </span>
+                      </div>
+
+                    </div>
+                    {agreementAmountInput > 0 && (
+                      <p className="text-sm text-blue-600">
+                        Additional Discount: {agreementAmountInput.toFixed(0)} сум
+                        <br />
+                        <span className="text-xs text-gray-500">
+                          (Will be added to existing discount)
+                        </span>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -3409,6 +3492,12 @@ function StepThree({
                   <span>{t("forms.advance_payment")}</span>
                   <span>{advance.toFixed(0)} сум</span>
                 </div>
+                {agreementAmountInput > 0 && (
+                  <div className="flex justify-between text-purple-600">
+                    <span>Additional Agreement Discount</span>
+                    <span>{agreementAmountInput.toFixed(0)} сум</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t("forms.remaining_balance")}</span>

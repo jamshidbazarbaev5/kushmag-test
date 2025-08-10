@@ -135,6 +135,7 @@ export default function EditOrderPage() {
     color: "",
     patina_color: "",
     beading_main: "",
+    beading_additional: "2",
     glass_type: "",
     threshold: "",
   });
@@ -321,6 +322,7 @@ export default function EditOrderPage() {
             color: firstDoor.color || "",
             patina_color: firstDoor.patina_color || "",
             beading_main: firstDoor.beading_main || "",
+            beading_additional: firstDoor.beading_additional || "2",
             glass_type: firstDoor.glass_type || "",
             threshold: firstDoor.threshold || "",
           });
@@ -862,7 +864,7 @@ function StepOne({
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-2 gap-6">
                 {/* Material */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none">
@@ -1037,6 +1039,39 @@ function StepOne({
                   </Select>
                 </div>
 
+                {/* Beading Additional */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    {t("forms.beading_additional")}
+                  </label>
+                  <Select
+                    value={globalDoorSettings.beading_additional}
+                    onValueChange={(value) =>
+                      setGlobalDoorSettings((prev: any) => ({
+                        ...prev,
+                        beading_additional: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t(
+                          "placeholders.select_beading_additional",
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fieldOptions.beadingAdditionalOptions?.map(
+                        (option: any) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ),
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Glass Type */}
                 {/* <div className="space-y-2">
               <label className="text-sm font-medium leading-none">
@@ -1106,6 +1141,8 @@ function StepOne({
                           color: globalDoorSettings.color,
                           patina_color: globalDoorSettings.patina_color,
                           beading_main: globalDoorSettings.beading_main,
+                          beading_additional:
+                            globalDoorSettings.beading_additional,
                           // glass_type: globalDoorSettings.glass_type,
                           // threshold: globalDoorSettings.threshold,
                         }));
@@ -1413,7 +1450,7 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: "",
+      beading_additional: orderData.beading_additional || "2",
       glass_type: "",
       threshold: "",
       extensions: defaultExtensions,
@@ -1445,6 +1482,7 @@ function StepTwo({
     "color",
     "patina_color",
     "beading_main",
+    "beading_additional",
   ]);
 
   useEffect(() => {
@@ -2111,7 +2149,7 @@ function StepTwo({
                       </Select>
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[500px]">
+                  <TableHead className="min-w-[570px]">
                     <div className="space-y-2">
                       <div className="flex items-center gap-1">
                         <span>{t("forms.casings")}</span>
@@ -2472,11 +2510,7 @@ function StepTwo({
                                 )?.priceType?.name || door.price_type}
                             </div>
                           )}
-                          {door.price && (
-                            <div className="text-xs text-gray-600">
-                              Price: {door.price}
-                            </div>
-                          )}
+
                           <Button
                             onClick={() => {
                               handleEditDoor(index);
@@ -2875,7 +2909,7 @@ function StepTwo({
                                       </Select>
                                     </div>
                                     {casing.casing_formula === "formula2" && (
-                                      <div className="mt-2">
+                                      <div>
                                         <label className="text-xs text-gray-600">
                                           Диапазон
                                         </label>
@@ -2905,7 +2939,7 @@ function StepTwo({
                                           }}
                                         >
                                           <SelectTrigger className="h-8">
-                                            <SelectValue placeholder="Select range" />
+                                            <SelectValue placeholder="Диапазон" />
                                           </SelectTrigger>
                                           <SelectContent className="z-[9999]">
                                             {fieldOptions.casingRangeOptions?.map(
