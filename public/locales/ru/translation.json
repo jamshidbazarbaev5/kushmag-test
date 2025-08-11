@@ -197,6 +197,9 @@
 
   "forms": {
     "date": "Дата",
+"agreement":"Соглашение",
+    "agreement_amount":"Сумма соглашения",
+    "agreement_amount_description":"Описание суммы соглашения",
     "extension": "Добор",
     "search_cubes": "Поиск куба",
     "order_status": "Статус заказа",

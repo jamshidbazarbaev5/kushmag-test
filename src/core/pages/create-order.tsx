@@ -3333,7 +3333,7 @@ function StepThree({
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.discount")} & {t("forms.advance_payment")} &
-                  Additional Agreement Discount
+                  {/* Additional Agreement Discount */}
                 </h4>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -3460,7 +3460,7 @@ function StepThree({
                   {/* Agreement Amount Field */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                      Additional Agreement Discount
+                     {t('forms.agreement')}
                     </label>
                     <div>
                       <div>
@@ -3509,17 +3509,17 @@ function StepThree({
                           }}
                         />
                         <span className="text-xs text-gray-500 mt-1 block">
-                          Additional Discount (сум)
+                          {t('forms.agreement_amount')}
                         </span>
                       </div>
                     </div>
                     {agreementAmountInput > 0 && (
                       <p className="text-sm text-blue-600">
-                        Additional Discount: {agreementAmountInput.toFixed(0)}{" "}
+                        {t('forms.agreement_amount')}: {agreementAmountInput.toFixed(0)}{" "}
                         сум
                         <br />
                         <span className="text-xs text-gray-500">
-                          (Will be added to existing discount)
+                          {t('forms.agreement_amount_description')}
                         </span>
                       </p>
                     )}
@@ -3546,7 +3546,7 @@ function StepThree({
                 </div>
                 {agreementAmountInput > 0 && (
                   <div className="flex justify-between text-purple-600">
-                    <span>Additional Agreement Discount</span>
+                    <span>{t('forms.agreement')}</span>
                     <span>{agreementAmountInput.toFixed(0)} сум</span>
                   </div>
                 )}
