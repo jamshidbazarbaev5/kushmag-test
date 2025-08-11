@@ -53,8 +53,6 @@ interface SalesPlanDetail {
   sales_count_percentage?: number;
 }
 
-
-
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;

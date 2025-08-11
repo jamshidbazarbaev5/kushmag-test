@@ -27,6 +27,7 @@ export interface DailyPlanResponse {
 export interface DailyPlanParams {
   year?: number;
   month?: number;
+  day?: number;
   user?: number;
 }
 

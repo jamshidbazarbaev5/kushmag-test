@@ -166,6 +166,10 @@ export default function OrdersPage() {
     admin: "",
   });
 
+
+  const formatToTruncate = (text: string, length: number = 10): string => {
+    return text?.length > length ? `${text.substring(0, length)}...` : text;
+  };
   // Fetch filter options
   const { data: projects } = useGetProjects();
   const { data: stores } = useGetStores();
@@ -728,7 +732,7 @@ export default function OrdersPage() {
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                 {t("forms.store")}
               </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32  ">
                 {t("forms.description")}
               </th>
               <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
@@ -839,10 +843,10 @@ export default function OrdersPage() {
                 </td>
                 <td className="px-3 py-2 text-sm">
                   <div
-                    className="truncate text-gray-600"
+                    className="truncate  text-gray-600"
                     title={order?.description}
                   >
-                    {order?.description || "-"}
+                   {formatToTruncate(order?.description)}
                   </div>
                 </td>
 

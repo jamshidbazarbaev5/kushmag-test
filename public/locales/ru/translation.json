@@ -95,7 +95,11 @@
     "add_first_plan": "Добавить первый план",
     "sales_plans_all_users": "Планы продаж - Все пользователи",
     "add_user_plan": "Добавить план пользователя",
-    "days": "Дни"
+    "days": "Дни",
+    "select_date": "Выберите дату",
+    "today": "Сегодня",
+    "selected_date": "Выбранная дата",
+    "user": "Пользователь"
   },
   "months": {
     "january": "Январь",
@@ -192,6 +196,7 @@
   },
 
   "forms": {
+    "date": "Дата",
     "extension": "Добор",
     "search_cubes": "Поиск куба",
     "order_status": "Статус заказа",

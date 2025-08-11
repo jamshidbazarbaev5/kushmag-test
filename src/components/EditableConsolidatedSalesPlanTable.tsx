@@ -20,12 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  WideDialog,
+  WideDialogContent,
+  WideDialogHeader,
+  WideDialogTitle,
+  WideDialogFooter,
+} from "@/components/ui/wide-dialog";
 import { Save, X, Edit, Plus, Calendar, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -473,17 +473,20 @@ const EditableConsolidatedSalesPlanTable: React.FC<
       )}
 
       {/* Plan Modal */}
-      <Dialog open={modalState.isOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
+      <WideDialog open={modalState.isOpen} onOpenChange={handleCloseModal}>
+        <WideDialogContent
+          width="extra-wide"
+          className="max-h-[90vh] overflow-y-auto"
+        >
+          <WideDialogHeader>
+            <WideDialogTitle>
               {modalState.mode === "add"
                 ? t("yearly_plans.add_new_plan")
                 : isAdmin
                   ? t("yearly_plans.edit_plan")
                   : t("yearly_plans.view_plan")}
-            </DialogTitle>
-          </DialogHeader>
+            </WideDialogTitle>
+          </WideDialogHeader>
 
           <div className="space-y-6">
             {/* User and Year Selection */}
@@ -643,7 +646,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
             </div>
           </div>
 
-          <DialogFooter>
+          <WideDialogFooter>
             <Button variant="outline" onClick={handleCloseModal}>
               <X className="w-4 h-4 mr-2" />
               {isAdmin ? t("common.cancel") : t("common.close")}
@@ -656,9 +659,9 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                   : t("common.save")}
               </Button>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </WideDialogFooter>
+        </WideDialogContent>
+      </WideDialog>
     </div>
   );
 };
