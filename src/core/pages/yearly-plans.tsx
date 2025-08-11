@@ -29,9 +29,7 @@ export default function YearlyPlansPage() {
   const [selectedYear] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
-  const [viewMode, setViewMode] = useState<"planned" | "comparison">(
-    "planned",
-  );
+  const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
 
   const { data: users } = useGetUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
@@ -110,7 +108,7 @@ export default function YearlyPlansPage() {
                       <Target className="w-4 h-4" />
                       {t("yearly_plans.planned_values")}
                     </Button>
-                   
+
                     <Button
                       variant={
                         viewMode === "comparison" ? "default" : "outline"
@@ -179,7 +177,7 @@ export default function YearlyPlansPage() {
                   if (plan) {
                     updateYearlyPlan({
                       id: planId,
-                      user: plan.user,
+                      user: plan.user.id,
                       year: plan.year,
                       details: updatedDetails.map((detail) => ({
                         month: detail.month,

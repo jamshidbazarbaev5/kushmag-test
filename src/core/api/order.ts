@@ -76,6 +76,7 @@ export interface Order {
   branch?: ModelReference;
   zamershik?: ModelReference;
   advance_payment: string;
+  agreement_amount: string;
   remaining_balance: string;
   description: string;
   doors: Door[];

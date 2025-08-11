@@ -554,28 +554,14 @@ export default function CreateOrderPage() {
         // Helper function to convert values with comma to number
         
 
-        // Calculate discount based on current inputs
-        let discountAmountValue = 0;
+        // Calculate total discount amount (base discount + agreement amount)
+        const discountPercentageValue = parseFloat(discountPercentage.replace(/,/g, ".") || "0");
+        const baseDiscountAmount = (response.total_sum * discountPercentageValue) / 100;
+        const currentAgreementAmount = agreementAmountInput || 0;
+        const totalDiscountAmount = baseDiscountAmount + currentAgreementAmount;
 
-        if (discountAmount && discountAmount.trim() !== "") {
-          // If discount amount is provided, use it
-          discountAmountValue = parseFloat(
-            discountAmount.replace(/,/g, ".") || "0",
-          );
-        } else if (discountPercentage && discountPercentage.trim() !== "") {
-          // If discount percentage is provided, calculate amount
-          const discountPercentageValue = parseFloat(
-            discountPercentage.replace(/,/g, ".") || "0",
-          );
-          discountAmountValue =
-            (response.total_sum * discountPercentageValue) / 100;
-        }
-
-        // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
-        const finalDiscountAmount =
-          discountAmountInput > 0
-            ? discountAmountInput
-            : discountAmountValue;
+        // Always use the calculated total discount amount
+        const finalDiscountAmount = totalDiscountAmount;
 
         const advance = parseFloat(advancePayment.replace(/,/g, ".") || "0");
         const finalAmount = response.total_sum - finalDiscountAmount;
@@ -603,9 +589,9 @@ export default function CreateOrderPage() {
       remainingBalance,
     } = totals;
 
-    // Calculate discount percentage for API
-    const discountPercentageForAPI =
-      total_sum > 0 ? (calculatedDiscountAmount / total_sum) * 100 : 0;
+    // Calculate base discount percentage for API (excluding agreement amount)
+    const currentDiscountPercentage = parseFloat(discountPercentage || "0");
+    const discountPercentageForAPI = currentDiscountPercentage;
 
     // Remove unwanted fields from form data
     const { order_code, order_date, ...cleanData } = data;
@@ -3542,7 +3528,7 @@ function StepThree({
   setDiscountPercentage,
   advancePayment,
   setAdvancePayment,
-  discountAmountInput,
+  // discountAmountInput,
   setDiscountAmountInput,
   agreementAmountInput,
   setAgreementAmountInput,
@@ -3550,6 +3536,16 @@ function StepThree({
   const { t } = useTranslation();
 
   // Helper function to convert values with comma to number
+  const convertToNumber = (value: any, defaultValue: number = 0) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+      if (normalized === "" || normalized === ".") return defaultValue;
+      const parsed = parseFloat(normalized);
+      return isNaN(parsed) ? defaultValue : parsed;
+    }
+    return defaultValue;
+  };
   
 
   // Calculate discount percentage for display
@@ -3560,9 +3556,15 @@ function StepThree({
     setDiscountAmount(value);
     setDiscountAmountInput(amount);
 
-    // Calculate percentage based on amount
+    // When total discount amount is changed manually, we need to calculate what the base discount percentage should be
+    // Total discount = base discount + agreement amount
+    // So: base discount = total discount - agreement amount
+    const currentAgreementAmount = agreementAmountInput || 0;
+    const baseDiscountAmount = Math.max(0, amount - currentAgreementAmount);
+
+    // Calculate percentage based on base discount amount only
     if (totals.total_sum > 0) {
-      const percentage = (amount / totals.total_sum) * 100;
+      const percentage = (baseDiscountAmount / totals.total_sum) * 100;
       setDiscountPercentage(percentage.toFixed(2));
     } else {
       setDiscountPercentage("0");
@@ -3574,10 +3576,14 @@ function StepThree({
     const percentage = parseFloat(value) || 0;
     setDiscountPercentage(value);
 
-    // Calculate amount based on percentage
-    const amount = (totals.total_sum * percentage) / 100;
-    setDiscountAmount(amount.toFixed(0));
-    setDiscountAmountInput(amount);
+    // Calculate base discount amount from percentage
+    const baseDiscountAmount = (totals.total_sum * percentage) / 100;
+    // Add agreement amount to get total discount
+    const currentAgreementAmount = agreementAmountInput || 0;
+    const totalDiscountAmount = baseDiscountAmount + currentAgreementAmount;
+
+    setDiscountAmount(totalDiscountAmount.toFixed(0));
+    setDiscountAmountInput(totalDiscountAmount);
   };
 
   // Handle advance payment change
@@ -3774,12 +3780,35 @@ function StepThree({
                   </div>
 
                   {/* Discount Summary */}
-                  {(discountAmount > 0 || discountPercentage > 0) && (
-                    <div className="flex justify-between text-green-600 font-medium pt-2 border-t border-green-200">
-                      <span>
-                        {t("forms.discount")} ({discountPercentage}%)
-                      </span>
-                      <span>{totals.discountAmount.toFixed(0)} сум</span>
+                  {(parseFloat(discountAmount) > 0 || parseFloat(discountPercentage) > 0) && (
+                    <div className="space-y-2 pt-2 border-t border-green-200">
+                      {/* Base Discount */}
+                      {parseFloat(discountPercentage) > 0 && (
+                        <div className="flex justify-between text-green-600 font-medium">
+                          <span>
+                            {t("forms.discount")} ({discountPercentage}%)
+                          </span>
+                          <span>{((totals.total_sum * (parseFloat(discountPercentage) || 0)) / 100).toFixed(0)} сум</span>
+                        </div>
+                      )}
+
+                      {/* Agreement Amount */}
+                      {agreementAmountInput > 0 && (
+                        <div className="flex justify-between text-purple-600 font-medium">
+                          <span>{t('forms.agreement')}</span>
+                          <span>{agreementAmountInput.toFixed(0)} сум</span>
+                        </div>
+                      )}
+
+                      {/* Total Discount */}
+                      {(parseFloat(discountPercentage) > 0 || agreementAmountInput > 0) && (
+                        <div className="flex justify-between text-green-700 font-semibold border-t border-green-300 pt-2">
+                          <span>
+                            {t("forms.total_discount")} ({totals.total_sum > 0 ? ((totals.discountAmount / totals.total_sum) * 100).toFixed(2) : 0}%)
+                          </span>
+                          <span>{totals.discountAmount.toFixed(0)} сум</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -3841,17 +3870,17 @@ function StepThree({
                         const amount = parseFloat(value) || 0;
                         setAgreementAmountInput(amount);
 
-                        // When user enters agreement amount, ADD it to existing discount
-                        const existingDiscountAmount = discountAmountInput || 0;
-                        const totalDiscountAmount = existingDiscountAmount + amount;
-                        const newDiscountPercentage =
-                          totals.total_sum > 0
-                            ? (totalDiscountAmount / totals.total_sum) * 100
-                            : 0;
+                        // When agreement amount changes, we need to recalculate the total discount
+                        // Get the current discount percentage to calculate base discount amount
+                        const currentDiscountPercentage = convertToNumber(discountPercentage, 0);
+                        const baseDiscountAmount = (totals.total_sum * currentDiscountPercentage) / 100;
 
-                        // Update discount fields
+                        // Total discount = base discount + agreement amount
+                        const totalDiscountAmount = baseDiscountAmount + amount;
+
+                        // Update only the total discount amount, keep the base percentage unchanged
                         setDiscountAmountInput(totalDiscountAmount);
-                        setDiscountPercentage(newDiscountPercentage.toFixed(2));
+                        setDiscountAmount(totalDiscountAmount.toFixed(0));
                       }}
                       placeholder="0"
                       className="w-full"
@@ -3881,22 +3910,38 @@ function StepThree({
                       {totals.total_sum.toFixed(0)} сум
                     </span>
                   </div>
-                  <div className="flex justify-between text-green-600">
-                    <span>
-                      {t("forms.discount")} ({discountPercentage || 0}%)
-                    </span>
-                    <span>{totals.discountAmount.toFixed(0)} сум</span>
-                  </div>
+                  {/* Base Discount */}
+                  {discountPercentage > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>
+                        {t("forms.discount")} ({discountPercentage || 0}%)
+                      </span>
+                      <span>{((totals.total_sum * (parseFloat(discountPercentage) || 0)) / 100).toFixed(0)} сум</span>
+                    </div>
+                  )}
+
+                  {/* Agreement Amount */}
+                  {agreementAmountInput > 0 && (
+                    <div className="flex justify-between text-purple-600">
+                      <span>{t('forms.agreement')}</span>
+                      <span>{agreementAmountInput.toFixed(0)} сум</span>
+                    </div>
+                  )}
+
+                  {/* Total Discount */}
+                  {(parseFloat(discountPercentage) > 0 || agreementAmountInput > 0) && (
+                    <div className="flex justify-between text-green-700 font-semibold border-t pt-2">
+                      <span>
+                        {t("forms.total_discount")} ({totals.total_sum > 0 ? ((totals.discountAmount / totals.total_sum) * 100).toFixed(2) : 0}%)
+                      </span>
+                      <span>{totals.discountAmount.toFixed(0)} сум</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-red-600">
                     <span>{t("forms.advance_payment")}</span>
                     <span>{parseFloat(advancePayment || "0").toFixed(0)} сум</span>
                   </div>
-                  {agreementAmountInput > 0 && (
-                    <div className="flex justify-between text-purple-600">
-                      <span>{t("forms.agreement")}</span>
-                      <span>{agreementAmountInput.toFixed(0)} сум</span>
-                    </div>
-                  )}
                 </div>
 
                 <Separator />

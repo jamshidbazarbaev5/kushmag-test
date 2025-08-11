@@ -255,7 +255,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
       updateYearlyPlan({
         id: existingPlan.id!,
-        user: { id: user.id!, full_name: user.full_name },
+        user: user.id!,
         year: editingCell.year,
         details: updatedDetails.map((detail) => ({
           month: detail.month,

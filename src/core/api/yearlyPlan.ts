@@ -34,12 +34,23 @@ export interface CreateYearlyPlanRequest {
   }[];
 }
 
+export interface UpdateYearlyPlanRequest {
+  id: number;
+  user?: number;
+  year: number;
+  details: {
+    month: number;
+    sales_plan: number;
+    clients_plan: number;
+    sales_count_plan: number;
+  }[];
+}
+
 const YEARLY_PLAN_URL = "yearly-plans/";
 
 export const {
   useGetResources: useGetYearlyPlans,
   useGetResource: useGetYearlyPlan,
-  useUpdateResource: useUpdateYearlyPlan,
   useDeleteResource: useDeleteYearlyPlan,
 } = createResourceApiHooks<YearlyPlan>(YEARLY_PLAN_URL, "yearly-plans");
 
@@ -53,6 +64,23 @@ export const useCreateYearlyPlan = () => {
   return useMutation({
     mutationFn: async (newPlan: CreateYearlyPlanRequest) => {
       const response = await api.post<YearlyPlan>(YEARLY_PLAN_URL, newPlan);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["yearly-plans"] });
+    },
+  });
+};
+
+export const useUpdateYearlyPlan = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updatePlan: UpdateYearlyPlanRequest) => {
+      const response = await api.put<YearlyPlan>(
+        `${YEARLY_PLAN_URL}${updatePlan.id}/`,
+        updatePlan,
+      );
       return response.data;
     },
     onSuccess: () => {
