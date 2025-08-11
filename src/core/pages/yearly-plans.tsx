@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Target } from "lucide-react";
 import { format } from "date-fns";
 
 export default function YearlyPlansPage() {
@@ -29,6 +29,9 @@ export default function YearlyPlansPage() {
   const [selectedYear] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
+  const [viewMode, setViewMode] = useState<"planned" | "comparison">(
+    "planned",
+  );
 
   const { data: users } = useGetUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
@@ -89,72 +92,78 @@ export default function YearlyPlansPage() {
         </TabsList>
 
         <TabsContent value="yearly" className="space-y-6">
-          {/* Filters
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>{t("common.filters")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="user-filter">{t("yearly_plans.user")}</Label>
-              <Select
-                value={selectedUser || undefined}
-                onValueChange={(value) => setSelectedUser(value || "")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("yearly_plans.all_users")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {usersList.map((user) => (
-                    <SelectItem key={user.id} value={user.id!.toString()}>
-                      {user.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedUser && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedUser("")}
-                  className="mt-2"
-                >
-                  {t("common.clear_filters")}
-                </Button>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="year-filter">{t("yearly_plans.year")}</Label>
-              <Select
-                value={selectedYear || undefined}
-                onValueChange={(value) => setSelectedYear(value || "")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("yearly_plans.all_years")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableYears.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedYear && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedYear("")}
-                  className="mt-2"
-                >
-                  {t("common.clear_filters")}
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
+          {/* View Toggle */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium">
+                    {t("yearly_plans.view_mode")}:
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={viewMode === "planned" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setViewMode("planned")}
+                      className="flex items-center gap-2"
+                    >
+                      <Target className="w-4 h-4" />
+                      {t("yearly_plans.planned_values")}
+                    </Button>
+                   
+                    <Button
+                      variant={
+                        viewMode === "comparison" ? "default" : "outline"
+                      }
+                      size="sm"
+                      onClick={() => setViewMode("comparison")}
+                      className="flex items-center gap-2"
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      {t("yearly_plans.comparison_view")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Legend for comparison view */}
+          {viewMode === "comparison" && (
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-6 text-sm">
+                  {/* <span className="font-medium">{t("common.legend")}:</span> */}
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                    <span className="text-blue-600">
+                      {t("yearly_plans.planned_values")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-orange-100 rounded"></div>
+                    <span className="text-orange-600">
+                      {t("yearly_plans.actual_values")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-100 rounded"></div>
+                      <span className="text-green-600">≥100%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-yellow-100 rounded"></div>
+                      <span className="text-yellow-600">75-99%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-red-100 rounded"></div>
+                      <span className="text-red-600">&lt;75%</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Consolidated Sales Plans */}
           <div className="space-y-6">
@@ -164,6 +173,7 @@ export default function YearlyPlansPage() {
               <EditableConsolidatedSalesPlanTable
                 data={filteredPlans}
                 year={selectedYear ? parseInt(selectedYear) : undefined}
+                viewMode={viewMode}
                 onUpdatePlan={(planId, updatedDetails) => {
                   const plan = plansList.find((p) => p.id === planId);
                   if (plan) {

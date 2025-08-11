@@ -153,7 +153,11 @@ export default function CreateOrderPage() {
   const [discountAmount, setDiscountAmount] = useState<string>("");
   const [discountPercentage, setDiscountPercentage] = useState<string>("");
   const [advancePayment, setAdvancePayment] = useState<string>("");
+  const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
+  const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
   const orderForm = useForm();
+
+  // const { discount_percentage, advance_payment } = orderForm.watch();
 
   // Pre-populate from measure data if available
   useEffect(() => {
@@ -547,6 +551,9 @@ export default function CreateOrderPage() {
 
     calculateOrder(calculationData, {
       onSuccess: (response) => {
+        // Helper function to convert values with comma to number
+        
+
         // Calculate discount based on current inputs
         let discountAmountValue = 0;
 
@@ -564,13 +571,19 @@ export default function CreateOrderPage() {
             (response.total_sum * discountPercentageValue) / 100;
         }
 
+        // Use the actual discount amount if it was set via amount input, otherwise calculate from percentage
+        const finalDiscountAmount =
+          discountAmountInput > 0
+            ? discountAmountInput
+            : discountAmountValue;
+
         const advance = parseFloat(advancePayment.replace(/,/g, ".") || "0");
-        const finalAmount = response.total_sum - discountAmountValue;
+        const finalAmount = response.total_sum - finalDiscountAmount;
         const remainingBalance = finalAmount - advance;
 
         setTotals({
           ...response,
-          discountAmount: discountAmountValue,
+          discountAmount: finalDiscountAmount,
           remainingBalance: remainingBalance,
         });
 
@@ -664,6 +677,7 @@ export default function CreateOrderPage() {
         advancePayment.replace(/,/g, ".") || "0",
       ).toFixed(2),
       remaining_balance: remainingBalance.toFixed(2),
+      agreement_amount: agreementAmountInput.toFixed(2),
     };
 
     // If measureId is available, make a request to the specific endpoint
@@ -794,6 +808,10 @@ export default function CreateOrderPage() {
             setDiscountPercentage={setDiscountPercentage}
             advancePayment={advancePayment}
             setAdvancePayment={setAdvancePayment}
+            discountAmountInput={discountAmountInput}
+            setDiscountAmountInput={setDiscountAmountInput}
+            agreementAmountInput={agreementAmountInput}
+            setAgreementAmountInput={setAgreementAmountInput}
           />
         </div>
       </div>
@@ -2431,25 +2449,11 @@ function StepTwo({
                           )}
                         </div>
                       ) : (
-                        <div className="space-y-1">
+                        <div className="items-cener justify-center mt-4">
                           <div className="text-xs font-medium">
                             {getProductName(door.model) || "Модель не выбрана"}
                           </div>
-                          {door.price_type && (
-                            <div className="text-xs text-gray-600">
-                              {productsList
-                                .find((p: any) => p.id === door.model)
-                                ?.salePrices?.find(
-                                  (p: any) =>
-                                    p.priceType.id === door.price_type,
-                                )?.priceType?.name || door.price_type}
-                            </div>
-                          )}
-                          {door.price && (
-                            <div className="text-xs text-gray-600">
-                              Цена:{(door.price || 0).toFixed(0)}
-                            </div>
-                          )}
+                         
                           <Button
                             onClick={() => {
                               handleEditDoor(index);
@@ -3538,27 +3542,42 @@ function StepThree({
   setDiscountPercentage,
   advancePayment,
   setAdvancePayment,
+  discountAmountInput,
+  setDiscountAmountInput,
+  agreementAmountInput,
+  setAgreementAmountInput,
 }: any) {
   const { t } = useTranslation();
+
+  // Helper function to convert values with comma to number
+  
 
   // Calculate discount percentage for display
 
   // Handle discount amount input change
   const handleDiscountAmountChange = (value: string) => {
+    const amount = parseFloat(value) || 0;
     setDiscountAmount(value);
-    // Clear percentage when amount is being edited
-    if (value.trim() !== "") {
-      setDiscountPercentage("");
+    setDiscountAmountInput(amount);
+
+    // Calculate percentage based on amount
+    if (totals.total_sum > 0) {
+      const percentage = (amount / totals.total_sum) * 100;
+      setDiscountPercentage(percentage.toFixed(2));
+    } else {
+      setDiscountPercentage("0");
     }
   };
 
   // Handle discount percentage input change
   const handleDiscountPercentageChange = (value: string) => {
+    const percentage = parseFloat(value) || 0;
     setDiscountPercentage(value);
-    // Clear amount when percentage is being edited
-    if (value.trim() !== "") {
-      setDiscountAmount("");
-    }
+
+    // Calculate amount based on percentage
+    const amount = (totals.total_sum * percentage) / 100;
+    setDiscountAmount(amount.toFixed(0));
+    setDiscountAmountInput(amount);
   };
 
   // Handle advance payment change
@@ -3622,24 +3641,24 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold">
-                      {totals.door_price.toFixed(2)} сум
+                      {(totals.door_price || 0).toFixed(2)} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{totals.extension_price.toFixed(2)} сум</span>
+                    <span>{(totals.extension_price || 0).toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{totals.casing_price.toFixed(2)} сум</span>
+                    <span>{(totals.casing_price || 0).toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{totals.crown_price.toFixed(2)} сум</span>
+                    <span>{(totals.crown_price || 0).toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{totals.accessory_price.toFixed(2)} сум</span>
+                    <span>{(totals.accessory_price || 0).toFixed(2)} сум</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
@@ -3789,6 +3808,93 @@ function StepThree({
                     <div className="flex justify-between text-orange-600 font-medium pt-2 border-t border-orange-200">
                       <span>{t("forms.advance_payment")}</span>
                       <span>{advancePayment.toFixed(0)} сум</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Agreement Amount Section */}
+                <div className="bg-purple-50 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-purple-700">
+                    {t("forms.agreement")}
+                  </h4>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      {t("forms.agreement_amount")} (сум)
+                    </label>
+                    <Input
+                      type="number"
+                      value={agreementAmountInput || ""}
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // Handle comma as decimal separator
+                        if (typeof value === "string") {
+                          let cleanedValue = value
+                            .replace(/,/g, ".")
+                            .replace(/[^\d.]/g, "");
+                          const parts = cleanedValue.split(".");
+                          if (parts.length > 2) {
+                            cleanedValue =
+                              parts[0] + "." + parts.slice(1).join("");
+                          }
+                          value = cleanedValue;
+                        }
+                        const amount = parseFloat(value) || 0;
+                        setAgreementAmountInput(amount);
+
+                        // When user enters agreement amount, ADD it to existing discount
+                        const existingDiscountAmount = discountAmountInput || 0;
+                        const totalDiscountAmount = existingDiscountAmount + amount;
+                        const newDiscountPercentage =
+                          totals.total_sum > 0
+                            ? (totalDiscountAmount / totals.total_sum) * 100
+                            : 0;
+
+                        // Update discount fields
+                        setDiscountAmountInput(totalDiscountAmount);
+                        setDiscountPercentage(newDiscountPercentage.toFixed(2));
+                      }}
+                      placeholder="0"
+                      className="w-full"
+                    />
+                  </div>
+
+                  {agreementAmountInput > 0 && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-purple-600 font-medium pt-2 border-t border-purple-200">
+                        <span>{t("forms.agreement_amount")}</span>
+                        <span>{agreementAmountInput.toFixed(0)} сум</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {t("forms.agreement_amount_description")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Summary breakdown */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">{t("forms.subtotal")}</span>
+                    <span className="font-semibold">
+                      {totals.total_sum.toFixed(0)} сум
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>
+                      {t("forms.discount")} ({discountPercentage || 0}%)
+                    </span>
+                    <span>{totals.discountAmount.toFixed(0)} сум</span>
+                  </div>
+                  <div className="flex justify-between text-red-600">
+                    <span>{t("forms.advance_payment")}</span>
+                    <span>{parseFloat(advancePayment || "0").toFixed(0)} сум</span>
+                  </div>
+                  {agreementAmountInput > 0 && (
+                    <div className="flex justify-between text-purple-600">
+                      <span>{t("forms.agreement")}</span>
+                      <span>{agreementAmountInput.toFixed(0)} сум</span>
                     </div>
                   )}
                 </div>

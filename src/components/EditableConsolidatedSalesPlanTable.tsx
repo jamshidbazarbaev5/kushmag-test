@@ -57,6 +57,7 @@ interface SalesPlanData {
 interface EditableConsolidatedSalesPlanTableProps {
   data: SalesPlanData[];
   year?: number;
+  viewMode?: "planned" | "actual" | "comparison";
   onUpdatePlan?: (planId: number, updatedDetails: SalesPlanDetail[]) => void;
   onCreatePlan?: (plan: Omit<SalesPlanData, "id">) => void;
   users?: Array<{ id: number; full_name: string }>;
@@ -77,7 +78,14 @@ interface ModalState {
 
 const EditableConsolidatedSalesPlanTable: React.FC<
   EditableConsolidatedSalesPlanTableProps
-> = ({ data, year, onUpdatePlan, onCreatePlan, users = [] }) => {
+> = ({
+  data,
+  year,
+  viewMode = "planned",
+  onUpdatePlan,
+  onCreatePlan,
+  users = [],
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -133,13 +141,18 @@ const EditableConsolidatedSalesPlanTable: React.FC<
     }));
   };
 
-  // Helper function to get sales plan value for a specific month and user
-  const getSalesPlanForMonth = (
-    details: SalesPlanDetail[],
-    month: number,
-  ): string => {
-    const monthDetail = details.find((detail) => detail.month === month);
-    return monthDetail ? String(monthDetail.sales_plan) : "0";
+
+
+  // Helper function to get percentage color for comparison view
+  const getComparisonPercentageColor = (percentage: number) => {
+    if (percentage >= 100) return "text-green-600 bg-green-50";
+    if (percentage >= 75) return "text-yellow-600 bg-yellow-50";
+    return "text-red-600 bg-red-50";
+  };
+
+  // Helper function to format percentage
+  const formatPercentage = (percentage: number) => {
+    return `${percentage.toFixed(1)}%`;
   };
 
   // Open modal for adding new plan
@@ -322,7 +335,12 @@ const EditableConsolidatedSalesPlanTable: React.FC<
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>
-                    {displayYear} {t("yearly_plans.sales_plans_all_users")}
+                    {displayYear} {t("yearly_plans.sales_plans_all_users")} -{" "}
+                    {viewMode === "actual"
+                      ? t("yearly_plans.actual_values")
+                      : viewMode === "comparison"
+                        ? t("yearly_plans.comparison_view")
+                        : t("yearly_plans.planned_values")}
                   </CardTitle>
                   {isAdmin && (
                     <Button onClick={handleAddPlan} size="sm">
@@ -336,16 +354,23 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-32">
+                      <TableRow className="bg-gray-50">
+                        <TableHead className="font-semibold">
                           {t("yearly_plans.user")}
                         </TableHead>
                         {MONTH_NAMES.map((month, index) => (
                           <TableHead
                             key={index}
-                            className="text-center min-w-20"
+                            className={`text-center min-w-24 ${
+                              viewMode === "comparison" ? "min-w-32" : ""
+                            }`}
                           >
                             {month}
+                            {viewMode === "comparison" && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                План / Фактический / %
+                              </div>
+                            )}
                           </TableHead>
                         ))}
                         <TableHead className="text-center min-w-24">
@@ -359,11 +384,24 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                     <TableBody>
                       {yearData.map((plan) => {
                         // Calculate total for the year
-                        const total = plan.details.reduce((sum, detail) => {
-                          return (
-                            sum + parseFloat(String(detail.sales_plan) || "0")
-                          );
-                        }, 0);
+                        const totalPlanned = plan.details.reduce(
+                          (sum, detail) => {
+                            return (
+                              sum + parseFloat(String(detail.sales_plan) || "0")
+                            );
+                          },
+                          0,
+                        );
+
+                        const totalActual = plan.details.reduce(
+                          (sum, detail) => {
+                            return sum + (detail.sales || 0);
+                          },
+                          0,
+                        );
+
+                        const total =
+                          viewMode === "actual" ? totalActual : totalPlanned;
 
                         return (
                           <TableRow
@@ -375,29 +413,98 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                             </TableCell>
                             {Array.from({ length: 12 }, (_, index) => {
                               const month = index + 1;
-                              const value = getSalesPlanForMonth(
-                                plan.details,
-                                month,
+                              const monthDetail = plan.details.find(
+                                (d) => d.month === month,
                               );
+                              const plannedValue = monthDetail
+                                ? parseFloat(
+                                    String(monthDetail.sales_plan) || "0",
+                                  )
+                                : 0;
+                              const actualValue = monthDetail
+                                ? monthDetail.sales || 0
+                                : 0;
+                              const percentage =
+                                plannedValue > 0
+                                  ? (actualValue / plannedValue) * 100
+                                  : 0;
+
+                              if (viewMode === "comparison") {
+                                return (
+                                  <TableCell
+                                    key={index}
+                                    className="text-center"
+                                  >
+                                    <div className="space-y-1">
+                                      <div className="text-xs text-blue-600 font-medium">
+                                        {plannedValue.toLocaleString()}
+                                      </div>
+                                      <div className="text-xs text-orange-600 font-medium">
+                                        {actualValue.toLocaleString()}
+                                      </div>
+                                      <div
+                                        className={`text-xs px-1 py-0.5 rounded ${getComparisonPercentageColor(percentage)}`}
+                                      >
+                                        {formatPercentage(percentage)}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                );
+                              }
+
+                              const value =
+                                viewMode === "actual"
+                                  ? actualValue
+                                  : plannedValue;
 
                               return (
                                 <TableCell key={index} className="text-center">
                                   <span
-                                    className="px-2 py-1 rounded text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                    className={`px-2 py-1 rounded text-sm cursor-pointer transition-colors ${
+                                      viewMode === "actual"
+                                        ? "bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+                                        : "hover:bg-blue-50 hover:text-blue-600"
+                                    }`}
                                     onClick={() =>
                                       handleMonthClick(plan, month)
                                     }
                                     title={`View daily plans for ${MONTH_NAMES[month - 1]} ${plan.year}`}
                                   >
-                                    {parseFloat(value).toLocaleString()}
+                                    {value.toLocaleString()}
                                   </span>
                                 </TableCell>
                               );
                             })}
                             <TableCell className="text-center font-semibold">
-                              <span className="px-2 py-1 bg-green-50 rounded">
-                                {total.toLocaleString()}
-                              </span>
+                              {viewMode === "comparison" ? (
+                                <div className="space-y-1">
+                                  <div className="text-xs text-blue-600 font-medium">
+                                    {totalPlanned.toLocaleString()}
+                                  </div>
+                                  <div className="text-xs text-orange-600 font-medium">
+                                    {totalActual.toLocaleString()}
+                                  </div>
+                                  <div
+                                    className={`text-xs px-1 py-0.5 rounded ${getComparisonPercentageColor(totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0)}`}
+                                  >
+                                    {formatPercentage(
+                                      totalPlanned > 0
+                                        ? (totalActual / totalPlanned) * 100
+                                        : 0,
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span
+                                  className={`px-2 py-1 rounded ${
+                                    viewMode === "actual"
+                                      ? "bg-orange-100 text-orange-800"
+                                      : "bg-green-50"
+                                  }`}
+                                >
+                                  {total.toLocaleString()}
+                                </span>
+                              )}
                             </TableCell>
                             <TableCell className="text-center">
                               <Button
@@ -425,40 +532,160 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                         <TableRow className="bg-gray-50 font-semibold border-t-2">
                           <TableCell>{t("yearly_plans.total")}</TableCell>
                           {Array.from({ length: 12 }, (_, index) => {
-                            const monthTotal = yearData.reduce((sum, plan) => {
-                              const monthValue = parseFloat(
-                                getSalesPlanForMonth(plan.details, index + 1) ||
-                                  "0",
+                            const monthTotalPlanned = yearData.reduce(
+                              (sum, plan) => {
+                                const monthDetail = plan.details.find(
+                                  (d) => d.month === index + 1,
+                                );
+                                if (!monthDetail) return sum;
+                                return (
+                                  sum +
+                                  parseFloat(
+                                    String(monthDetail.sales_plan) || "0",
+                                  )
+                                );
+                              },
+                              0,
+                            );
+
+                            const monthTotalActual = yearData.reduce(
+                              (sum, plan) => {
+                                const monthDetail = plan.details.find(
+                                  (d) => d.month === index + 1,
+                                );
+                                if (!monthDetail) return sum;
+                                return sum + (monthDetail.sales || 0);
+                              },
+                              0,
+                            );
+
+                            if (viewMode === "comparison") {
+                              const percentage =
+                                monthTotalPlanned > 0
+                                  ? (monthTotalActual / monthTotalPlanned) * 100
+                                  : 0;
+                              return (
+                                <TableCell key={index} className="text-center">
+                                  <div className="space-y-1">
+                                    <div className="text-xs text-blue-600 font-bold">
+                                      {monthTotalPlanned.toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-orange-600 font-bold">
+                                      {monthTotalActual.toLocaleString()}
+                                    </div>
+                                    <div
+                                      className={`text-xs px-1 py-0.5 rounded font-medium ${getComparisonPercentageColor(percentage)}`}
+                                    >
+                                      {formatPercentage(percentage)}
+                                    </div>
+                                  </div>
+                                </TableCell>
                               );
-                              return sum + monthValue;
-                            }, 0);
+                            }
+
+                            const monthTotal =
+                              viewMode === "actual"
+                                ? monthTotalActual
+                                : monthTotalPlanned;
                             return (
                               <TableCell key={index} className="text-center">
-                                <span className="px-2 py-1 bg-blue-100 rounded">
+                                <span
+                                  className={`px-2 py-1 rounded ${
+                                    viewMode === "actual"
+                                      ? "bg-orange-100 text-orange-800"
+                                      : "bg-blue-100"
+                                  }`}
+                                >
                                   {monthTotal.toLocaleString()}
                                 </span>
                               </TableCell>
                             );
                           })}
                           <TableCell className="text-center">
-                            <span className="px-2 py-1 bg-green-100 rounded">
-                              {yearData
-                                .reduce((sum, plan) => {
-                                  const planTotal = plan.details.reduce(
-                                    (planSum, detail) => {
-                                      return (
-                                        planSum +
-                                        parseFloat(
-                                          String(detail.sales_plan) || "0",
-                                        )
-                                      );
-                                    },
-                                    0,
-                                  );
-                                  return sum + planTotal;
-                                }, 0)
-                                .toLocaleString()}
-                            </span>
+                            {viewMode === "comparison" ? (
+                              (() => {
+                                const grandTotalPlanned = yearData.reduce(
+                                  (sum, plan) => {
+                                    const planTotal = plan.details.reduce(
+                                      (planSum, detail) => {
+                                        return (
+                                          planSum +
+                                          parseFloat(
+                                            String(detail.sales_plan) || "0",
+                                          )
+                                        );
+                                      },
+                                      0,
+                                    );
+                                    return sum + planTotal;
+                                  },
+                                  0,
+                                );
+
+                                const grandTotalActual = yearData.reduce(
+                                  (sum, plan) => {
+                                    const planTotal = plan.details.reduce(
+                                      (planSum, detail) => {
+                                        return planSum + (detail.sales || 0);
+                                      },
+                                      0,
+                                    );
+                                    return sum + planTotal;
+                                  },
+                                  0,
+                                );
+
+                                const grandPercentage =
+                                  grandTotalPlanned > 0
+                                    ? (grandTotalActual / grandTotalPlanned) *
+                                      100
+                                    : 0;
+
+                                return (
+                                  <div className="space-y-1">
+                                    <div className="text-xs text-blue-600 font-bold">
+                                      {grandTotalPlanned.toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-orange-600 font-bold">
+                                      {grandTotalActual.toLocaleString()}
+                                    </div>
+                                    <div
+                                      className={`text-xs px-1 py-0.5 rounded font-medium ${getComparisonPercentageColor(grandPercentage)}`}
+                                    >
+                                      {formatPercentage(grandPercentage)}
+                                    </div>
+                                  </div>
+                                );
+                              })()
+                            ) : (
+                              <span
+                                className={`px-2 py-1 rounded ${
+                                  viewMode === "actual"
+                                    ? "bg-orange-100 text-orange-800"
+                                    : "bg-green-100"
+                                }`}
+                              >
+                                {yearData
+                                  .reduce((sum, plan) => {
+                                    const planTotal = plan.details.reduce(
+                                      (planSum, detail) => {
+                                        if (viewMode === "actual") {
+                                          return planSum + (detail.sales || 0);
+                                        }
+                                        return (
+                                          planSum +
+                                          parseFloat(
+                                            String(detail.sales_plan) || "0",
+                                          )
+                                        );
+                                      },
+                                      0,
+                                    );
+                                    return sum + planTotal;
+                                  }, 0)
+                                  .toLocaleString()}
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell></TableCell>
                         </TableRow>
@@ -541,11 +768,20 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                     <TableHead className="text-center">
                       {t("yearly_plans.sales_plan")}
                     </TableHead>
+                    <TableHead className="text-center bg-blue-50">
+                      {t("yearly_plans.sales_actual")}
+                    </TableHead>
                     <TableHead className="text-center">
                       {t("yearly_plans.clients_plan")}
                     </TableHead>
+                    <TableHead className="text-center bg-blue-50">
+                      {t("yearly_plans.clients_actual")}
+                    </TableHead>
                     <TableHead className="text-center">
                       {t("yearly_plans.sales_count_plan")}
+                    </TableHead>
+                    <TableHead className="text-center bg-blue-50">
+                      {t("yearly_plans.sales_count_actual")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -574,6 +810,11 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                           readOnly={!isAdmin}
                         />
                       </TableCell>
+                      <TableCell className="bg-blue-25">
+                        <div className="text-center py-2 px-3 bg-gray-100 rounded text-sm">
+                          {(detail.sales || 0).toLocaleString()}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Input
                           type="number"
@@ -589,6 +830,11 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                           className="text-center"
                           readOnly={!isAdmin}
                         />
+                      </TableCell>
+                      <TableCell className="bg-blue-25">
+                        <div className="text-center py-2 px-3 bg-gray-100 rounded text-sm">
+                          {(detail.clients || 0).toLocaleString()}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Input
@@ -606,6 +852,11 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                           readOnly={!isAdmin}
                         />
                       </TableCell>
+                      <TableCell className="bg-blue-25">
+                        <div className="text-center py-2 px-3 bg-gray-100 rounded text-sm">
+                          {(detail.sales_count || 0).toLocaleString()}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {/* Total Row */}
@@ -620,6 +871,11 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                         )
                         .toLocaleString()}
                     </TableCell>
+                    <TableCell className="text-center bg-blue-50">
+                      {formData.details
+                        .reduce((sum, detail) => sum + (detail.sales || 0), 0)
+                        .toLocaleString()}
+                    </TableCell>
                     <TableCell className="text-center">
                       {formData.details
                         .reduce(
@@ -630,12 +886,25 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                         )
                         .toLocaleString()}
                     </TableCell>
+                    <TableCell className="text-center bg-blue-50">
+                      {formData.details
+                        .reduce((sum, detail) => sum + (detail.clients || 0), 0)
+                        .toLocaleString()}
+                    </TableCell>
                     <TableCell className="text-center">
                       {formData.details
                         .reduce(
                           (sum, detail) =>
                             sum +
                             parseFloat(String(detail.sales_count_plan) || "0"),
+                          0,
+                        )
+                        .toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-center bg-blue-50">
+                      {formData.details
+                        .reduce(
+                          (sum, detail) => sum + (detail.sales_count || 0),
                           0,
                         )
                         .toLocaleString()}

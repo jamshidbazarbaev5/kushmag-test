@@ -10,6 +10,7 @@
   "common": {
     "yes": "Awa",
     "no": "Yaq",
+    "legend": "Aңlatpa",
     "or": "yamasa",
     "save": "Saqlap qoyıw",
     "cancel": "Biykar etiw",
@@ -134,6 +135,10 @@
     "please_select_user": "Paydalanıwshınی tańlań",
     "yearly_plan_created_successfully": "Jıllıq plan sátli jaratıldı",
     "yearly_plan_updated_successfully": "Jıllıq plan sátli jańartıldı",
+    "view_mode": "Kóriw rejimi",
+    "planned_values": "Planlı mánisler",
+    "actual_values": "Haqıyqıy mánisler",
+    "comparison_view": "Salıstırmalı kóriw",
     "yearly_plan_deleted_successfully": "Jıllıq plan sátli óshirildi",
     "failed_to_create_yearly_plan": "Jıllıq plan jaratıw sátsiz boldı",
     "failed_to_update_yearly_plan": "Jıllıq plan jańartıw sátsiz boldı",

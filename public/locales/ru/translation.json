@@ -11,6 +11,7 @@
     "yes": "Да",
     "add": "Добавить",
     "close": "Закрыть",
+    "legend": "Легенда",
     "or": "или",
     "send_to_moy_sklad": "Отправить в Мой Склад",
     "back_to_doors": "Вернуться к дверям",
@@ -168,6 +169,10 @@
     "please_select_user": "Пожалуйста, выберите пользователя",
     "yearly_plan_created_successfully": "Годовой план успешно создан",
     "yearly_plan_updated_successfully": "Годовой план успешно обновлен",
+    "view_mode": "Режим просмотра",
+    "planned_values": "Плановые значения",
+    "actual_values": "Фактические значения",
+    "comparison_view": "Сравнительный вид",
     "yearly_plan_deleted_successfully": "Годовой план успешно удален",
     "failed_to_create_yearly_plan": "Не удалось создать годовой план",
     "failed_to_update_yearly_plan": "Не удалось обновить годовой план",
@@ -197,9 +202,10 @@
 
   "forms": {
     "date": "Дата",
-"agreement":"Соглашение",
-    "agreement_amount":"Сумма соглашения",
-    "agreement_amount_description":"Описание суммы соглашения",
+
+    "agreement": "Соглашение",
+    "agreement_amount": "Сумма соглашения",
+    "agreement_amount_description": "Описание суммы соглашения",
     "extension": "Добор",
     "search_cubes": "Поиск куба",
     "order_status": "Статус заказа",
