@@ -620,7 +620,6 @@ export default function CreateOrderPage() {
       agreement_amount: agreementAmountInput.toFixed(2),
       beading_additional: data.beading_additional,
     };
-    
 
     createOrder(orderData, {
       onSuccess: () => {
@@ -1901,12 +1900,12 @@ function StepTwo({
                 {doors.map((door: any, index: number) => (
                   <TableRow
                     key={index}
-                    className={editingIndex === index ? "bg-blue-50" : ""}
+                    className={`h-[200px] ${editingIndex === index ? "bg-blue-50" : ""}`}
                   >
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Door Model */}
-                    <TableCell className="align-top p-2">
+                    <TableCell className="align-middle p-2">
                       {editingIndex === index ? (
                         <div className="space-y-2">
                           <HeaderSearch
@@ -2446,7 +2445,7 @@ function StepTwo({
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
-                            {door.casings?.length || 0} <span>элементов</span>
+                            {/* {door.casings?.length || 0} <span>элементов</span> */}
                             {door.casings?.length > 0 && (
                               <div className="mt-1 space-y-1">
                                 {door.casings.map((casing: any, i: number) => (
@@ -2680,7 +2679,7 @@ function StepTwo({
                             );
                           }}
                           className="w-45"
-                          placeholder="Кol-во"
+                          placeholder="Кoл-во"
                           min="0"
                         />
                       ) : (
@@ -2743,7 +2742,7 @@ function StepTwo({
                             );
                           }}
                           className="w-45"
-                          placeholder="Кol-во"
+                          placeholder="Кoл-во"
                           min="0"
                         />
                       ) : (
@@ -2806,7 +2805,7 @@ function StepTwo({
                             );
                           }}
                           className="w-45"
-                          placeholder="Кol-во"
+                          placeholder="Кoл-во"
                           min="0"
                         />
                       ) : (
@@ -2869,7 +2868,7 @@ function StepTwo({
                             );
                           }}
                           className="w-45"
-                          placeholder="Кol-во"
+                          placeholder="Кoл-во"
                           min="0"
                         />
                       ) : (
@@ -2996,7 +2995,7 @@ function StepTwo({
                 ))}
 
                 {doors.length === 0 && (
-                  <TableRow>
+                  <TableRow className="h-24">
                     <TableCell
                       colSpan={18}
                       className="text-center py-8 text-gray-500"
@@ -3254,29 +3253,29 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold">
-                      {priceBreakdown.doors.toFixed(2)} сум
+                      {priceBreakdown.doors.toFixed(0)} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{priceBreakdown.extensions.toFixed(2)} сум</span>
+                    <span>{priceBreakdown.extensions.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{priceBreakdown.casings.toFixed(2)} сум</span>
+                    <span>{priceBreakdown.casings.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{priceBreakdown.crowns.toFixed(2)} сум</span>
+                    <span>{priceBreakdown.crowns.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{priceBreakdown.accessories.toFixed(2)} сум</span>
+                    <span>{priceBreakdown.accessories.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold">
-                      {totals.total_sum.toFixed(2)} сум
+                      {totals.total_sum.toFixed(0)} сум
                     </span>
                   </div>
                 </div>
@@ -3287,26 +3286,31 @@ function StepThree({
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.door_details")}
                 </h4>
-                {doors.map((door: any, index: number) => (
-                  <div key={index} className="p-4 border rounded-lg bg-white">
-                    <h5 className="font-medium mb-2">
-                      {t("forms.door")} {index + 1}
-                    </h5>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>
-                        {t("forms.dimensions")}: {parseFloat(door.width || 0)} x{" "}
-                        {parseFloat(door.height || 0)}
-                      </p>
-                      <p>
-                        {t("forms.quantity")}: {parseInt(door.quantity || 1)}
-                      </p>
-                      <p>
-                        {t("forms.price")}:{" "}
-                        {parseFloat(door.price || 0).toFixed(2)} сум
-                      </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {doors.map((door: any, index: number) => (
+                    <div
+                      key={index}
+                      className="p-3 border rounded-lg bg-white shadow-sm"
+                    >
+                      <h5 className="font-medium mb-2 text-center">
+                        {t("forms.door")} {index + 1}
+                      </h5>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>
+                          {t("forms.dimensions")}: {parseFloat(door.width || 0)}{" "}
+                          x {parseFloat(door.height || 0)}
+                        </p>
+                        <p>
+                          {t("forms.quantity")}: {parseInt(door.quantity || 1)}
+                        </p>
+                        <p>
+                          {t("forms.price")}:{" "}
+                          {parseFloat(door.price || 0).toFixed(0)} сум
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -3372,8 +3376,12 @@ function StepThree({
                             // When total discount amount is changed manually, we need to calculate what the base discount percentage should be
                             // Total discount = base discount + agreement amount
                             // So: base discount = total discount - agreement amount
-                            const currentAgreementAmount = agreementAmountInput || 0;
-                            const baseDiscountAmount = Math.max(0, amount - currentAgreementAmount);
+                            const currentAgreementAmount =
+                              agreementAmountInput || 0;
+                            const baseDiscountAmount = Math.max(
+                              0,
+                              amount - currentAgreementAmount,
+                            );
 
                             // Calculate percentage based on base discount amount only
                             const percentage =
@@ -3413,10 +3421,13 @@ function StepThree({
                               }
                               const percentage = parseFloat(value) || 0;
                               // Calculate base discount amount from percentage
-                              const baseDiscountAmount = totals.total_sum * (percentage / 100);
+                              const baseDiscountAmount =
+                                totals.total_sum * (percentage / 100);
                               // Add agreement amount to get total discount
-                              const currentAgreementAmount = agreementAmountInput || 0;
-                              const totalDiscountAmount = baseDiscountAmount + currentAgreementAmount;
+                              const currentAgreementAmount =
+                                agreementAmountInput || 0;
+                              const totalDiscountAmount =
+                                baseDiscountAmount + currentAgreementAmount;
                               setDiscountAmountInput(totalDiscountAmount);
                             },
                           })}
@@ -3473,7 +3484,7 @@ function StepThree({
                   {/* Agreement Amount Field */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
-                     {t('forms.agreement')}
+                      {t("forms.agreement")}
                     </label>
                     <div>
                       <div>
@@ -3502,28 +3513,34 @@ function StepThree({
 
                             // When agreement amount changes, we need to recalculate the total discount
                             // Get the current discount percentage to calculate base discount amount
-                            const currentDiscountPercentage = convertToNumber(orderForm.getValues("discount_percentage"), 0);
-                            const baseDiscountAmount = (totals.total_sum * currentDiscountPercentage) / 100;
+                            const currentDiscountPercentage = convertToNumber(
+                              orderForm.getValues("discount_percentage"),
+                              0,
+                            );
+                            const baseDiscountAmount =
+                              (totals.total_sum * currentDiscountPercentage) /
+                              100;
 
                             // Total discount = base discount + agreement amount
-                            const totalDiscountAmount = baseDiscountAmount + amount;
+                            const totalDiscountAmount =
+                              baseDiscountAmount + amount;
 
                             // Update only the total discount amount, keep the base percentage unchanged
                             setDiscountAmountInput(totalDiscountAmount);
                           }}
                         />
                         <span className="text-xs text-gray-500 mt-1 block">
-                          {t('forms.agreement_amount')}
+                          {t("forms.agreement_amount")}
                         </span>
                       </div>
                     </div>
                     {agreementAmountInput > 0 && (
                       <p className="text-sm text-blue-600">
-                        {t('forms.agreement_amount')}: {agreementAmountInput.toFixed(0)}{" "}
-                        сум
+                        {t("forms.agreement_amount")}:{" "}
+                        {agreementAmountInput.toFixed(0)} сум
                         <br />
                         <span className="text-xs text-gray-500">
-                          {t('forms.agreement_amount_description')}
+                          {t("forms.agreement_amount_description")}
                         </span>
                       </p>
                     )}
@@ -3544,14 +3561,20 @@ function StepThree({
                     <span>
                       {t("forms.discount")} ({discount_percentage || 0}%)
                     </span>
-                    <span>{((totals.total_sum * (discount_percentage || 0)) / 100).toFixed(0)} сум</span>
+                    <span>
+                      {(
+                        (totals.total_sum * (discount_percentage || 0)) /
+                        100
+                      ).toFixed(0)}{" "}
+                      сум
+                    </span>
                   </div>
                 )}
 
                 {/* Agreement Amount */}
                 {agreementAmountInput > 0 && (
                   <div className="flex justify-between text-purple-600">
-                    <span>{t('forms.agreement')}</span>
+                    <span>{t("forms.agreement")}</span>
                     <span>{agreementAmountInput.toFixed(0)} сум</span>
                   </div>
                 )}
@@ -3560,7 +3583,14 @@ function StepThree({
                 {(discount_percentage > 0 || agreementAmountInput > 0) && (
                   <div className="flex justify-between text-green-700 font-semibold border-t pt-2">
                     <span>
-                      {t("forms.total_discount")} ({totals.total_sum > 0 ? ((totals.discountAmount / totals.total_sum) * 100).toFixed(2) : 0}%)
+                      {t("forms.total_discount")} (
+                      {totals.total_sum > 0
+                        ? (
+                            (totals.discountAmount / totals.total_sum) *
+                            100
+                          ).toFixed(2)
+                        : 0}
+                      %)
                     </span>
                     <span>{totals.discountAmount.toFixed(0)} сум</span>
                   </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ import {
   ChevronRight,
   SendHorizontal,
   Download,
+  MoreHorizontal,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -149,6 +150,8 @@ export default function OrdersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState({
     project: "",
     store: "",
@@ -166,6 +169,22 @@ export default function OrdersPage() {
     admin: "",
   });
 
+  // Close action menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenActionMenu(null);
+      }
+    };
+
+    if (openActionMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openActionMenu]);
 
   const formatToTruncate = (text: string, length: number = 10): string => {
     return text?.length > length ? `${text.substring(0, length)}...` : text;
@@ -846,7 +865,7 @@ export default function OrdersPage() {
                     className="truncate  text-gray-600"
                     title={order?.description}
                   >
-                   {formatToTruncate(order?.description)}
+                    {formatToTruncate(order?.description)}
                   </div>
                 </td>
 
@@ -882,44 +901,77 @@ export default function OrdersPage() {
                     {order.operator?.name || "-"}
                   </div>
                 </td>
-                <td className="px-3 py-2">
-                  <div className="flex gap-1 justify-center">
+                <td className="px-3 py-2 relative">
+                  <div className="flex justify-center">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => navigate(`/orders/edit/${order.id}`)}
-                      title={t("common.edit_advanced")}
+                      className="h-7 px-2"
+                      onClick={() =>
+                        setOpenActionMenu(
+                          openActionMenu === order.id ? null : order.id,
+                        )
+                      }
                     >
-                      <Pencil />
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => handleDeleteClick(order)}
-                      title={t("common.delete")}
-                    >
-                      <Trash />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="link"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => handleSendToMoySklad(order)}
-                      title={t("common.send_to_moy_sklad")}
-                    >
-                      <SendHorizontal />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => handleExportOrder(order)}
-                      title={t("common.export")}
-                    >
-                      <Download />
-                    </Button>
+
+                    {openActionMenu === order.id && (
+                      <div
+                        ref={menuRef}
+                        className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-28"
+                      >
+                        <div className="py-1">
+                          <button
+                            className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => {
+                              navigate(`/orders/edit/${order.id}`);
+                              setOpenActionMenu(null);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            {/* {t("common.edit_advanced")} */}
+                          </button>
+                          <button
+                            className={`flex items-center justify-start w-full px-3 py-2 text-sm ${
+                              order.order_status === "moy_sklad"
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                            disabled={order.order_status === "moy_sklad"}
+                            onClick={() => {
+                              if (order.order_status !== "moy_sklad") {
+                                handleSendToMoySklad(order);
+                                setOpenActionMenu(null);
+                              }
+                            }}
+                          >
+                            <SendHorizontal className="h-4 w-4 mr-2" />
+                            {/* {t("common.send_to_moy_sklad")} */}
+                          </button>
+                          <button
+                            className="flex items-center  justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => {
+                              handleExportOrder(order);
+                              setOpenActionMenu(null);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            {/* {t("common.export")} */}
+                          </button>
+                          <button
+                            className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                            onClick={() => {
+                              handleDeleteClick(order);
+                              setOpenActionMenu(null);
+                            }}
+                          >
+                            <Trash className="h-4 w-4 mr-2" />
+                            {/* {t("common.delete")} */}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </td>
               </tr>

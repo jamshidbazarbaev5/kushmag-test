@@ -111,7 +111,7 @@ export default function EditOrderPage() {
     useCalculateOrder();
 
   const [doors, setDoors] = useState<any[]>([]);
-  const [currentStep, _setCurrentStep] = useState(1);
+  const [_currentStep, _setCurrentStep] = useState(1);
   const [totals, setTotals] = useState({
     total_sum: 0,
     door_price: 0,
@@ -157,11 +157,6 @@ export default function EditOrderPage() {
   useAutoSave(doors, `edit-order-${id}-doors-draft`);
 
   // Initialize steps data
-  const steps = [
-    { id: 1, title: t("forms.basic_info"), icon: Package },
-    { id: 2, title: t("forms.doors"), icon: DoorOpen },
-    { id: 3, title: t("forms.review"), icon: Calculator },
-  ];
 
   //  Fetching ---
   const { data: currencies } = useGetCurrencies();
@@ -578,7 +573,8 @@ export default function EditOrderPage() {
     calculateOrder(calculationData, {
       onSuccess: (response) => {
         // Calculate total discount amount (base discount + agreement amount)
-        const baseDiscountAmount = (response.total_sum * discountPercentage) / 100;
+        const baseDiscountAmount =
+          (response.total_sum * discountPercentage) / 100;
         const currentAgreementAmount = agreementAmountInput || 0;
         const totalDiscountAmount = baseDiscountAmount + currentAgreementAmount;
 
@@ -593,7 +589,6 @@ export default function EditOrderPage() {
           remainingBalance: remainingBalance,
         });
 
-        toast.success(t("messages.calculation_completed"));
       },
       onError: (error: any) => {
         console.error("Error calculating order:", error);
@@ -700,7 +695,7 @@ export default function EditOrderPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div>
         {/* Header with Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -719,41 +714,6 @@ export default function EditOrderPage() {
             >
               ← {t("common.back_to_orders")}
             </Button>
-          </div>
-
-          {/* Step Indicator */}
-          <div className="flex items-center justify-center mb-8">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div
-                  className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-200 ${
-                    currentStep === step.id
-                      ? "bg-blue-600 border-blue-600 text-white shadow-lg"
-                      : currentStep > step.id
-                        ? "bg-green-500 border-green-500 text-white"
-                        : "bg-gray-100 border-gray-300 text-gray-500"
-                  }`}
-                >
-                  <step.icon className="h-5 w-5" />
-                </div>
-                <div className="ml-3 hidden sm:block">
-                  <p
-                    className={`text-sm font-medium ${
-                      currentStep >= step.id ? "text-gray-900" : "text-gray-500"
-                    }`}
-                  >
-                    {step.title}
-                  </p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`h-0.5 w-16 mx-4 ${
-                      currentStep > step.id ? "bg-green-500" : "bg-gray-200"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
           </div>
         </div>
 
@@ -797,6 +757,7 @@ export default function EditOrderPage() {
             setAdvancePayment={setAdvancePayment}
             agreementAmountInput={agreementAmountInput}
             setAgreementAmountInput={setAgreementAmountInput}
+            orderData={orderData}
           />
         </div>
       </div>
@@ -3686,9 +3647,7 @@ function HeaderSearch({
         )}
         {/* Show indicator when there are filtered results */}
         {!isLoading && value.length >= 1 && products.length > 0 && !isOpen && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-           
-          </div>
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2"></div>
         )}
       </div>
 
@@ -3740,6 +3699,7 @@ function StepThree({
   setAdvancePayment,
   agreementAmountInput,
   setAgreementAmountInput,
+  orderData,
 }: any) {
   const { t } = useTranslation();
 
@@ -3837,29 +3797,29 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold">
-                      {totals.door_price.toFixed(2)} сум
+                      {totals.door_price.toFixed(0)} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{totals.extension_price.toFixed(2)} сум</span>
+                    <span>{totals.extension_price.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{totals.casing_price.toFixed(2)} сум</span>
+                    <span>{totals.casing_price.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{totals.crown_price.toFixed(2)} сум</span>
+                    <span>{totals.crown_price.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{totals.accessory_price.toFixed(2)} сум</span>
+                    <span>{totals.accessory_price.toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold">
-                      {totals.total_sum.toFixed(2)} сум
+                      {totals.total_sum.toFixed(0)} сум
                     </span>
                   </div>
                 </div>
@@ -3870,26 +3830,31 @@ function StepThree({
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.door_details")}
                 </h4>
-                {doors.map((door: any, index: number) => (
-                  <div key={index} className="p-4 border rounded-lg bg-white">
-                    <h5 className="font-medium mb-2">
-                      {t("forms.door")} {index + 1}
-                    </h5>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p>
-                        {t("forms.dimensions")}: {parseFloat(door.width || 0)} x{" "}
-                        {parseFloat(door.height || 0)}
-                      </p>
-                      <p>
-                        {t("forms.quantity")}: {parseInt(door.quantity || 1)}
-                      </p>
-                      <p>
-                        {t("forms.price")}:{" "}
-                        {parseFloat(door.price || 0).toFixed(2)} сум
-                      </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {doors.map((door: any, index: number) => (
+                    <div
+                      key={index}
+                      className="p-3 border rounded-lg bg-white shadow-sm"
+                    >
+                      <h5 className="font-medium mb-2 text-center">
+                        {t("forms.door")} {index + 1}
+                      </h5>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>
+                          {t("forms.dimensions")}: {parseFloat(door.width || 0)}{" "}
+                          x {parseFloat(door.height || 0)}
+                        </p>
+                        <p>
+                          {t("forms.quantity")}: {parseInt(door.quantity || 1)}
+                        </p>
+                        <p>
+                          {t("forms.price")}:{" "}
+                          {parseFloat(door.price || 0).toFixed(0)} сум
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -3976,16 +3941,23 @@ function StepThree({
                       {discountPercentage > 0 && (
                         <div className="flex justify-between text-green-600 font-medium">
                           <span>
-                            {t("forms.discount")} ({discountPercentage.toFixed(1)}%)
+                            {t("forms.discount")} (
+                            {discountPercentage.toFixed(1)}%)
                           </span>
-                          <span>{((totals.total_sum * discountPercentage) / 100).toFixed(0)} сум</span>
+                          <span>
+                            {(
+                              (totals.total_sum * discountPercentage) /
+                              100
+                            ).toFixed(0)}{" "}
+                            сум
+                          </span>
                         </div>
                       )}
 
                       {/* Agreement Amount */}
                       {agreementAmountInput > 0 && (
                         <div className="flex justify-between text-purple-600 font-medium">
-                          <span>{t('forms.agreement')}</span>
+                          <span>{t("forms.agreement")}</span>
                           <span>{agreementAmountInput.toFixed(0)} сум</span>
                         </div>
                       )}
@@ -3994,7 +3966,14 @@ function StepThree({
                       {(discountPercentage > 0 || agreementAmountInput > 0) && (
                         <div className="flex justify-between text-green-700 font-semibold border-t border-green-300 pt-2">
                           <span>
-                            {t("forms.total_discount")} ({totals.total_sum > 0 ? ((totals.discountAmount / totals.total_sum) * 100).toFixed(2) : 0}%)
+                            {t("forms.total_discount")} (
+                            {totals.total_sum > 0
+                              ? (
+                                  (totals.discountAmount / totals.total_sum) *
+                                  100
+                                ).toFixed(2)
+                              : 0}
+                            %)
                           </span>
                           <span>{totals.discountAmount.toFixed(0)} сум</span>
                         </div>
@@ -4049,7 +4028,8 @@ function StepThree({
 
                         // When agreement amount changes, we need to recalculate the total discount
                         // Get the current discount percentage to calculate base discount amount
-                        const baseDiscountAmount = (totals.total_sum * discountPercentage) / 100;
+                        const baseDiscountAmount =
+                          (totals.total_sum * discountPercentage) / 100;
 
                         // Total discount = base discount + agreement amount
                         const totalDiscountAmount = baseDiscountAmount + amount;
@@ -4087,7 +4067,9 @@ function StepThree({
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
-                  disabled={isLoading}
+                  disabled={
+                    isLoading || orderData?.order_status === "moy_sklad"
+                  }
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
