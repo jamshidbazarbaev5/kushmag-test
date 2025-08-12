@@ -807,64 +807,68 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       </>
                     ) : null}
 
-                    {/* Yearly Plans - available for all roles */}
-                    <a
-                      href="/yearly-plans"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setMobileMenuOpen(false);
-                        navigate("/yearly-plans");
-                      }}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                        location.pathname === "/yearly-plans"
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-gray-50"
-                      }`}
-                    >
-                      <Calendar
-                        size={18}
-                        className={
+                    {/* Yearly Plans - hidden for ADMIN role */}
+                    {currentUser?.role !== "ADMIN" && (
+                      <a
+                        href="/yearly-plans"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/yearly-plans");
+                        }}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                           location.pathname === "/yearly-plans"
-                            ? "text-emerald-500"
-                            : "text-gray-500"
-                        }
-                      />
-                      <span className="font-medium">
-                        {t("navigation.yearly_plans")}
-                      </span>
-                    </a>
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-gray-50"
+                        }`}
+                      >
+                        <Calendar
+                          size={18}
+                          className={
+                            location.pathname === "/yearly-plans"
+                              ? "text-emerald-500"
+                              : "text-gray-500"
+                          }
+                        />
+                        <span className="font-medium">
+                          {t("navigation.yearly_plans")}
+                        </span>
+                      </a>
+                    )}
 
-                    {/* Measures - available for all roles */}
-                    <a
-                      href="/measures"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setMobileMenuOpen(false);
-                        navigate("/measures");
-                      }}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                        location.pathname === "/measures"
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-gray-50"
-                      }`}
-                    >
-                      <Package
-                        size={18}
-                        className={
+                    {/* Measures - hidden for ADMIN role */}
+                    {currentUser?.role !== "ADMIN" && (
+                      <a
+                        href="/measures"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/measures");
+                        }}
+                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                           location.pathname === "/measures"
-                            ? "text-emerald-500"
-                            : "text-gray-500"
-                        }
-                      />
-                      <span className="font-medium">
-                        {t("navigation.measures")}
-                      </span>
-                      {newMeasuresCount > 0 && (
-                        <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
-                          {newMeasuresCount}
-                        </div>
-                      )}
-                    </a>
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-gray-50"
+                        }`}
+                      >
+                        <Package
+                          size={18}
+                          className={
+                            location.pathname === "/measures"
+                              ? "text-emerald-500"
+                              : "text-gray-500"
+                          }
+                        />
+                        <span className="font-medium">
+                          {t("navigation.measures")}
+                        </span>
+                        {newMeasuresCount > 0 && (
+                          <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
+                            {newMeasuresCount}
+                          </div>
+                        )}
+                      </a>
+                    )}
                   </div>
                 </div>
               </>
