@@ -466,7 +466,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 />
                 <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border py-2 min-w-[280px] z-[999]">
                   {/* Orders - only for ADMIN */}
-                  {currentUser?.role === "ADMIN" && (
+                  {/* {currentUser?.role === "ADMIN" && (
                     <a
                       href="/orders"
                       onClick={(e) => {
@@ -492,7 +492,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         {t("navigation.orders")}
                       </span>
                     </a>
-                  )}
+                  )} */}
 
                   {/* Settings with submenu */}
                   <div className="border-t border-gray-100 pt-2 mt-2">
