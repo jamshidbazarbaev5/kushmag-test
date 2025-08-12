@@ -331,58 +331,110 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               currentUser?.role === "PRODAVEC" ||
               currentUser?.role === "OPERATOR" ||
               currentUser?.role === "SOTRUDNIK") && (
-              <a
-                href="/salary-overview"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/salary-overview");
-                }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  location.pathname === "/measures"
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-gray-50"
-                }`}
-              >
-                <Package
-                  size={16}
-                  className={
+              <>
+                <a
+                  href="/salary-overview"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/salary-overview");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/measures"
-                      ? "text-emerald-500"
-                      : "text-gray-500"
-                  }
-                />
-                <span className="font-medium">
-                  {t("navigation.sales_overview")}
-                </span>
-              </a>
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/measures"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">
+                    {t("navigation.sales_overview")}
+                  </span>
+                </a>
+                <a
+                  href="/yearly-plans"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/yearly-plans");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === "/yearly-plans"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/yearly-plans"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">
+                    {t("navigation.yearly_plans")}
+                  </span>
+                </a>
+              </>
             )}
 
             {/* Monthly Salaries - only for ADMIN */}
             {currentUser?.role === "ADMIN" && (
-              <a
-                href="/monthly-salaries"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/monthly-salaries");
-                }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  location.pathname === "/monthly-salaries"
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-gray-50"
-                }`}
-              >
-                <Package
-                  size={16}
-                  className={
+              <>
+                <a
+                  href="/monthly-salaries"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/monthly-salaries");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/monthly-salaries"
-                      ? "text-emerald-500"
-                      : "text-gray-500"
-                  }
-                />
-                <span className="font-medium">
-                  {t("navigation.monthly_salaries")}
-                </span>
-              </a>
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/monthly-salaries"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">
+                    {t("navigation.monthly_salaries")}
+                  </span>
+                </a>
+                <a
+                  href="/yearly-plans"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/yearly-plans");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === "/yearly-plans"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/yearly-plans"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">
+                    {t("navigation.yearly_plans")}
+                  </span>
+                </a>
+              </>
             )}
           </div>
 
@@ -393,12 +445,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 setMobileMenuOpen(!mobileMenuOpen);
                 setDropdownOpen(false);
               }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
+              <span className="font-medium text-gray-600">
+                {t("navigation.settings")}
+              </span>
               {mobileMenuOpen ? (
-                <X size={24} className="text-gray-600" />
+                <X size={20} className="text-gray-600" />
               ) : (
-                <Menu size={24} className="text-gray-600" />
+                <Menu size={20} className="text-gray-600" />
               )}
             </button>
 
@@ -809,24 +864,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           {newMeasuresCount}
                         </div>
                       )}
-                    </a>
-                    <a
-                      href="/salary-overview"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setMobileMenuOpen(false);
-                        navigate("/salary-overview");
-                      }}
-                      className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                        location.pathname === "/measures"
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-gray-50"
-                      }`}
-                    >
-                      {/* <Package size={18} className={location.pathname === "/measures" ? "text-emerald-500" : "text-gray-500"} /> */}
-                      <span className="font-medium">
-                        {t("navigation.sales_overview")}
-                      </span>
                     </a>
                   </div>
                 </div>

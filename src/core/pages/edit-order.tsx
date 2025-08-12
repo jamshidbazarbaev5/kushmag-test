@@ -858,7 +858,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_material")}
                       />
@@ -887,7 +887,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_material_type")}
                       />
@@ -916,7 +916,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_massif")}
                       />
@@ -945,7 +945,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_color")}
                       />
@@ -974,7 +974,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_patina_color")}
                       />
@@ -1003,7 +1003,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_beading_main")}
                       />
@@ -1032,7 +1032,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t(
                           "placeholders.select_beading_additional",
@@ -1065,7 +1065,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t(
                           "placeholders.select_beading_additional",
@@ -2328,7 +2328,9 @@ function StepTwo({
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Door Model */}
-                    <TableCell className="align-middle p-2">
+                    <TableCell
+                      className={`${editingIndex === index ? "align-middle" : "align-top"} p-2`}
+                    >
                       {editingIndex === index ? (
                         <div className="space-y-2">
                           <HeaderSearch
@@ -2422,7 +2424,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Quantity */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="number"
@@ -2438,7 +2444,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Height */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2455,7 +2465,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Width */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2472,7 +2486,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Glass Type */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.glass_type || ""}
@@ -2508,7 +2526,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Threshold */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.threshold || ""}
@@ -3613,29 +3635,29 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold">
-                      {(totals.door_price || 0).toFixed(2)} сум
+                      {(totals.door_price || 0).toFixed(0)} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{(totals.extension_price || 0).toFixed(2)} сум</span>
+                    <span>{(totals.extension_price || 0).toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{(totals.casing_price || 0).toFixed(2)} сум</span>
+                    <span>{(totals.casing_price || 0).toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{(totals.crown_price || 0).toFixed(2)} сум</span>
+                    <span>{(totals.crown_price || 0).toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{(totals.accessory_price || 0).toFixed(2)} сум</span>
+                    <span>{(totals.accessory_price || 0).toFixed(0)} сум</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold">
-                      {totals.total_sum.toFixed(2)} сум
+                      {totals.total_sum.toFixed(0)} сум
                     </span>
                   </div>
                 </div>
@@ -3665,7 +3687,7 @@ function StepThree({
                         </p>
                         <p>
                           {t("forms.price")}:{" "}
-                          {parseFloat(door.price || 0).toFixed(2)} сум
+                          {parseFloat(door.price || 0).toFixed(0)} сум
                         </p>
                       </div>
                     </div>
@@ -3936,7 +3958,7 @@ function StepThree({
                           ? (
                               (totals.discountAmount / totals.total_sum) *
                               100
-                            ).toFixed(2)
+                            ).toFixed(0)
                           : 0}
                         %)
                       </span>

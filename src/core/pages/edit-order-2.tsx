@@ -588,7 +588,6 @@ export default function EditOrderPage() {
           discountAmount: finalDiscountAmount,
           remainingBalance: remainingBalance,
         });
-
       },
       onError: (error: any) => {
         console.error("Error calculating order:", error);
@@ -851,7 +850,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_material")}
                       />
@@ -880,7 +879,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_material_type")}
                       />
@@ -909,7 +908,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_massif")}
                       />
@@ -938,7 +937,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_color")}
                       />
@@ -967,7 +966,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_patina_color")}
                       />
@@ -996,7 +995,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("placeholders.select_beading_main")}
                       />
@@ -1025,7 +1024,7 @@ function StepOne({
                       }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t(
                           "placeholders.select_beading_additional",
@@ -1053,7 +1052,7 @@ function StepOne({
                 value={globalDoorSettings.glass_type}
                 onValueChange={(value) => setGlobalDoorSettings((prev:any) => ({ ...prev, glass_type: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder={t("placeholders.select_glass_type")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -2461,7 +2460,9 @@ function StepTwo({
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Door Model */}
-                    <TableCell className="align-midlle p-2">
+                    <TableCell
+                      className={`${editingIndex === index ? "align-middle" : "align-top"} p-2`}
+                    >
                       {editingIndex === index ? (
                         <div className="space-y-2">
                           <HeaderSearch
@@ -2554,7 +2555,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Quantity */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="number"
@@ -2570,7 +2575,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Height */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2587,7 +2596,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Width */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2604,7 +2617,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Glass Type */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.glass_type || ""}
@@ -2640,7 +2657,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Threshold */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.threshold || ""}
@@ -2791,7 +2812,7 @@ function StepTwo({
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
-                            {door.extensions?.length || 0} items
+                            {/* {door.extensions?.length || 0} items */}
                             {door.extensions?.length > 0 && (
                               <div className="mt-1 space-y-1">
                                 {door.extensions.map((ext: any, i: number) => (
@@ -2997,7 +3018,7 @@ function StepTwo({
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
-                            {door.casings?.length || 0} <span>элементов</span>
+                            {/* {door.casings?.length || 0} <span>элементов</span> */}
                             {door.casings?.length > 0 && (
                               <div className="mt-1 space-y-1">
                                 {door.casings.map((casing: any, i: number) => (
@@ -3103,7 +3124,7 @@ function StepTwo({
                           </>
                         ) : (
                           <div className="text-xs text-gray-600">
-                            {door.crowns?.length || 0} items
+                            {/* {door.crowns?.length || 0} items */}
                             {door.crowns?.length > 0 && (
                               <div className="mt-1 space-y-1">
                                 {door.crowns.map((crown: any, i: number) => (
@@ -3886,8 +3907,8 @@ function StepThree({
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold">

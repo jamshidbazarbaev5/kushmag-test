@@ -1905,7 +1905,9 @@ function StepTwo({
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
                     {/* Door Model */}
-                    <TableCell className="align-middle p-2">
+                    <TableCell
+                      className={`${editingIndex === index ? "align-middle" : "align-top"} p-2`}
+                    >
                       {editingIndex === index ? (
                         <div className="space-y-2">
                           <HeaderSearch
@@ -2002,7 +2004,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Quantity */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="number"
@@ -2018,7 +2024,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Height */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2035,7 +2045,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Width */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Input
                           type="text"
@@ -2052,7 +2066,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Glass Type */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.glass_type || ""}
@@ -2088,7 +2106,11 @@ function StepTwo({
                     </TableCell>
 
                     {/* Threshold */}
-                    <TableCell className="align-middle">
+                    <TableCell
+                      className={
+                        editingIndex === index ? "align-middle" : "align-top"
+                      }
+                    >
                       {editingIndex === index ? (
                         <Select
                           value={editingDoor?.threshold || ""}
