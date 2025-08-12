@@ -1879,6 +1879,13 @@ function StepTwo({
     return t("forms.unknown_product");
   };
 
+  const getDisplayName = (modelId: string | any, isDoor: boolean = false) => {
+    if (isDoor) {
+      return getProductName(modelId);
+    }
+    return ""; // Hide product names for accessories
+  };
+
   return (
     <div>
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
@@ -2406,7 +2413,8 @@ function StepTwo({
                       ) : (
                         <div className="items-cener justify-center mt-4">
                           <div className="text-xs font-medium">
-                            {getProductName(door.model) || "Модель не выбрана"}
+                            {getDisplayName(door.model, true) ||
+                              "Модель не выбрана"}
                           </div>
 
                           <Button
@@ -2688,10 +2696,7 @@ function StepTwo({
                                   <div
                                     key={i}
                                     className="text-xs bg-blue-50 p-1 rounded"
-                                  >
-                                    {getProductName(ext.model)} (x{ext.quantity}
-                                    )
-                                  </div>
+                                  ></div>
                                 ))}
                               </div>
                             )}
@@ -2792,10 +2797,7 @@ function StepTwo({
                                   <div
                                     key={i}
                                     className="text-xs bg-green-50 p-1 rounded"
-                                  >
-                                    {getProductName(casing.model)} (x
-                                    {casing.quantity})
-                                  </div>
+                                  ></div>
                                 ))}
                               </div>
                             )}
@@ -2898,10 +2900,7 @@ function StepTwo({
                                   <div
                                     key={i}
                                     className="text-xs bg-purple-50 p-1 rounded"
-                                  >
-                                    {getProductName(crown.model)} (x
-                                    {crown.quantity})
-                                  </div>
+                                  ></div>
                                 ))}
                               </div>
                             )}
@@ -2962,10 +2961,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[0]?.quantity > 0 ? (
-                            <div className="bg-blue-50 p-1 rounded">
-                              {getProductName(door.accessories[0].model)} (x
-                              {door.accessories[0].quantity})
-                            </div>
+                            <div className="bg-blue-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}
@@ -3025,10 +3021,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[1]?.quantity > 0 ? (
-                            <div className="bg-orange-50 p-1 rounded">
-                              {getProductName(door.accessories[1].model)} (x
-                              {door.accessories[1].quantity})
-                            </div>
+                            <div className="bg-orange-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}
@@ -3088,10 +3081,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[2]?.quantity > 0 ? (
-                            <div className="bg-cyan-50 p-1 rounded">
-                              {getProductName(door.accessories[2].model)} (x
-                              {door.accessories[2].quantity})
-                            </div>
+                            <div className="bg-cyan-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}
@@ -3151,10 +3141,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[3]?.quantity > 0 ? (
-                            <div className="bg-red-50 p-1 rounded">
-                              {getProductName(door.accessories[3].model)} (x
-                              {door.accessories[3].quantity})
-                            </div>
+                            <div className="bg-red-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}
@@ -3214,10 +3201,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[4]?.quantity > 0 ? (
-                            <div className="bg-indigo-50 p-1 rounded">
-                              {getProductName(door.accessories[4].model)} (x
-                              {door.accessories[4].quantity})
-                            </div>
+                            <div className="bg-indigo-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}
@@ -3277,10 +3261,7 @@ function StepTwo({
                       ) : (
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[5]?.quantity > 0 ? (
-                            <div className="bg-yellow-50 p-1 rounded">
-                              {getProductName(door.accessories[5].model)} (x
-                              {door.accessories[5].quantity})
-                            </div>
+                            <div className="bg-yellow-50 p-1 rounded"></div>
                           ) : (
                             <span>0</span>
                           )}

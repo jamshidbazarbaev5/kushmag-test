@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
@@ -20,7 +19,7 @@ import type { Order } from "../api/order";
 import {
   useGetProjects,
   useGetStores,
-  useGetCounterparties,
+  // useGetCounterparties,
   useGetOrganizations,
   useGetSalesChannels,
   useGetSellers,
@@ -34,114 +33,13 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  SendHorizontal,
   Download,
   MoreHorizontal,
+  Eye,
+  Search,
+  Plus,
 } from "lucide-react";
 import api from "../api/api";
-
-// import { format } from 'date-fns';
-
-// const DoorDetails = ({ door, t }: { door: any; t: any }) => (
-//   <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-//     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-//       <div>
-//         <span className="font-semibold">{t('forms.door_model')}:</span>
-//         <p>{door.model?.name || 'N/A'}</p>
-//       </div>
-//       <div>
-//         <span className="font-semibold">{t('common.height')}:</span>
-//         <p>{door.height}m</p>
-//       </div>
-//       <div>
-//         <span className="font-semibold">{t('common.width')}:</span>
-//         <p>{door.width}m</p>
-//       </div>
-//       <div>
-//         <span className="font-semibold">{t('common.quantity')}:</span>
-//         <p>{door.quantity}</p>
-//       </div>
-//       <div>
-//         <span className="font-semibold">{t('forms.price')}:</span>
-//         <p>{door.price}</p>
-//       </div>
-//     </div>
-
-//     {door.extensions && door.extensions.length > 0 && (
-//       <Card>
-//         <CardHeader>
-//           <CardTitle className="text-sm">{t('forms.extensions')}</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           {door.extensions.map((ext: any, idx: number) => (
-//             <div key={idx} className="grid grid-cols-5 gap-2 text-sm mb-2">
-//               <span><span className="font-medium">{t('forms.model')}:</span> {ext.model?.name}</span>
-//               <span><span className="font-medium">{t('common.height')}:</span> {ext.height}m</span>
-//               <span><span className="font-medium">{t('common.width')}:</span> {ext.width}m</span>
-//               <span><span className="font-medium">{t('common.quantity')}:</span> x{ext.quantity}</span>
-//               <span><span className="font-medium">{t('forms.price')}:</span> {ext.price}</span>
-//             </div>
-//           ))}
-//         </CardContent>
-//       </Card>
-//     )}
-
-//     {door.casings && door.casings.length > 0 && (
-//       <Card>
-//         <CardHeader>
-//           <CardTitle className="text-sm">{t('forms.casings')}</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           {door.casings.map((casing: any, idx: number) => (
-//             <div key={idx} className="grid grid-cols-5 gap-2 text-sm mb-2">
-//               <span><span className="font-medium">{t('forms.model')}:</span> {casing.model?.name}</span>
-//               <span><span className="font-medium">{t('common.height')}:</span> {casing.height}m</span>
-//               <span><span className="font-medium">{t('common.width')}:</span> {casing.width}m</span>
-//               <span><span className="font-medium">{t('common.quantity')}:</span> x{casing.quantity}</span>
-//               <span><span className="font-medium">{t('forms.price')}:</span> {casing.price}</span>
-//             </div>
-//           ))}
-//         </CardContent>
-//       </Card>
-//     )}
-
-//     {door.crowns && door.crowns.length > 0 && (
-//       <Card>
-//         <CardHeader>
-//           <CardTitle className="text-sm">{t('forms.crowns')}</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           {door.crowns.map((crown: any, idx: number) => (
-//             <div key={idx} className="grid grid-cols-4 gap-2 text-sm mb-2">
-//               <span><span className="font-medium">{t('forms.model')}:</span> {crown.model?.name}</span>
-//               <span><span className="font-medium">{t('common.width')}:</span> {crown.width}m</span>
-//               <span><span className="font-medium">{t('common.quantity')}:</span> x{crown.quantity}</span>
-//               <span><span className="font-medium">{t('forms.price')}:</span> {crown.price}</span>
-//             </div>
-//           ))}
-//         </CardContent>
-//       </Card>
-//     )}
-
-//     {door.accessories && door.accessories.length > 0 && (
-//       <Card>
-//         <CardHeader>
-//           <CardTitle className="text-sm">{t('forms.accessories')}</CardTitle>
-//         </CardHeader>
-//         <CardContent>
-//           {door.accessories.map((accessory: any, idx: number) => (
-//             <div key={idx} className="grid grid-cols-4 gap-2 text-sm mb-2">
-//               <span><span className="font-medium">{t('forms.model')}:</span> {accessory.model?.name}</span>
-//               <span><span className="font-medium">{t('forms.type')}:</span> {t(`accessory_types.${accessory.accessory_type}`)}</span>
-//               <span><span className="font-medium">{t('common.quantity')}:</span> x{accessory.quantity}</span>
-//               <span><span className="font-medium">{t('forms.price')}:</span> {accessory.price}</span>
-//             </div>
-//           ))}
-//         </CardContent>
-//       </Card>
-//     )}
-//   </div>
-// );
 
 export default function OrdersPage() {
   const { t } = useTranslation();
@@ -152,6 +50,15 @@ export default function OrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [activeStatusTab, setActiveStatusTab] = useState("all");
+  const [counterpartSearchQuery, setCounterpartSearchQuery] = useState("");
+  const [counterpartSearchResults, setCounterpartSearchResults] = useState<
+    any[]
+  >([]);
+  const [showCounterpartDropdown, setShowCounterpartDropdown] = useState(false);
+  const [isCounterpartLoading, setIsCounterpartLoading] = useState(false);
+  const counterpartDropdownRef = useRef<HTMLDivElement>(null);
+
   const [filters, setFilters] = useState({
     project: "",
     store: "",
@@ -169,30 +76,123 @@ export default function OrdersPage() {
     admin: "",
   });
 
+  // Column visibility state with localStorage persistence
+  const [showColumnsDialog, setShowColumnsDialog] = useState(false);
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const savedColumns = localStorage.getItem("ordersColumnVisibility");
+    if (savedColumns) {
+      try {
+        return JSON.parse(savedColumns);
+      } catch {
+        // If parsing fails, fall back to default
+      }
+    }
+    return {
+      number: true,
+      order_status: true,
+      moy_sklad_id: true,
+      client_name: false,
+      client_phone: false,
+      created_at: true,
+      deadline_date: true,
+      counterparty: true,
+      organization: true,
+      address: false,
+      advance_payment: true,
+      discount_amount: true,
+      remaining_balance: true,
+      total_amount: false,
+      project: true,
+      store: true,
+      description: true,
+      seller: true,
+      zamershik: true,
+      admin: true,
+      operator: true,
+      sales_channel: false,
+      discount_percentage: false,
+      agreement_amount: false,
+      measure_date: false,
+      actions: true,
+    };
+  });
+
+  const statusTabs = [
+    { key: "all", label: t("common.all") },
+    { key: "draft", label: t("order_status.draft") },
+    { key: "moy_sklad", label: t("order_status.moy_sklad") },
+    { key: "cancelled", label: t("order_status.cancelled") },
+  ];
+
+  const handleColumnVisibilityChange = (column: string, checked: boolean) => {
+    const newColumns = {
+      ...visibleColumns,
+      [column]: checked,
+    };
+    setVisibleColumns(newColumns);
+    localStorage.setItem("ordersColumnVisibility", JSON.stringify(newColumns));
+  };
+
   // Close action menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenActionMenu(null);
       }
+      if (
+        counterpartDropdownRef.current &&
+        !counterpartDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCounterpartDropdown(false);
+      }
     };
 
-    if (openActionMenu) {
+    if (openActionMenu || showCounterpartDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [openActionMenu]);
+  }, [openActionMenu, showCounterpartDropdown]);
+
+  // Counterpart search functionality
+  useEffect(() => {
+    const searchCounterparts = async () => {
+      if (counterpartSearchQuery.length < 2) {
+        setCounterpartSearchResults([]);
+        return;
+      }
+
+      setIsCounterpartLoading(true);
+      try {
+        const res = await api.get(
+          `counterparty/?search=${encodeURIComponent(counterpartSearchQuery)}`,
+        );
+        const results = Array.isArray(res.data)
+          ? res.data
+          : res.data?.results || [];
+        setCounterpartSearchResults(results);
+      } catch (error) {
+        console.error("Error searching counterparties:", error);
+        setCounterpartSearchResults([]);
+      } finally {
+        setIsCounterpartLoading(false);
+      }
+    };
+
+    const debounceTimeout = setTimeout(searchCounterparts, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [counterpartSearchQuery]);
 
   const formatToTruncate = (text: string, length: number = 10): string => {
     return text?.length > length ? `${text.substring(0, length)}...` : text;
   };
+
   // Fetch filter options
   const { data: projects } = useGetProjects();
   const { data: stores } = useGetStores();
-  const { data: agents } = useGetCounterparties();
+  // const { data: agents } = useGetCounterparties();
   const { data: organizations } = useGetOrganizations();
   const { data: salesChannels } = useGetSalesChannels();
   const { data: sellers } = useGetSellers();
@@ -207,6 +207,12 @@ export default function OrdersPage() {
         params[key] = value;
       }
     });
+
+    // Add status filter based on active tab
+    if (activeStatusTab !== "all") {
+      params.order_status = activeStatusTab;
+    }
+
     params.page = currentPage;
     return params;
   };
@@ -216,14 +222,29 @@ export default function OrdersPage() {
   const { mutate: deleteOrder } = useDeleteOrder();
 
   const ordersData = Array.isArray(orders) ? orders : orders?.results || [];
-  const totalPages =
-    !Array.isArray(orders) && orders?.count ? Math.ceil(orders.count / 20) : 1;
+  const totalCount =
+    !Array.isArray(orders) && orders?.count ? orders.count : ordersData.length;
+  const itemsPerPage = 20;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const hasNextPage = !Array.isArray(orders) && currentPage < totalPages;
+  const hasPreviousPage = !Array.isArray(orders) && currentPage > 1;
 
   const handleFilterChange = (key: string, value: string) => {
-    // Convert "all" back to empty string for API
     const apiValue = value === "all" ? "" : value;
     setFilters((prev) => ({ ...prev, [key]: apiValue }));
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
+  };
+
+  const handleStatusTabChange = (status: string) => {
+    setActiveStatusTab(status);
+    setCurrentPage(1);
+  };
+
+  const handleCounterpartSelect = (counterpart: any) => {
+    setFilters((prev) => ({ ...prev, agent: counterpart.id }));
+    setCounterpartSearchQuery(counterpart.name);
+    setShowCounterpartDropdown(false);
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -243,6 +264,8 @@ export default function OrdersPage() {
       zamershik: "",
       admin: "",
     });
+    setActiveStatusTab("all");
+    setCounterpartSearchQuery("");
     setCurrentPage(1);
   };
 
@@ -261,11 +284,6 @@ export default function OrdersPage() {
         ? users.filter((user: any) => user.role === "ADMIN")
         : [];
 
-  // const handleEditClick = (order: Order) => {
-  //   setEditingOrder(order);
-  //   setIsEditDialogOpen(true);
-  // };
-
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -280,6 +298,7 @@ export default function OrdersPage() {
       return "-";
     }
   };
+
   const handleDeleteClick = (order: Order) => {
     if (!order.id) return;
 
@@ -317,29 +336,16 @@ export default function OrdersPage() {
     });
   };
 
-  const handleSendToMoySklad = (order: Order) => {
-    if (!order.id) return;
-
-    api
-      .post(`orders/${order.id}/moy_sklad/`, {})
-      .then(() => {
-        toast.success(t("messages.order_sent_to_moy_sklad"));
-      })
-      .catch(() => {
-        toast.error(t("messages.error_sending_order_to_moy_sklad"));
-      });
-  };
-
   const handleExportOrder = (order: Order) => {
     if (!order.id) return;
 
     const exportUrl = `https://kushmag.uz/api/orders/${order.id}/export/`;
-
-    // Open the export URL in a new tab to trigger download
     window.open(exportUrl, "_blank");
   };
 
-  // ...expanded row logic removed...
+  const handleRowClick = (order: Order) => {
+    navigate(`/orders/edit/${order.id}`);
+  };
 
   return (
     <div className="space-y-4 p-6">
@@ -354,10 +360,33 @@ export default function OrdersPage() {
             {t("common.filters")}
           </Button>
 
+          <Button variant="outline" onClick={() => setShowColumnsDialog(true)}>
+            <Eye className="h-4 w-4 mr-2" />
+            {t("common.show_columns")}
+          </Button>
+
           <Button onClick={() => navigate("/orders/create")}>
+            <Plus className="h-4 w-4 mr-2" />
             {t("common.create")}
           </Button>
         </div>
+      </div>
+
+      {/* Status Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+        {statusTabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => handleStatusTabChange(tab.key)}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeStatusTab === tab.key
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {showFilters && (
@@ -367,6 +396,62 @@ export default function OrdersPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+              {/* Counterpart Search Filter */}
+              <div className="space-y-1 relative" ref={counterpartDropdownRef}>
+                <label className="text-sm font-medium">
+                  {t("forms.counterparty")}
+                </label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    value={counterpartSearchQuery}
+                    onChange={(e) => {
+                      setCounterpartSearchQuery(e.target.value);
+                      setShowCounterpartDropdown(true);
+                    }}
+                    onFocus={() => setShowCounterpartDropdown(true)}
+                    placeholder={t("forms.search_counterparty")}
+                    className="h-9 min-w-[200px]"
+                  />
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+
+                  {showCounterpartDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {isCounterpartLoading ? (
+                        <div className="p-3 text-center text-gray-500">
+                          {t("common.loading")}...
+                        </div>
+                      ) : counterpartSearchResults.length > 0 ? (
+                        counterpartSearchResults.map((counterpart) => (
+                          <div
+                            key={counterpart.id}
+                            className="p-3 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100 last:border-b-0"
+                            onClick={() => handleCounterpartSelect(counterpart)}
+                          >
+                            <div className="font-medium">
+                              {counterpart.name}
+                            </div>
+                            {counterpart.phone && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                {counterpart.phone}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      ) : counterpartSearchQuery.length >= 2 ? (
+                        <div className="p-3 text-center text-gray-500 text-sm">
+                          {t("common.no_results_found")}
+                        </div>
+                      ) : (
+                        <div className="p-3 text-center text-gray-500 text-sm">
+                          {t("common.type_to_search")}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Project Filter */}
               <div className="space-y-1">
                 <label className="text-sm font-medium">
@@ -415,32 +500,6 @@ export default function OrdersPage() {
                     ).map((store: any) => (
                       <SelectItem key={store.id} value={store.id}>
                         {store.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Agent Filter */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium">
-                  {t("forms.agent")}
-                </label>
-                <Select
-                  value={filters.agent || "all"}
-                  onValueChange={(value) => handleFilterChange("agent", value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_agent")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(agents)
-                      ? agents
-                      : agents?.results || []
-                    ).map((agent: any) => (
-                      <SelectItem key={agent.id} value={agent.id}>
-                        {agent.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -555,35 +614,6 @@ export default function OrdersPage() {
                         {operator.name}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Order Status Filter */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium">
-                  {t("forms.order_status")}
-                </label>
-                <Select
-                  value={filters.order_status || "all"}
-                  onValueChange={(value) =>
-                    handleFilterChange("order_status", value)
-                  }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_status")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    <SelectItem value="draft">
-                      {t("order_status.draft")}
-                    </SelectItem>
-                    <SelectItem value="moy_sklad">
-                      {t("order_status.moy_sklad")}
-                    </SelectItem>
-                    <SelectItem value="cancelled">
-                      {t("order_status.cancelled")}
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -711,269 +741,423 @@ export default function OrdersPage() {
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead>
             <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
-                №
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.order_status")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.moy_sklad_id")}
-              </th>
-
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.created_at")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.deadline")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
-                {t("forms.counterparty")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
-                {t("forms.organization")}
-              </th>
-              {/* <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                {t("forms.total_amount")}
-              </th> */}
-              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                {t("forms.advance_payment")}
-              </th>
-              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                {t("forms.discount_amount")}
-              </th>
-              <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                {t("forms.remaining_balance")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.project")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.store")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32  ">
-                {t("forms.description")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.seller")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.zamershik")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.admin")}
-              </th>
-              <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
-                {t("forms.operator")}
-              </th>
-              <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
-                {t("common.actions")}
-              </th>
+              {visibleColumns.number && (
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                  №
+                </th>
+              )}
+              {visibleColumns.order_status && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.order_status")}
+                </th>
+              )}
+              {visibleColumns.moy_sklad_id && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.moy_sklad_id")}
+                </th>
+              )}
+              {visibleColumns.client_name && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.client_name")}
+                </th>
+              )}
+              {visibleColumns.client_phone && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.client_phone")}
+                </th>
+              )}
+              {visibleColumns.created_at && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.created_at")}
+                </th>
+              )}
+              {visibleColumns.deadline_date && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.deadline")}
+                </th>
+              )}
+              {visibleColumns.counterparty && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  {t("forms.counterparty")}
+                </th>
+              )}
+              {visibleColumns.organization && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  {t("forms.organization")}
+                </th>
+              )}
+              {visibleColumns.address && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  {t("forms.address")}
+                </th>
+              )}
+              {visibleColumns.total_amount && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.total_amount")}
+                </th>
+              )}
+              {visibleColumns.advance_payment && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.advance_payment")}
+                </th>
+              )}
+              {visibleColumns.discount_amount && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.discount_amount")}
+                </th>
+              )}
+              {visibleColumns.discount_percentage && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.discount_percentage")}
+                </th>
+              )}
+              {visibleColumns.agreement_amount && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.agreement_amount")}
+                </th>
+              )}
+              {visibleColumns.remaining_balance && (
+                <th className="px-3 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.remaining_balance")}
+                </th>
+              )}
+              {visibleColumns.project && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.project")}
+                </th>
+              )}
+              {visibleColumns.store && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.store")}
+                </th>
+              )}
+              {visibleColumns.sales_channel && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.sales_channel")}
+                </th>
+              )}
+              {visibleColumns.description && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  {t("forms.description")}
+                </th>
+              )}
+              {visibleColumns.seller && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.seller")}
+                </th>
+              )}
+              {visibleColumns.zamershik && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.zamershik")}
+                </th>
+              )}
+              {visibleColumns.admin && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.admin")}
+                </th>
+              )}
+              {visibleColumns.operator && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.operator")}
+                </th>
+              )}
+              {visibleColumns.measure_date && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.measure_date")}
+                </th>
+              )}
+              {visibleColumns.actions && (
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-32">
+                  {t("common.actions")}
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {ordersData.map((order: any, index: number) => (
               <tr
                 key={order.id}
-                className="hover:bg-gray-50 transition-colors duration-150"
+                className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                onClick={() => handleRowClick(order)}
               >
-                <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
-                  {(currentPage - 1) * 20 + index + 1}
-                </td>
-                <td className="px-3 py-2 text-xs text-gray-600">
-                  <div className="truncate" title={formatDate(order.status)}>
-                    {order.order_status
-                      ? t(`order_status.${order.order_status}`)
-                      : "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-xs text-gray-600">
-                  <div className="truncate" title={order.name}>
-                    {order.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-xs text-gray-600">
-                  <div
-                    className="truncate"
-                    title={formatDate(order.created_at)}
-                  >
-                    {formatDate(order.created_at)}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-xs text-gray-600">
-                  <div
-                    className="truncate"
-                    title={formatDate(order.deadline_date)}
-                  >
-                    {formatDate(order.deadline_date)}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate font-medium text-gray-900"
-                    title={order.agent?.name}
-                  >
-                    {order.agent?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.organization?.name}
-                  >
-                    {order.organization?.name || "-"}
-                  </div>
-                </td>
-                {/* <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
-                  {order.total_amount
-                    ? Number(order.total_amount).toLocaleString()
-                    : "0"}
-                </td> */}
-                <td className="px-3 py-2 text-right text-sm text-blue-600">
-                  {order.advance_payment
-                    ? Number(order.advance_payment).toLocaleString()
-                    : "0"}
-                </td>
-                <td className="px-3 py-2 text-right text-sm text-orange-600">
-                  {order.discount_amount
-                    ? Number(order.discount_amount).toLocaleString()
-                    : "0"}
-                </td>
-                <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
-                  {order.remaining_balance
-                    ? Number(order.remaining_balance).toLocaleString()
-                    : "0"}
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.project?.name}
-                  >
-                    {order.project?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.store?.name}
-                  >
-                    {order.store?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate  text-gray-600"
-                    title={order?.description}
-                  >
-                    {formatToTruncate(order?.description)}
-                  </div>
-                </td>
-
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.seller?.name}
-                  >
-                    {order.seller?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.seller?.name}
-                  >
-                    {order.admin?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.seller?.name}
-                  >
-                    {order.zamershik?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm">
-                  <div
-                    className="truncate text-gray-700"
-                    title={order.operator?.name}
-                  >
-                    {order.operator?.name || "-"}
-                  </div>
-                </td>
-                <td className="px-3 py-2 relative">
-                  <div className="flex justify-center">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2"
-                      onClick={() =>
-                        setOpenActionMenu(
-                          openActionMenu === order.id ? null : order.id,
-                        )
-                      }
+                {visibleColumns.number && (
+                  <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </td>
+                )}
+                {visibleColumns.order_status && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div className="truncate" title={formatDate(order.status)}>
+                      {order.order_status
+                        ? t(`order_status.${order.order_status}`)
+                        : "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.moy_sklad_id && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div className="truncate" title={order.name}>
+                      {order.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.client_name && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div className="truncate" title={order.client_name}>
+                      {order.client_name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.client_phone && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div className="truncate" title={order.client_phone}>
+                      {order.client_phone || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.created_at && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div
+                      className="truncate"
+                      title={formatDate(order.created_at)}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-
-                    {openActionMenu === order.id && (
-                      <div
-                        ref={menuRef}
-                        className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-28"
+                      {formatDate(order.created_at)}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.deadline_date && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div
+                      className="truncate"
+                      title={formatDate(order.deadline_date)}
+                    >
+                      {formatDate(order.deadline_date)}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.counterparty && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate font-medium text-gray-900"
+                      title={order.agent?.name}
+                    >
+                      {order.agent?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.organization && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.organization?.name}
+                    >
+                      {order.organization?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.address && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.address}
+                    >
+                      {order.address || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.total_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
+                    {order.total_amount
+                      ? Number(order.total_amount).toLocaleString()
+                      : "0"}
+                  </td>
+                )}
+                {visibleColumns.advance_payment && (
+                  <td className="px-3 py-2 text-right text-sm text-blue-600">
+                    {order.advance_payment
+                      ? Number(order.advance_payment).toLocaleString()
+                      : "0"}
+                  </td>
+                )}
+                {visibleColumns.discount_amount && (
+                  <td className="px-3 py-2 text-right text-sm text-orange-600">
+                    {order.discount_amount
+                      ? Number(order.discount_amount).toLocaleString()
+                      : "0"}
+                  </td>
+                )}
+                {visibleColumns.discount_percentage && (
+                  <td className="px-3 py-2 text-right text-sm text-purple-600">
+                    {order.discount_percentage
+                      ? `${order.discount_percentage}%`
+                      : "0%"}
+                  </td>
+                )}
+                {visibleColumns.agreement_amount && (
+                  <td className="px-3 py-2 text-right text-sm text-indigo-600">
+                    {order.agreement_amount
+                      ? Number(order.agreement_amount).toLocaleString()
+                      : "0"}
+                  </td>
+                )}
+                {visibleColumns.remaining_balance && (
+                  <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
+                    {order.remaining_balance
+                      ? Number(order.remaining_balance).toLocaleString()
+                      : "0"}
+                  </td>
+                )}
+                {visibleColumns.project && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.project?.name}
+                    >
+                      {order.project?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.store && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.store?.name}
+                    >
+                      {order.store?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.sales_channel && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.salesChannel?.name}
+                    >
+                      {order.salesChannel?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.description && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-600"
+                      title={order?.description}
+                    >
+                      {formatToTruncate(order?.description)}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.seller && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.seller?.name}
+                    >
+                      {order.seller?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.zamershik && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.zamershik?.name}
+                    >
+                      {order.zamershik?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.admin && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.admin?.name}
+                    >
+                      {order.admin?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.operator && (
+                  <td className="px-3 py-2 text-sm">
+                    <div
+                      className="truncate text-gray-700"
+                      title={order.operator?.name}
+                    >
+                      {order.operator?.name || "-"}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.measure_date && (
+                  <td className="px-3 py-2 text-xs text-gray-600">
+                    <div
+                      className="truncate"
+                      title={formatDate(order.measure_date)}
+                    >
+                      {formatDate(order.measure_date)}
+                    </div>
+                  </td>
+                )}
+                {visibleColumns.actions && (
+                  <td
+                    className="px-3 py-2 relative"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2"
+                        onClick={() =>
+                          setOpenActionMenu(
+                            openActionMenu === order.id ? null : order.id,
+                          )
+                        }
                       >
-                        <div className="py-1">
-                          <button
-                            className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => {
-                              navigate(`/orders/edit/${order.id}`);
-                              setOpenActionMenu(null);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            {/* {t("common.edit_advanced")} */}
-                          </button>
-                          <button
-                            className={`flex items-center justify-start w-full px-3 py-2 text-sm ${
-                              order.order_status === "moy_sklad"
-                                ? "text-gray-400 cursor-not-allowed"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                            disabled={order.order_status === "moy_sklad"}
-                            onClick={() => {
-                              if (order.order_status !== "moy_sklad") {
-                                handleSendToMoySklad(order);
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+
+                      {openActionMenu === order.id && (
+                        <div
+                          ref={menuRef}
+                          className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-36"
+                        >
+                          <div className="py-1">
+                            <button
+                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => {
+                                navigate(`/orders/edit/${order.id}`);
                                 setOpenActionMenu(null);
-                              }
-                            }}
-                          >
-                            <SendHorizontal className="h-4 w-4 mr-2" />
-                            {/* {t("common.send_to_moy_sklad")} */}
-                          </button>
-                          <button
-                            className="flex items-center  justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => {
-                              handleExportOrder(order);
-                              setOpenActionMenu(null);
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            {/* {t("common.export")} */}
-                          </button>
-                          <button
-                            className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                            onClick={() => {
-                              handleDeleteClick(order);
-                              setOpenActionMenu(null);
-                            }}
-                          >
-                            <Trash className="h-4 w-4 mr-2" />
-                            {/* {t("common.delete")} */}
-                          </button>
+                              }}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              {t("common.edit")}
+                            </button>
+                            <button
+                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => {
+                                handleExportOrder(order);
+                                setOpenActionMenu(null);
+                              }}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              {t("common.export")}
+                            </button>
+                            <button
+                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                              onClick={() => {
+                                handleDeleteClick(order);
+                                setOpenActionMenu(null);
+                              }}
+                            >
+                              <Trash className="h-4 w-4 mr-2" />
+                              {t("common.delete")}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                </td>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -981,29 +1165,38 @@ export default function OrdersPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {(totalCount > itemsPerPage || hasNextPage || hasPreviousPage) && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            {t("pagination.page")} {currentPage} {t("pagination.of")}{" "}
-            {totalPages}
+            {t("pagination.page")} {currentPage}{" "}
+            {totalPages > 0 && `${t("pagination.of")} ${totalPages}`}
+            <span className="ml-2 text-gray-500">
+              ({totalCount} {t("common.items")} {t("common.total")})
+            </span>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              disabled={!hasPreviousPage && currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
               {t("pagination.previous")}
             </Button>
+
+            {/* Show current page info */}
+            <div className="flex items-center px-3 py-1 text-sm text-gray-600">
+              {Math.min((currentPage - 1) * itemsPerPage + 1, totalCount)}-
+              {Math.min(currentPage * itemsPerPage, totalCount)}{" "}
+              {t("pagination.of")} {totalCount}
+            </div>
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
-              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={!hasNextPage && currentPage >= totalPages}
             >
               {t("pagination.next")}
               <ChevronRight className="h-4 w-4" />
@@ -1011,6 +1204,46 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
+
+      {/* Column Visibility Dialog */}
+      <Dialog open={showColumnsDialog} onOpenChange={setShowColumnsDialog}>
+        <DialogContent>
+          <div className="space-y-4">
+            <h4 className="font-medium leading-none">
+              {t("common.toggle_columns")}
+            </h4>
+            <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
+              {Object.entries(visibleColumns).map(([key, value]) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id={key}
+                    checked={Boolean(value)}
+                    onChange={(e) =>
+                      handleColumnVisibilityChange(key, e.target.checked)
+                    }
+                    className="rounded border border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  />
+                  <label
+                    htmlFor={key}
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {t(`forms.${key}`) ||
+                      key
+                        .replace(/_/g, " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
+                  </label>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setShowColumnsDialog(false)}>
+                {t("common.done")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>

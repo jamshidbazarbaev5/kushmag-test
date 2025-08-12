@@ -55,7 +55,11 @@
     "type_to_search": "Введите для поиска",
     "creating": "Создание",
     "table": "Таблица",
-    "charts": "Графики"
+    "charts": "Графики",
+    "show_columns": "Показать колонки",
+    "toggle_columns": "Переключить колонки",
+    "done": "Готово",
+    "total": "всего"
   },
   "roles": {
     "admin": "Администратор",
@@ -202,7 +206,8 @@
 
   "forms": {
     "date": "Дата",
-    "search_doors":"Поиск двери",
+    "search_counterparty":"Поиск контрагента",
+    "search_doors": "Поиск двери",
     "agreement": "Соглашение",
     "agreement_amount": "Сумма соглашения",
     "agreement_amount_description": "Описание суммы соглашения",
@@ -383,6 +388,14 @@
     "client_phone": "Телефон клиента",
     "address": "Адрес",
     "status": "Статус",
+    "number": "№",
+    "moy_sklad_id": "Мой склад ID",
+    "counterparty": "Контрагент",
+    "sales_channel": "Канал продаж",
+    "discount_percentage": "Процент скидки",
+    "agreement_amount": "Сумма соглашения",
+    "measure_date": "Дата замера",
+    "actions": "Действия",
     "comment": "Комментарий",
     "measure_information": "Информация о замере",
     "create_order_from_measure_description": "Создание заказа на основе данных замера",

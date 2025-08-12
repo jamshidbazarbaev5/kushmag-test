@@ -3907,179 +3907,237 @@ function StepThree({
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+            <CardContent className="space-y-4">
+              {/* Discount and Payment Fields */}
+              <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-semibold text-gray-800">
+                  {t("forms.discount")} & {t("forms.advance_payment")} &
+                  {/* Additional Agreement Discount */}
+                </h4>
+
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t("forms.discount")}
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={discountAmount || ""}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Handle comma as decimal separator
+                            if (typeof value === "string") {
+                              let cleanedValue = value
+                                .replace(/,/g, ".")
+                                .replace(/[^\d.]/g, "");
+                              const parts = cleanedValue.split(".");
+                              if (parts.length > 2) {
+                                cleanedValue =
+                                  parts[0] + "." + parts.slice(1).join("");
+                              }
+                              value = cleanedValue;
+                            }
+                            const amount = parseFloat(value) || 0;
+                            handleDiscountAmountChange(amount.toString());
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          {t("forms.discount_amount")}
+                        </span>
+                      </div>
+                      <div className="w-20">
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={discountPercentage || ""}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Handle comma as decimal separator
+                            if (typeof value === "string") {
+                              let cleanedValue = value
+                                .replace(/,/g, ".")
+                                .replace(/[^\d.]/g, "");
+                              const parts = cleanedValue.split(".");
+                              if (parts.length > 2) {
+                                cleanedValue =
+                                  parts[0] + "." + parts.slice(1).join("");
+                              }
+                              value = cleanedValue;
+                            }
+                            handleDiscountPercentageChange(value);
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block text-center">
+                          %
+                        </span>
+                      </div>
+                    </div>
+                    {(discountPercentage > 0 || discountAmount > 0) && (
+                      <p className="text-sm text-green-600">
+                        {t("forms.discount_amount")}:{" "}
+                        {discountAmount > 0
+                          ? discountAmount.toFixed(0)
+                          : (
+                              totals.total_sum *
+                              (discountPercentage / 100)
+                            ).toFixed(0)}{" "}
+                        сум
+                        {discountPercentage > 0 && ` (${discountPercentage}%)`}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {t("forms.advance_payment")}
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={advancePayment || ""}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => {
+                        let value = e.target.value;
+                        // Handle comma as decimal separator
+                        if (typeof value === "string") {
+                          let cleanedValue = value
+                            .replace(/,/g, ".")
+                            .replace(/[^\d.]/g, "");
+                          const parts = cleanedValue.split(".");
+                          if (parts.length > 2) {
+                            cleanedValue =
+                              parts[0] + "." + parts.slice(1).join("");
+                          }
+                          value = cleanedValue;
+                        }
+                        handleAdvancePaymentChange(value);
+                      }}
+                    />
+                  </div>
+
+                  {/* Agreement Amount Field */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {t("forms.agreement")}
+                    </label>
+                    <div>
+                      <div>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={agreementAmountInput || ""}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            // Handle comma as decimal separator
+                            if (typeof value === "string") {
+                              let cleanedValue = value
+                                .replace(/,/g, ".")
+                                .replace(/[^\d.]/g, "");
+                              const parts = cleanedValue.split(".");
+                              if (parts.length > 2) {
+                                cleanedValue =
+                                  parts[0] + "." + parts.slice(1).join("");
+                              }
+                              value = cleanedValue;
+                            }
+                            const amount = parseFloat(value) || 0;
+                            setAgreementAmountInput(amount);
+
+                            // When agreement amount changes, we need to recalculate the total discount
+                            // Get the current discount percentage to calculate base discount amount
+                            const baseDiscountAmount =
+                              (totals.total_sum * discountPercentage) / 100;
+
+                            // Total discount = base discount + agreement amount
+                            const totalDiscountAmount =
+                              baseDiscountAmount + amount;
+
+                            // Update only the total discount amount, keep the base percentage unchanged
+                            setDiscountAmount(totalDiscountAmount);
+                          }}
+                        />
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          {t("forms.agreement_amount")}
+                        </span>
+                      </div>
+                    </div>
+                    {agreementAmountInput > 0 && (
+                      <p className="text-sm text-blue-600">
+                        {t("forms.agreement_amount")}:{" "}
+                        {agreementAmountInput.toFixed(0)} сум
+                        <br />
+                        <span className="text-xs text-gray-500">
+                          {t("forms.agreement_amount_description")}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold">
                     {totals.total_sum.toFixed(0)} сум
                   </span>
                 </div>
-
-                {/* Discount Section */}
-                <div className="bg-green-50 p-4 rounded-lg space-y-3">
-                  <h4 className="font-medium text-green-700">
-                    {t("forms.discount")}
-                  </h4>
-
-                  {/* Discount Amount Input */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.discount_amount")} (сум)
-                    </label>
-                    <Input
-                      type="number"
-                      value={discountAmount || ""}
-                      onChange={(e) =>
-                        handleDiscountAmountChange(e.target.value)
-                      }
-                      placeholder="0"
-                      className="w-full"
-                    />
+                {/* Base Discount */}
+                {discountPercentage > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>
+                      {t("forms.discount")} ({discountPercentage || 0}%)
+                    </span>
+                    <span>
+                      {(
+                        (totals.total_sum * (discountPercentage || 0)) /
+                        100
+                      ).toFixed(0)}{" "}
+                      сум
+                    </span>
                   </div>
+                )}
 
-                  {/* Discount Percentage Input */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.discount_percentage")} (%)
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={discountPercentage || ""}
-                      onChange={(e) =>
-                        handleDiscountPercentageChange(e.target.value)
-                      }
-                      placeholder="0"
-                      className="w-full"
-                    />
+                {/* Agreement Amount */}
+                {agreementAmountInput > 0 && (
+                  <div className="flex justify-between text-purple-600">
+                    <span>{t("forms.agreement")}</span>
+                    <span>{agreementAmountInput.toFixed(0)} сум</span>
                   </div>
+                )}
 
-                  {/* Discount Summary */}
-                  {(discountAmount > 0 || discountPercentage > 0) && (
-                    <div className="space-y-2 pt-2 border-t border-green-200">
-                      {/* Base Discount */}
-                      {discountPercentage > 0 && (
-                        <div className="flex justify-between text-green-600 font-medium">
-                          <span>
-                            {t("forms.discount")} (
-                            {discountPercentage.toFixed(1)}%)
-                          </span>
-                          <span>
-                            {(
-                              (totals.total_sum * discountPercentage) /
-                              100
-                            ).toFixed(0)}{" "}
-                            сум
-                          </span>
-                        </div>
-                      )}
+                {/* Total Discount - only show if there's any discount */}
+                {(discountPercentage > 0 || agreementAmountInput > 0) && (
+                  <div className="flex justify-between text-green-700 font-semibold border-t pt-2">
+                    <span>
+                      {t("forms.total_discount")} (
+                      {totals.total_sum > 0
+                        ? (
+                            (totals.discountAmount / totals.total_sum) *
+                            100
+                          ).toFixed(2)
+                        : 0}
+                      %)
+                    </span>
+                    <span>{totals.discountAmount.toFixed(0)} сум</span>
+                  </div>
+                )}
 
-                      {/* Agreement Amount */}
-                      {agreementAmountInput > 0 && (
-                        <div className="flex justify-between text-purple-600 font-medium">
-                          <span>{t("forms.agreement")}</span>
-                          <span>{agreementAmountInput.toFixed(0)} сум</span>
-                        </div>
-                      )}
-
-                      {/* Total Discount */}
-                      {(discountPercentage > 0 || agreementAmountInput > 0) && (
-                        <div className="flex justify-between text-green-700 font-semibold border-t border-green-300 pt-2">
-                          <span>
-                            {t("forms.total_discount")} (
-                            {totals.total_sum > 0
-                              ? (
-                                  (totals.discountAmount / totals.total_sum) *
-                                  100
-                                ).toFixed(2)
-                              : 0}
-                            %)
-                          </span>
-                          <span>{totals.discountAmount.toFixed(0)} сум</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <div className="flex justify-between text-red-600">
+                  <span>{t("forms.advance_payment")}</span>
+                  <span>{advancePayment.toFixed(0)} сум</span>
                 </div>
-
-                {/* Advance Payment Section */}
-                <div className="bg-orange-50 p-4 rounded-lg space-y-3">
-                  <h4 className="font-medium text-orange-700">
-                    {t("forms.advance_payment")}
-                  </h4>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.advance_payment")} (сум)
-                    </label>
-                    <Input
-                      type="number"
-                      value={advancePayment || ""}
-                      onChange={(e) =>
-                        handleAdvancePaymentChange(e.target.value)
-                      }
-                      placeholder="0"
-                      className="w-full"
-                    />
-                  </div>
-
-                  {advancePayment > 0 && (
-                    <div className="flex justify-between text-orange-600 font-medium pt-2 border-t border-orange-200">
-                      <span>{t("forms.advance_payment")}</span>
-                      <span>{advancePayment.toFixed(0)} сум</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Agreement Amount Section */}
-                <div className="bg-purple-50 p-4 rounded-lg space-y-3">
-                  <h4 className="font-medium text-purple-700">
-                    {t("forms.agreement")}
-                  </h4>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      {t("forms.agreement_amount")} (сум)
-                    </label>
-                    <Input
-                      type="number"
-                      value={agreementAmountInput || ""}
-                      onChange={(e) => {
-                        const amount = parseFloat(e.target.value) || 0;
-                        setAgreementAmountInput(amount);
-
-                        // When agreement amount changes, we need to recalculate the total discount
-                        // Get the current discount percentage to calculate base discount amount
-                        const baseDiscountAmount =
-                          (totals.total_sum * discountPercentage) / 100;
-
-                        // Total discount = base discount + agreement amount
-                        const totalDiscountAmount = baseDiscountAmount + amount;
-
-                        // Update only the total discount amount, keep the base percentage unchanged
-                        setDiscountAmount(totalDiscountAmount);
-                      }}
-                      placeholder="0"
-                      className="w-full"
-                    />
-                  </div>
-
-                  {agreementAmountInput > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-purple-600 font-medium pt-2 border-t border-purple-200">
-                        <span>{t("forms.agreement_amount")}</span>
-                        <span>{agreementAmountInput.toFixed(0)} сум</span>
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        {t("forms.agreement_amount_description")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
                 <Separator />
-
-                {/* Final Remaining Balance */}
-                <div className="flex justify-between text-xl font-bold text-purple-600 bg-purple-50 p-4 rounded-lg">
+                <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t("forms.remaining_balance")}</span>
                   <span>{totals.remainingBalance.toFixed(0)} сум</span>
                 </div>
