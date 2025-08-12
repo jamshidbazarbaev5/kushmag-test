@@ -226,8 +226,8 @@ export default function OrdersPage() {
     !Array.isArray(orders) && orders?.count ? orders.count : ordersData.length;
   const itemsPerPage = 20;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const hasNextPage = !Array.isArray(orders) && currentPage < totalPages;
-  const hasPreviousPage = !Array.isArray(orders) && currentPage > 1;
+  const hasNextPage = !Array.isArray(orders) && orders?.next !== null;
+  const hasPreviousPage = !Array.isArray(orders) && orders?.previous !== null;
 
   const handleFilterChange = (key: string, value: string) => {
     const apiValue = value === "all" ? "" : value;

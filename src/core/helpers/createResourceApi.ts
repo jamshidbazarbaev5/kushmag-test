@@ -1,11 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import api from '../api/api';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "../api/api";
 
 interface BaseResource {
   id?: string | number;
 }
 
-export function createResourceApiHooks<T extends BaseResource, R = T[] | { results: T[], count: number }>(baseUrl: string, queryKey: string) {
+interface PaginatedResponse<T> {
+  results: T[];
+  count: number;
+  next?: string | null;
+  previous?: string | null;
+}
+
+export function createResourceApiHooks<
+  T extends BaseResource,
+  R = T[] | PaginatedResponse<T>,
+>(baseUrl: string, queryKey: string) {
   const useGetResources = (options?: { params?: Record<string, any> }) => {
     return useQuery({
       queryKey: [queryKey, options?.params],
@@ -29,12 +39,14 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
 
   const useCreateResource = () => {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
       mutationFn: async (newResource: T | FormData) => {
         const isFormData = newResource instanceof FormData;
-        const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
-        
+        const config = isFormData
+          ? { headers: { "Content-Type": "multipart/form-data" } }
+          : {};
+
         const response = await api.post<T>(baseUrl, newResource, config);
         return response.data;
       },
@@ -46,29 +58,32 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
 
   const useUpdateResource = () => {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
-      mutationFn: async (payload: { formData: FormData; id: string | number } | T) => {
-        if ('formData' in payload && payload.id) {
+      mutationFn: async (
+        payload: { formData: FormData; id: string | number } | T,
+      ) => {
+        if ("formData" in payload && payload.id) {
           const response = await api.put<T>(
             `${baseUrl}${payload.id}/`,
             payload.formData,
             {
               headers: {
-                'Content-Type': 'multipart/form-data'  // Add this header
-              }
-            }
+                "Content-Type": "multipart/form-data", // Add this header
+              },
+            },
           );
-          
+
           return response.data;
         }
-        
+
         const updatedResource = payload as T;
-        if (!updatedResource.id) throw new Error(`${queryKey} ID is required for update`);
-        
+        if (!updatedResource.id)
+          throw new Error(`${queryKey} ID is required for update`);
+
         const response = await api.put<T>(
           `${baseUrl}${updatedResource.id}/`,
-          updatedResource
+          updatedResource,
         );
         return response.data;
       },
@@ -83,7 +98,7 @@ export function createResourceApiHooks<T extends BaseResource, R = T[] | { resul
 
   const useDeleteResource = () => {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
       mutationFn: async (id: string | number) => {
         await api.delete(`${baseUrl}${id}/`);

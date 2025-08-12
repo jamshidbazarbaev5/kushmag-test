@@ -2692,7 +2692,7 @@ function StepTwo({
                             {/* {door.extensions?.length || 0} items */}
                             {door.extensions?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.extensions.map((ext: any, i: number) => (
+                                {door.extensions.map((_ext: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-blue-50 p-1 rounded"
@@ -2793,7 +2793,7 @@ function StepTwo({
                             {door.casings?.length || 0} <span>элементов</span>
                             {door.casings?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.casings.map((casing: any, i: number) => (
+                                {door.casings.map((_casing: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-green-50 p-1 rounded"
@@ -2896,7 +2896,7 @@ function StepTwo({
                             {/* {door.crowns?.length || 0} items */}
                             {door.crowns?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.crowns.map((crown: any, i: number) => (
+                                {door.crowns.map((_crown: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-purple-50 p-1 rounded"
