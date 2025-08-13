@@ -10,7 +10,7 @@
   "common": {
     "yes": "Да",
     "add": "Добавить",
-    "export":"Экспорт",
+    "export": "Экспорт",
     "close": "Закрыть",
     "legend": "Легенда",
     "or": "или",
@@ -150,7 +150,8 @@
     "measures": "Замеры",
     "create_measure": "Создать замер",
     "monthly_salaries": "Месячные зарплаты",
-    "yearly_plans": "Годовые планы"
+    "yearly_plans": "Годовые планы",
+    "price_settings": "Настройки цен"
   },
   "settings": {
     "description": "Управляйте настройками системы и конфигурациями",
@@ -172,7 +173,8 @@
       "users": "Управление пользователями",
       "monthly-salaries": "Настройка месячных зарплат",
       "attribute-settings": "Конфигурация системных атрибутов",
-      "casing-ranges": "Управление диапазонами наличников"
+      "casing-ranges": "Управление диапазонами наличников",
+      "price-settings": "Настройка цен для различных продуктов"
     }
   },
   "yearly_plans": {
@@ -344,6 +346,7 @@
     "total_after_discount": "Итого после скидки",
     "price_type": "Тип цены",
     "select_price_type": "Выберите тип цены",
+    "product": "Продукт",
     "order_information": "Информация о заказе",
     "create_order_description": "Создание заказа",
     "edit_order": "Редактировать заказ",
@@ -572,6 +575,8 @@
     "select_door_model": "Выберите модель двери",
     "search_model": "Поиск модели",
     "select_price_type": "Выберите тип цены",
+    "search_product": "Поиск продукта",
+    "select_product": "Выберите продукт",
     "search_casing_range": "Поиск диапазонов наличников",
     "enter_min_size": "Введите минимальный размер",
     "enter_max_size": "Введите максимальный размер",

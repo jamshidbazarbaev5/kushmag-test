@@ -1,7 +1,7 @@
 // import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useTranslation } from "react-i18next";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Package,
   User,
@@ -14,8 +14,8 @@ import {
   Minus,
   DollarSign,
   Calendar,
-  BarChart3
-} from 'lucide-react';
+  BarChart3,
+} from "lucide-react";
 
 interface SettingsTab {
   id: string;
@@ -34,113 +34,120 @@ export default function SettingsPage() {
 
   const settingsTabs: SettingsTab[] = [
     {
-      id: 'orders',
-      label: t('navigation.orders'),
+      id: "orders",
+      label: t("navigation.orders"),
       icon: <Package size={20} />,
-      path: '/orders',
-      adminOnly: true
+      path: "/orders",
+      adminOnly: true,
     },
     {
-      id: 'measures',
-      label: t('navigation.measures'),
+      id: "measures",
+      label: t("navigation.measures"),
       icon: <Package size={20} />,
-      path: '/measures'
+      path: "/measures",
     },
     {
-      id: 'monthly-salaries',
-      label: t('navigation.monthly_salaries'),
+      id: "monthly-salaries",
+      label: t("navigation.monthly_salaries"),
       icon: <DollarSign size={20} />,
-      path: '/monthly-salaries',
-      adminOnly: true
+      path: "/monthly-salaries",
+      adminOnly: true,
     },
     {
-      id: 'salary-overview',
-      label: t('navigation.sales_overview'),
+      id: "salary-overview",
+      label: t("navigation.sales_overview"),
       icon: <BarChart3 size={20} />,
-      path: '/salary-overview'
+      path: "/salary-overview",
     },
     {
-      id: 'yearly-plans',
-      label: t('navigation.yearly_plans'),
+      id: "yearly-plans",
+      label: t("navigation.yearly_plans"),
       icon: <Calendar size={20} />,
-      path: '/yearly-plans'
+      path: "/yearly-plans",
     },
     {
-      id: 'materials',
-      label: t('navigation.material'),
+      id: "materials",
+      label: t("navigation.material"),
       icon: <Package size={20} />,
-      path: '/materials',
-      adminOnly: true
+      path: "/materials",
+      adminOnly: true,
     },
     {
-      id: 'material-types',
-      label: t('navigation.material_types'),
+      id: "material-types",
+      label: t("navigation.material_types"),
       icon: <Package size={20} />,
-      path: '/material-types',
-      adminOnly: true
+      path: "/material-types",
+      adminOnly: true,
     },
     {
-      id: 'massifs',
-      label: t('navigation.massifs'),
+      id: "massifs",
+      label: t("navigation.massifs"),
       icon: <Package size={20} />,
-      path: '/massifs',
-      adminOnly: true
+      path: "/massifs",
+      adminOnly: true,
     },
     {
-      id: 'colors',
-      label: t('navigation.colors'),
+      id: "colors",
+      label: t("navigation.colors"),
       icon: <Palette size={20} />,
-      path: '/colors',
-      adminOnly: true
+      path: "/colors",
+      adminOnly: true,
     },
     {
-      id: 'patina-colors',
-      label: t('navigation.patina_colors'),
+      id: "patina-colors",
+      label: t("navigation.patina_colors"),
       icon: <Droplets size={20} />,
-      path: '/patina-colors',
-      adminOnly: true
+      path: "/patina-colors",
+      adminOnly: true,
     },
     {
-      id: 'beadings',
-      label: t('navigation.beadings'),
+      id: "beadings",
+      label: t("navigation.beadings"),
       icon: <Square size={20} />,
-      path: '/beadings',
-      adminOnly: true
+      path: "/beadings",
+      adminOnly: true,
     },
     {
-      id: 'glass-types',
-      label: t('navigation.glass_types'),
+      id: "glass-types",
+      label: t("navigation.glass_types"),
       icon: <Eye size={20} />,
-      path: '/glass-types',
-      adminOnly: true
+      path: "/glass-types",
+      adminOnly: true,
     },
     {
-      id: 'thresholds',
-      label: t('navigation.thresholds'),
+      id: "thresholds",
+      label: t("navigation.thresholds"),
       icon: <Minus size={20} />,
-      path: '/thresholds',
-      adminOnly: true
+      path: "/thresholds",
+      adminOnly: true,
     },
     {
-      id: 'users',
-      label: t('navigation.users'),
+      id: "users",
+      label: t("navigation.users"),
       icon: <User size={20} />,
-      path: '/users',
-      adminOnly: true
+      path: "/users",
+      adminOnly: true,
     },
     {
-      id: 'attribute-settings',
-      label: t('navigation.attribute_settings'),
+      id: "attribute-settings",
+      label: t("navigation.attribute_settings"),
       icon: <SettingsIcon size={20} />,
-      path: '/attribute-settings'
+      path: "/attribute-settings",
     },
     {
-      id: 'casing-ranges',
-      label: t('navigation.casing_ranges'),
+      id: "casing-ranges",
+      label: t("navigation.casing_ranges"),
       icon: <Layers size={20} />,
-      path: '/casing-ranges',
-      adminOnly: true
-    }
+      path: "/casing-ranges",
+      adminOnly: true,
+    },
+    {
+      id: "price-settings",
+      label: t("navigation.price_settings"),
+      icon: <DollarSign size={20} />,
+      path: "/price-settings",
+      adminOnly: true,
+    },
   ];
 
   const handleTabClick = (path: string) => {
@@ -151,18 +158,16 @@ export default function SettingsPage() {
     if (currentUser?.role === "ADMIN") {
       return settingsTabs;
     }
-    return settingsTabs.filter(tab => !tab.adminOnly);
+    return settingsTabs.filter((tab) => !tab.adminOnly);
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {t('navigation.settings')}
+          {t("navigation.settings")}
         </h1>
-        <p className="text-gray-600">
-          {t('settings.description')}
-        </p>
+        <p className="text-gray-600">{t("settings.description")}</p>
       </div>
 
       {/* Desktop Tabs */}
@@ -176,8 +181,8 @@ export default function SettingsPage() {
                 onClick={() => handleTabClick(tab.path)}
                 className={`flex items-center gap-2 py-4 px-3 border-b-2 font-medium text-sm transition-colors ${
                   location.pathname === tab.path
-                    ? 'border-emerald-500 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "border-emerald-500 text-emerald-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 {tab.icon}
@@ -190,7 +195,7 @@ export default function SettingsPage() {
         {/* Tab Content - Show current page info */}
         <div className="grid grid-cols-1 gap-6">
           {getFilteredTabs()
-            .filter(tab => location.pathname === tab.path)
+            .filter((tab) => location.pathname === tab.path)
             .map((tab) => (
               <div
                 key={tab.path}
@@ -201,7 +206,9 @@ export default function SettingsPage() {
                     {tab.icon}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{tab.label}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      {tab.label}
+                    </h3>
                     <p className="text-sm text-gray-500 mt-1">
                       {t(`settings.descriptions.${tab.path.substring(1)}`)}
                     </p>
@@ -214,10 +221,10 @@ export default function SettingsPage() {
             ))}
 
           {/* Show message if no current page matches */}
-          {!getFilteredTabs().some(tab => location.pathname === tab.path) && (
+          {!getFilteredTabs().some((tab) => location.pathname === tab.path) && (
             <div className="p-8 bg-gray-50 rounded-lg border border-gray-200 text-center">
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                {t('navigation.settings')}
+                {t("navigation.settings")}
               </h3>
               <p className="text-gray-500">
                 Click on any tab above to navigate to that section
@@ -235,8 +242,8 @@ export default function SettingsPage() {
             onClick={() => handleTabClick(tab.path)}
             className={`w-full flex items-center gap-3 p-4 rounded-lg transition-colors text-left ${
               location.pathname === tab.path
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
             }`}
           >
             {tab.icon}

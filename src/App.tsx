@@ -41,6 +41,8 @@ import YearlyPlansPage from "./core/pages/yearly-plans";
 import DailyPlansPage from "./core/pages/daily-plans";
 import YearlyPlanDemo from "./components/YearlyPlanDemo";
 import YearlyPlanApiExample from "./components/YearlyPlanApiExample";
+import PriceSettingsPage from "./core/pages/price-settings";
+import CreatePriceSettingPage from "./core/pages/create-price-setting";
 
 const queryClient = new QueryClient();
 function App() {
@@ -121,10 +123,10 @@ function App() {
               element={<CreateCasingRangePage />}
             />
 
-            <Route path="/casing-ranges" element={<CasingRangesPage />} />
+            <Route path="/price-settings" element={<PriceSettingsPage />} />
             <Route
-              path="/create-casing-range"
-              element={<CreateCasingRangePage />}
+              path="/create-price-setting"
+              element={<CreatePriceSettingPage />}
             />
 
             <Route path="/yearly-plans" element={<YearlyPlansPage />} />

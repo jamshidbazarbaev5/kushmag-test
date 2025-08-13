@@ -84,7 +84,8 @@
     "measures": "Ólshemler",
     "create_measure": "Ólshem jasaw",
     "monthly_salaries": "Aylıq maashlar",
-    "yearly_plans": "Jıllıq planlar"
+    "yearly_plans": "Jıllıq planlar",
+    "price_settings": "Baha sazlawları"
   },
   "settings": {
     "description": "Sistema sazlawların hám konfiguraciyalardı basqarıń",
@@ -106,7 +107,8 @@
       "users": "Paydalanıwshılardı basqarıw",
       "monthly-salaries": "Aylıq maashlardı sazlaw",
       "attribute-settings": "Sistema atributlerin konfiguraciyalaw",
-      "casing-ranges": "Nalichnik diapazonların basqarıw"
+      "casing-ranges": "Nalichnik diapazonların basqarıw",
+      "price-settings": "Túrli ónimlər ushın baha sazlawları"
     }
   },
   "daily_plans": {
@@ -317,6 +319,8 @@
     "crowns": "Koronalar",
     "doors": "Esikler",
     "api_password": "API parol",
+    "product": "Ónim",
+    "price_type": "Baha túri",
     "fixed_salary": "Belgilengen máyish",
     "order_percentage": "Buyırtpa procesenti",
     "month": "Ay",
@@ -462,6 +466,9 @@
     "enter_penalties": "Jarimalardı kiritiń",
     "enter_bonuses": "Bonuslardı kiritiń",
     "search_monthly_salary": "Aylıq maashlardı izdew",
+    "search_product": "Ónim izdew",
+    "select_product": "Ónimdi tańlań",
+    "select_price_type": "Baha túrin tańlań",
     "update_door": "Esikti jańartıw",
     "measure_data": "Ólshem maǵlıwmatları",
     "prefilled": "aldın ala tolıqlanǧan",

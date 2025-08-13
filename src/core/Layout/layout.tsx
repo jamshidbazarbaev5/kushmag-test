@@ -15,6 +15,7 @@ import {
   User,
   Calendar,
   Settings,
+  DollarSign,
 } from "lucide-react";
 import { useGetMeasures } from "../api/measure";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -936,6 +937,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             />
                             <span className="font-medium">
                               {t("navigation.casing_ranges")}
+                            </span>
+                          </a>
+                          <a
+                            href="/price-settings"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setMobileMenuOpen(false);
+                              navigate("/price-settings");
+                            }}
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                              location.pathname === "/price-settings"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground hover:bg-gray-50"
+                            }`}
+                          >
+                            <DollarSign
+                              size={18}
+                              className={
+                                location.pathname === "/price-settings"
+                                  ? "text-emerald-500"
+                                  : "text-gray-500"
+                              }
+                            />
+                            <span className="font-medium">
+                              {t("navigation.price_settings")}
                             </span>
                           </a>
                         </>
