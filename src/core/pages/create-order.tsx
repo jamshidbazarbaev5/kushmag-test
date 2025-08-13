@@ -111,6 +111,28 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
   return defaultValue;
 };
 
+// Price type mapping for different product types
+const getPriceTypeByProduct = (productName: string): string => {
+  const priceTypeMapping: { [key: string]: string } = {
+    door: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    leg: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    casing: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    beading: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    topsa: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    lock: "6a3ceb22-dd31-11ef-0a80-028d0002a3b1",
+    glass: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    cube: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    crown: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+    extension: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
+  };
+
+  // Default price type if product not found in mapping
+  return (
+    priceTypeMapping[productName.toLowerCase()] ||
+    "0f4d57e2-f0b0-11ee-0a80-16ce00046acd"
+  );
+};
+
 export default function CreateOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -435,48 +457,78 @@ export default function CreateOrderPage() {
       operator: getMetaById(operators, orderData.operator),
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
-      doors: doors.map((door: any) => ({
-        ...door,
-        model: getProductById(productsList, door.model),
-        extensions:
-          door.extensions
-            ?.map((ext: any) => ({
-              ...ext,
-              model: getProductById(productsList, ext.model),
-            }))
-            .filter(
-              (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
-            ) || [],
-        casings:
-          door.casings
-            ?.map((casing: any) => ({
-              ...casing,
-              model: getProductById(productsList, casing.model),
-            }))
-            .filter(
-              (casing: any) =>
-                casing.model && casing.model.id && casing.quantity > 0,
-            ) || [],
-        crowns:
-          door.crowns
-            ?.map((crown: any) => ({
-              ...crown,
-              model: getProductById(productsList, crown.model),
-            }))
-            .filter(
-              (crown: any) =>
-                crown.model && crown.model.id && crown.quantity > 0,
-            ) || [],
-        accessories:
-          door.accessories
-            ?.map((acc: any) => ({
-              ...acc,
-              model: getProductById(productsList, acc.model),
-            }))
-            .filter(
-              (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
-            ) || [],
-      })),
+      doors: doors.map((door: any) => {
+        const doorModel = getProductById(productsList, door.model);
+        return {
+          ...door,
+          model: doorModel,
+          price_type: doorModel
+            ? getPriceTypeByProduct(doorModel.name || "door")
+            : getPriceTypeByProduct("door"),
+          extensions:
+            door.extensions
+              ?.map((ext: any) => {
+                const model = getProductById(productsList, ext.model);
+                return {
+                  ...ext,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "extension")
+                    : getPriceTypeByProduct("extension"),
+                };
+              })
+              .filter(
+                (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
+              ) || [],
+          casings:
+            door.casings
+              ?.map((casing: any) => {
+                const model = getProductById(productsList, casing.model);
+                return {
+                  ...casing,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "casing")
+                    : getPriceTypeByProduct("casing"),
+                };
+              })
+              .filter(
+                (casing: any) =>
+                  casing.model && casing.model.id && casing.quantity > 0,
+              ) || [],
+          crowns:
+            door.crowns
+              ?.map((crown: any) => {
+                const model = getProductById(productsList, crown.model);
+                return {
+                  ...crown,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "crown")
+                    : getPriceTypeByProduct("crown"),
+                };
+              })
+              .filter(
+                (crown: any) =>
+                  crown.model && crown.model.id && crown.quantity > 0,
+              ) || [],
+          accessories:
+            door.accessories
+              ?.map((acc: any) => {
+                const model = getProductById(productsList, acc.model);
+                return {
+                  ...acc,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "lock")
+                    : getPriceTypeByProduct("lock"),
+                };
+              })
+              .filter(
+                (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
+              ) || [],
+        };
+      }),
     };
 
     calculateOrder(calculationData, {
@@ -568,49 +620,79 @@ export default function CreateOrderPage() {
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
       branch: getMetaById(branches, data.branch),
-      // Hydrate door data with full product info
-      doors: doors.map((door: any) => ({
-        ...door,
-        model: getProductById(productsList, door.model),
-        extensions:
-          door.extensions
-            ?.map((ext: any) => ({
-              ...ext,
-              model: getProductById(productsList, ext.model),
-            }))
-            .filter(
-              (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
-            ) || [],
-        casings:
-          door.casings
-            ?.map((casing: any) => ({
-              ...casing,
-              model: getProductById(productsList, casing.model),
-            }))
-            .filter(
-              (casing: any) =>
-                casing.model && casing.model.id && casing.quantity > 0,
-            ) || [],
-        crowns:
-          door.crowns
-            ?.map((crown: any) => ({
-              ...crown,
-              model: getProductById(productsList, crown.model),
-            }))
-            .filter(
-              (crown: any) =>
-                crown.model && crown.model.id && crown.quantity > 0,
-            ) || [],
-        accessories:
-          door.accessories
-            ?.map((acc: any) => ({
-              ...acc,
-              model: getProductById(productsList, acc.model),
-            }))
-            .filter(
-              (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
-            ) || [],
-      })),
+      // Hydrate door data with full product info and add price_type
+      doors: doors.map((door: any) => {
+        const doorModel = getProductById(productsList, door.model);
+        return {
+          ...door,
+          model: doorModel,
+          price_type: doorModel
+            ? getPriceTypeByProduct(doorModel.name || "door")
+            : getPriceTypeByProduct("door"),
+          extensions:
+            door.extensions
+              ?.map((ext: any) => {
+                const model = getProductById(productsList, ext.model);
+                return {
+                  ...ext,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "extension")
+                    : getPriceTypeByProduct("extension"),
+                };
+              })
+              .filter(
+                (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
+              ) || [],
+          casings:
+            door.casings
+              ?.map((casing: any) => {
+                const model = getProductById(productsList, casing.model);
+                return {
+                  ...casing,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "casing")
+                    : getPriceTypeByProduct("casing"),
+                };
+              })
+              .filter(
+                (casing: any) =>
+                  casing.model && casing.model.id && casing.quantity > 0,
+              ) || [],
+          crowns:
+            door.crowns
+              ?.map((crown: any) => {
+                const model = getProductById(productsList, crown.model);
+                return {
+                  ...crown,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "crown")
+                    : getPriceTypeByProduct("crown"),
+                };
+              })
+              .filter(
+                (crown: any) =>
+                  crown.model && crown.model.id && crown.quantity > 0,
+              ) || [],
+          accessories:
+            door.accessories
+              ?.map((acc: any) => {
+                const model = getProductById(productsList, acc.model);
+                return {
+                  ...acc,
+                  model,
+                  price_type: model
+                    ? getPriceTypeByProduct(model.name || "lock")
+                    : getPriceTypeByProduct("lock"),
+                };
+              })
+              .filter(
+                (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
+              ) || [],
+        };
+      }),
 
       // Add calculated totals
       total_amount: total_sum.toFixed(2),
