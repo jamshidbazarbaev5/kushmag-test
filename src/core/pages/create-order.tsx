@@ -804,7 +804,7 @@ function StepTwo({
     },
   ]);
 
-  const [activeTableId, setActiveTableId] = useState(1);
+  const [activeTableId, _setActiveTableId] = useState(1);
   const [editingTableId, setEditingTableId] = useState<number | null>(null);
 
   // Search states for each section
@@ -1578,7 +1578,7 @@ function StepTwo({
       </div>
 
       {/* Render all tables vertically */}
-      {tables.map((table, tableIndex) => {
+      {tables.map((table, _tableIndex) => {
         const tableCurrentDoors = table.doors || [];
         return (
           <Card

@@ -2167,7 +2167,7 @@ function StepTwo({
       </div>
 
       {/* Tables displayed vertically */}
-      {tables.map((table, tableIndex) => {
+      {tables.map((table, _tableIndex) => {
         const tableCurrentDoors = table?.doors || [];
         return (
           <Card
