@@ -793,11 +793,20 @@ function StepTwo({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingDoor, setEditingDoor] = useState<any>(null);
 
+  // Tables state - each table has its own door model and doors array
+  const [tables, setTables] = useState([
+    {
+      id: 1,
+      doorModel: null as any,
+      doorPriceType: "",
+      doorSearch: "",
+      doors: doors || [],
+    },
+  ]);
+
+  const [activeTableId, setActiveTableId] = useState(1);
+
   // Search states for each section
-  const [doorSearch, setDoorSearch] = useState<string>("");
-  const [tempSelectedDoorProduct, setTempSelectedDoorProduct] =
-    useState<any>(null);
-  const [lastSelectedDoorModel, setLastSelectedDoorModel] = useState<any>(null);
   const [extensionSearch, setExtensionSearch] = useState<string>("");
   const [casingSearch, setCasingSearch] = useState<string>("");
   const [crownSearch, setCrownSearch] = useState<string>("");
@@ -837,20 +846,71 @@ function StepTwo({
   const [lockPriceType, setLockPriceType] = useState<string>("");
   const [topsaPriceType, setTopsaPriceType] = useState<string>();
   const [beadingPriceType, setBeadingPriceType] = useState<string>("");
+
+  // Get current active table
+  const currentTable =
+    tables.find((table) => table.id === activeTableId) || tables[0];
+  const currentDoors = currentTable?.doors || [];
+
+  // Sync doors with parent component
+  useEffect(() => {
+    // Flatten all doors from all tables
+    const allDoors = tables.flatMap((table) => table.doors);
+    setDoors(allDoors);
+  }, [tables]);
+
+  // Initialize tables with existing doors
+  useEffect(() => {
+    if (doors && doors.length > 0 && tables[0].doors.length === 0) {
+      setTables([
+        {
+          ...tables[0],
+          doors: doors,
+        },
+      ]);
+    }
+  }, [doors]);
+
   console.log("editing door", editingDoor);
   console.log("cube search", selectedCubeProduct);
+
+  // Add new table functionality
+  const handleAddNewTable = () => {
+    const newTableId = Math.max(...tables.map((t) => t.id)) + 1;
+    const newTable = {
+      id: newTableId,
+      doorModel: null as any,
+      doorPriceType: "",
+      doorSearch: "",
+      doors: [],
+    };
+    setTables([...tables, newTable]);
+    setActiveTableId(newTableId);
+  };
+
+  // Remove table functionality
+  const handleRemoveTable = (tableId: number) => {
+    if (tables.length <= 1) return; // Don't allow removing the last table
+
+    const updatedTables = tables.filter((table) => table.id !== tableId);
+    setTables(updatedTables);
+
+    if (activeTableId === tableId) {
+      setActiveTableId(updatedTables[0].id);
+    }
+  };
 
   const handleAddNewRow = () => {
     // Get material attributes from the order form to apply to all doors
     const orderData = orderForm.getValues();
 
-    // Use last selected door model as default for new rows
-    const defaultDoorModel = lastSelectedDoorModel?.id || "";
-    const defaultDoorPriceType = lastSelectedDoorModel?.lastPriceType || "";
+    // Use current table's door model as default for new rows
+    const defaultDoorModel = currentTable.doorModel?.id || "";
+    const defaultDoorPriceType = currentTable.doorPriceType || "";
     const defaultDoorPrice =
-      lastSelectedDoorModel && lastSelectedDoorModel.lastPriceType
-        ? (lastSelectedDoorModel.salePrices?.find(
-            (p: any) => p.priceType.id === lastSelectedDoorModel.lastPriceType,
+      currentTable.doorModel && currentTable.doorPriceType
+        ? (currentTable.doorModel.salePrices?.find(
+            (p: any) => p.priceType.id === currentTable.doorPriceType,
           )?.value || 0) / 100
         : 0;
 
@@ -1041,19 +1101,21 @@ function StepTwo({
       accessories: defaultAccessories,
     };
 
-    const newIndex = doors.length;
-    setDoors([...doors, newDoor]);
+    // Add door to current table
+    const updatedTables = tables.map((table) => {
+      if (table.id === activeTableId) {
+        return {
+          ...table,
+          doors: [...table.doors, newDoor],
+        };
+      }
+      return table;
+    });
+
+    setTables(updatedTables);
+    const newIndex = currentDoors.length;
     setEditingIndex(newIndex);
     setEditingDoor({ ...newDoor });
-
-    // If we have a default door model, set it as temp selected product and search text
-    if (lastSelectedDoorModel) {
-      setTempSelectedDoorProduct(lastSelectedDoorModel);
-      setDoorSearch(lastSelectedDoorModel.name || "");
-    } else {
-      setDoorSearch("");
-      setTempSelectedDoorProduct(null);
-    }
   };
 
   // Effect to update all doors when material attributes change in order form
@@ -1068,7 +1130,7 @@ function StepTwo({
   ]);
 
   useEffect(() => {
-    if (doors.length > 0) {
+    if (tables.some((table) => table.doors.length > 0)) {
       const [
         material,
         material_type,
@@ -1079,18 +1141,21 @@ function StepTwo({
         beading_additional,
       ] = materialAttributes;
 
-      const updatedDoors = doors.map((door: any) => ({
-        ...door,
-        material: material || "",
-        material_type: material_type || "",
-        massif: massif || "",
-        color: color || "",
-        patina_color: patina_color || "",
-        beading_main: beading_main || "",
-        beading_additional: beading_additional || "2",
+      const updatedTables = tables.map((table) => ({
+        ...table,
+        doors: table.doors.map((door: any) => ({
+          ...door,
+          material: material || "",
+          material_type: material_type || "",
+          massif: massif || "",
+          color: color || "",
+          patina_color: patina_color || "",
+          beading_main: beading_main || "",
+          beading_additional: beading_additional || "2",
+        })),
       }));
 
-      setDoors(updatedDoors);
+      setTables(updatedTables);
 
       // Also update editing door if it's currently being edited
       if (editingDoor && editingIndex !== null) {
@@ -1110,27 +1175,11 @@ function StepTwo({
 
   const handleEditDoor = (index: number) => {
     setEditingIndex(index);
-    setEditingDoor({ ...doors[index] });
-    // Set temp selected product based on current door model
-    const currentDoorProduct = productsList.find(
-      (p: any) => p.id === doors[index].model,
-    );
-    if (currentDoorProduct) {
-      setDoorSearch(currentDoorProduct.name || "");
-      setTempSelectedDoorProduct({
-        ...currentDoorProduct,
-        lastPriceType: doors[index].price_type,
-      });
-    } else {
-      setDoorSearch("");
-      setTempSelectedDoorProduct(null);
-    }
+    setEditingDoor({ ...currentDoors[index] });
   };
 
   const handleSaveDoor = () => {
     if (editingIndex !== null && editingDoor) {
-      const updatedDoors = [...doors];
-
       // Helper function to convert string with comma to number
       const convertToNumber = (value: any, defaultValue: number = 0) => {
         if (typeof value === "number") return value;
@@ -1144,23 +1193,30 @@ function StepTwo({
         return defaultValue;
       };
 
-      // Validate door model and price type
-      if (!editingDoor.model) {
-        toast.error("Please select a door model");
+      // Validate door model and price type from table header
+      if (!currentTable.doorModel) {
+        toast.error("Please select a door model in the table header");
         return;
       }
-      if (!editingDoor.price_type) {
-        toast.error("Please select a price type for the door");
+      if (!currentTable.doorPriceType) {
+        toast.error(
+          "Please select a price type for the door in the table header",
+        );
         return;
       }
 
       // Apply door data being saved
       const updatedDoor = {
         ...editingDoor,
-        // Keep individual door model and price type selections
-        model: editingDoor.model,
-        price_type: editingDoor.price_type,
-        price: convertToNumber(editingDoor.price, 0),
+        // Use table header door model and price type
+        model: currentTable.doorModel.id,
+        price_type: currentTable.doorPriceType,
+        price:
+          currentTable.doorModel && currentTable.doorPriceType
+            ? (currentTable.doorModel.salePrices?.find(
+                (p: any) => p.priceType.id === currentTable.doorPriceType,
+              )?.value || 0) / 100
+            : convertToNumber(editingDoor.price, 0),
         quantity: parseInt(editingDoor.quantity || 1),
         height: convertToNumber(editingDoor.height, 0),
         width: convertToNumber(editingDoor.width, 0),
@@ -1220,31 +1276,59 @@ function StepTwo({
           })) || [],
       };
 
-      updatedDoors[editingIndex] = updatedDoor;
-      setDoors(updatedDoors);
+      // Update the door in the current table
+      const updatedTables = tables.map((table) => {
+        if (table.id === activeTableId) {
+          const updatedTableDoors = [...table.doors];
+          updatedTableDoors[editingIndex] = updatedDoor;
+          return {
+            ...table,
+            doors: updatedTableDoors,
+          };
+        }
+        return table;
+      });
+
+      setTables(updatedTables);
       setEditingIndex(null);
       setEditingDoor(null);
-      // Reset temporary states
-      setDoorSearch("");
-      setTempSelectedDoorProduct(null);
       toast.success(t("forms.door_updated_successfully"));
     }
   };
 
   const handleCancelEdit = () => {
-    if (editingIndex === doors.length - 1 && !doors[editingIndex].model) {
+    if (
+      editingIndex === currentDoors.length - 1 &&
+      !currentDoors[editingIndex].model
+    ) {
       // If it's a new row that was just added and not saved, remove it
-      setDoors(doors.slice(0, -1));
+      const updatedTables = tables.map((table) => {
+        if (table.id === activeTableId) {
+          return {
+            ...table,
+            doors: table.doors.slice(0, -1),
+          };
+        }
+        return table;
+      });
+      setTables(updatedTables);
     }
     setEditingIndex(null);
     setEditingDoor(null);
-    // Reset temporary states
-    setDoorSearch("");
-    setTempSelectedDoorProduct(null);
   };
 
   const handleRemoveDoor = (index: number) => {
-    setDoors(doors.filter((_: any, i: number) => i !== index));
+    const updatedTables = tables.map((table) => {
+      if (table.id === activeTableId) {
+        return {
+          ...table,
+          doors: table.doors.filter((_: any, i: number) => i !== index),
+        };
+      }
+      return table;
+    });
+    setTables(updatedTables);
+
     if (editingIndex === index) {
       setEditingIndex(null);
       setEditingDoor(null);
@@ -1458,6 +1542,41 @@ function StepTwo({
 
   return (
     <div>
+      {/* Table Tabs */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        {tables.map((table) => (
+          <div key={table.id} className="flex items-center gap-1">
+            <Button
+              variant={activeTableId === table.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveTableId(table.id)}
+              className="h-8"
+            >
+              Table {table.id} ({table.doors.length})
+            </Button>
+            {tables.length > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemoveTable(table.id)}
+                className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+              >
+                ×
+              </Button>
+            )}
+          </div>
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleAddNewTable}
+          className="h-8 flex items-center gap-1"
+        >
+          <Plus className="h-3 w-3" />
+          Add Table
+        </Button>
+      </div>
+
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
@@ -1466,10 +1585,15 @@ function StepTwo({
                 <div className="p-2 bg-green-100 rounded-lg">
                   <DoorOpen className="h-6 w-6 text-green-600" />
                 </div>
-                {t("forms.doors_configuration")}
+                {t("forms.doors_configuration")} - Table {activeTableId}
                 <Badge variant="secondary" className="ml-3 px-3 py-1">
-                  {doors.length} {t("forms.doors_added")}
+                  {currentDoors.length} {t("forms.doors_added")}
                 </Badge>
+                {currentTable.doorModel && (
+                  <Badge variant="outline" className="ml-2 px-2 py-1 text-xs">
+                    {currentTable.doorModel.name}
+                  </Badge>
+                )}
               </CardTitle>
               <p className="text-gray-600 mt-2">
                 {t("forms.add_doors_description")}
@@ -1480,10 +1604,16 @@ function StepTwo({
                 onClick={handleAddNewRow}
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
                 size="lg"
+                disabled={
+                  !currentTable.doorModel || !currentTable.doorPriceType
+                }
               >
                 <Plus className="h-5 w-5" />
                 {t("forms.add_row")}
               </Button>
+              {(!currentTable.doorModel || !currentTable.doorPriceType) && (
+                <p className="text-xs text-red-500">Select door model first</p>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -1494,7 +1624,73 @@ function StepTwo({
                 <TableRow className="bg-gray-50">
                   <TableHead className="w-12">#</TableHead>
                   <TableHead className="min-w-[250px]">
-                    {t("forms.door_model")}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span>{t("forms.door_model")}</span>
+                      </div>
+                      <HeaderSearch
+                        value={currentTable.doorSearch}
+                        onChange={(value) => {
+                          const updatedTables = tables.map((table) => {
+                            if (table.id === activeTableId) {
+                              return { ...table, doorSearch: value };
+                            }
+                            return table;
+                          });
+                          setTables(updatedTables);
+                        }}
+                        placeholder={t("forms.search_doors")}
+                        onProductSelect={(product) => {
+                          const updatedTables = tables.map((table) => {
+                            if (table.id === activeTableId) {
+                              // Find sales price automatically
+                              const salesPrice = product?.salePrices?.find(
+                                (p: any) => p.priceType.name === "Цена продажи",
+                              );
+                              return {
+                                ...table,
+                                doorModel: product,
+                                doorPriceType: salesPrice
+                                  ? salesPrice.priceType.id
+                                  : "",
+                                doorSearch: product?.name || "",
+                              };
+                            }
+                            return table;
+                          });
+                          setTables(updatedTables);
+                        }}
+                      />
+                      <Select
+                        value={currentTable.doorPriceType}
+                        onValueChange={(value) => {
+                          const updatedTables = tables.map((table) => {
+                            if (table.id === activeTableId) {
+                              return { ...table, doorPriceType: value };
+                            }
+                            return table;
+                          });
+                          setTables(updatedTables);
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {currentTable.doorModel?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </TableHead>
                   <TableHead className="w-16">{t("forms.quantity")}</TableHead>
                   <TableHead className="w-20">{t("forms.height")}</TableHead>
@@ -1509,42 +1705,36 @@ function StepTwo({
                         <span>{t("forms.extensions")}</span>
                         {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={extensionSearch}
-                            onChange={setExtensionSearch}
-                            placeholder={t("forms.search_extensions")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedExtensionProduct,
-                              setExtensionPriceType,
-                            )}
-                          />
-                          <Select
-                            value={extensionPriceType}
-                            onValueChange={setExtensionPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedExtensionProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={extensionSearch}
+                        onChange={setExtensionSearch}
+                        placeholder={t("forms.search_extensions")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedExtensionProduct,
+                          setExtensionPriceType,
+                        )}
+                      />
+                      <Select
+                        value={extensionPriceType}
+                        onValueChange={setExtensionPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedExtensionProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[570px]">
@@ -1553,42 +1743,36 @@ function StepTwo({
                         <span>{t("forms.casings")}</span>
                         {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={casingSearch}
-                            onChange={setCasingSearch}
-                            placeholder={t("forms.search_casings")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedCasingProduct,
-                              setCasingPriceType,
-                            )}
-                          />
-                          <Select
-                            value={casingPriceType}
-                            onValueChange={setCasingPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedCasingProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={casingSearch}
+                        onChange={setCasingSearch}
+                        placeholder={t("forms.search_casings")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCasingProduct,
+                          setCasingPriceType,
+                        )}
+                      />
+                      <Select
+                        value={casingPriceType}
+                        onValueChange={setCasingPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedCasingProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1597,42 +1781,36 @@ function StepTwo({
                         <span>{t("forms.crowns")}</span>
                         {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={crownSearch}
-                            onChange={setCrownSearch}
-                            placeholder={t("forms.search_crowns")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedCrownProduct,
-                              setCrownPriceType,
-                            )}
-                          />
-                          <Select
-                            value={crownPriceType}
-                            onValueChange={setCrownPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedCrownProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={crownSearch}
+                        onChange={setCrownSearch}
+                        placeholder={t("forms.search_crowns")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCrownProduct,
+                          setCrownPriceType,
+                        )}
+                      />
+                      <Select
+                        value={crownPriceType}
+                        onValueChange={setCrownPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedCrownProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1640,42 +1818,36 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Кубик</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={cubeSearch}
-                            onChange={setCubeSearch}
-                            placeholder={t("forms.search_cubes")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedCubeProduct,
-                              setCubePriceType,
-                            )}
-                          />
-                          <Select
-                            value={cubePriceType}
-                            onValueChange={setCubePriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedCubeProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={cubeSearch}
+                        onChange={setCubeSearch}
+                        placeholder={t("forms.search_cubes")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedCubeProduct,
+                          setCubePriceType,
+                        )}
+                      />
+                      <Select
+                        value={cubePriceType}
+                        onValueChange={setCubePriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedCubeProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1683,42 +1855,34 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Ножка</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={legSearch}
-                            onChange={setLegSearch}
-                            placeholder={t("forms.search_legs")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedLegProduct,
-                              setLegPriceType,
-                            )}
-                          />
-                          <Select
-                            value={legPriceType}
-                            onValueChange={setLegPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedLegProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={legSearch}
+                        onChange={setLegSearch}
+                        placeholder={t("forms.search_legs")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLegProduct,
+                          setLegPriceType,
+                        )}
+                      />
+                      <Select
+                        value={legPriceType}
+                        onValueChange={setLegPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedLegProduct?.salePrices?.map((price: any) => (
+                            <SelectItem
+                              key={price.priceType.id}
+                              value={price.priceType.id}
+                            >
+                              {price.priceType.name} -{" "}
+                              {(price.value / 100).toFixed(2)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1726,42 +1890,36 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Стекло</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={glassSearch}
-                            onChange={setGlassSearch}
-                            placeholder={t("forms.search_glass")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedGlassProduct,
-                              setGlassPriceType,
-                            )}
-                          />
-                          <Select
-                            value={glassPriceType}
-                            onValueChange={setGlassPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedGlassProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={glassSearch}
+                        onChange={setGlassSearch}
+                        placeholder={t("forms.search_glass")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedGlassProduct,
+                          setGlassPriceType,
+                        )}
+                      />
+                      <Select
+                        value={glassPriceType}
+                        onValueChange={setGlassPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedGlassProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1769,42 +1927,36 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Замок</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={lockSearch}
-                            onChange={setLockSearch}
-                            placeholder={t("forms.search_locks")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedLockProduct,
-                              setLockPriceType,
-                            )}
-                          />
-                          <Select
-                            value={lockPriceType}
-                            onValueChange={setLockPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedLockProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={lockSearch}
+                        onChange={setLockSearch}
+                        placeholder={t("forms.search_locks")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedLockProduct,
+                          setLockPriceType,
+                        )}
+                      />
+                      <Select
+                        value={lockPriceType}
+                        onValueChange={setLockPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedLockProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1812,42 +1964,36 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Топса</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={topsaSearch}
-                            onChange={setTopsaSearch}
-                            placeholder={t("forms.search_topsas")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedTopsaProduct,
-                              setTopsaPriceType,
-                            )}
-                          />
-                          <Select
-                            value={topsaPriceType}
-                            onValueChange={setTopsaPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedTopsaProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={topsaSearch}
+                        onChange={setTopsaSearch}
+                        placeholder={t("forms.search_topsas")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedTopsaProduct,
+                          setTopsaPriceType,
+                        )}
+                      />
+                      <Select
+                        value={topsaPriceType}
+                        onValueChange={setTopsaPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedTopsaProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="min-w-[200px]">
@@ -1855,152 +2001,58 @@ function StepTwo({
                       <div className="flex items-center gap-1">
                         <span>Шпингалет</span>
                       </div>
-                      {editingIndex !== null && (
-                        <>
-                          <HeaderSearch
-                            value={beadingSearch}
-                            onChange={setBeadingSearch}
-                            placeholder={t("forms.search_beading")}
-                            onProductSelect={createProductSelectHandler(
-                              setSelectedBeadingProduct,
-                              setBeadingPriceType,
-                            )}
-                          />
-                          <Select
-                            value={beadingPriceType}
-                            onValueChange={setBeadingPriceType}
-                          >
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue
-                                placeholder={t("forms.price_type")}
-                              />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              {selectedBeadingProduct?.salePrices?.map(
-                                (price: any) => (
-                                  <SelectItem
-                                    key={price.priceType.id}
-                                    value={price.priceType.id}
-                                  >
-                                    {price.priceType.name} -{" "}
-                                    {(price.value / 100).toFixed(2)}
-                                  </SelectItem>
-                                ),
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      )}
+                      <HeaderSearch
+                        value={beadingSearch}
+                        onChange={setBeadingSearch}
+                        placeholder={t("forms.search_beading")}
+                        onProductSelect={createProductSelectHandler(
+                          setSelectedBeadingProduct,
+                          setBeadingPriceType,
+                        )}
+                      />
+                      <Select
+                        value={beadingPriceType}
+                        onValueChange={setBeadingPriceType}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder={t("forms.price_type")} />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                          {selectedBeadingProduct?.salePrices?.map(
+                            (price: any) => (
+                              <SelectItem
+                                key={price.priceType.id}
+                                value={price.priceType.id}
+                              >
+                                {price.priceType.name} -{" "}
+                                {(price.value / 100).toFixed(2)}
+                              </SelectItem>
+                            ),
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </TableHead>
                   <TableHead className="w-32">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {doors.map((door: any, index: number) => (
+                {currentDoors.map((door: any, index: number) => (
                   <TableRow
                     key={index}
-                    className={`h-[200px] ${editingIndex === index ? "bg-blue-50" : ""}`}
+                    className={`h-[100px] ${editingIndex === index ? "bg-blue-50" : ""}`}
                   >
                     <TableCell className="font-medium">{index + 1}</TableCell>
 
-                    {/* Door Model */}
+                    {/* Door Model - Now shows selected from header */}
                     <TableCell
                       className={`${editingIndex === index ? "align-middle" : "align-top"} p-2`}
                     >
-                      {editingIndex === index ? (
-                        <div className="space-y-2">
-                          <HeaderSearch
-                            value={doorSearch}
-                            onChange={setDoorSearch}
-                            placeholder={t("forms.search_door_model")}
-                            onProductSelect={(product) => {
-                              setTempSelectedDoorProduct(product);
-                              handleFieldChange("model", product?.id || "");
-                              // Find 'продаж цена' price type
-                              const salePrice = product?.salePrices?.find(
-                                (p: any) => p.priceType.name === "Цена продажи",
-                              );
-                              handleFieldChange(
-                                "price_type",
-                                salePrice ? salePrice.priceType.id : "",
-                              );
-                              handleFieldChange(
-                                "price",
-                                salePrice ? salePrice.value / 100 : 0,
-                              );
-                              // Update last selected door model for future rows
-                              if (product) {
-                                setLastSelectedDoorModel({
-                                  ...product,
-                                  lastPriceType: salePrice
-                                    ? salePrice.priceType.id
-                                    : "",
-                                });
-                              }
-                            }}
-                          />
-                          {tempSelectedDoorProduct && (
-                            <Select
-                              value={editingDoor?.price_type || ""}
-                              onValueChange={(value) => {
-                                const selectedPrice =
-                                  tempSelectedDoorProduct?.salePrices?.find(
-                                    (p: any) => p.priceType.id === value,
-                                  );
-                                handleFieldChange("price_type", value);
-                                handleFieldChange(
-                                  "price",
-                                  selectedPrice ? selectedPrice.value / 100 : 0,
-                                );
-                                // Update last selected price type for future rows
-                                if (tempSelectedDoorProduct) {
-                                  setLastSelectedDoorModel({
-                                    ...tempSelectedDoorProduct,
-                                    lastPriceType: value,
-                                  });
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue
-                                  placeholder={t("forms.price_type")}
-                                />
-                              </SelectTrigger>
-                              <SelectContent className="z-[9999]">
-                                {tempSelectedDoorProduct?.salePrices?.map(
-                                  (price: any) => (
-                                    <SelectItem
-                                      key={price.priceType.id}
-                                      value={price.priceType.id}
-                                    >
-                                      {price.priceType.name} -{" "}
-                                      {(price.value / 100).toFixed(2)}
-                                    </SelectItem>
-                                  ),
-                                )}
-                              </SelectContent>
-                            </Select>
-                          )}
+                      <div className="space-y-1">
+                        <div className="text-xs font-medium">
+                          {currentTable.doorModel?.name || "No model selected"}
                         </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium">
-                            {getProductName(door.model) || "No model selected"}
-                          </div>
-
-                          <Button
-                            onClick={() => {
-                              handleEditDoor(index);
-                            }}
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs"
-                          >
-                            Сменить модель
-                          </Button>
-                        </div>
-                      )}
+                      </div>
                     </TableCell>
 
                     {/* Quantity */}
@@ -2264,15 +2316,14 @@ function StepTwo({
                             {/* {door.extensions?.length || 0} items */}
                             {door.extensions?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.extensions.map((ext: any, i: number) => (
+                                {/* {door.extensions.map((ext: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-blue-50 p-1 rounded"
                                   >
-                                    {getProductName(ext.model)} (x{ext.quantity}
-                                    )
+                                    {getProductName(ext.model)}
                                   </div>
-                                ))}
+                                ))} */}
                               </div>
                             )}
                           </div>
@@ -2470,15 +2521,14 @@ function StepTwo({
                             {/* {door.casings?.length || 0} <span>элементов</span> */}
                             {door.casings?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.casings.map((casing: any, i: number) => (
+                                {/* {door.casings.map((casing: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-green-50 p-1 rounded"
                                   >
-                                    {getProductName(casing.model)} (x
-                                    {casing.quantity})
+                                    {getProductName(casing.model)}
                                   </div>
-                                ))}
+                                ))} */}
                               </div>
                             )}
                           </div>
@@ -2576,15 +2626,14 @@ function StepTwo({
                             {/* {door.crowns?.length || 0} items */}
                             {door.crowns?.length > 0 && (
                               <div className="mt-1 space-y-1">
-                                {door.crowns.map((crown: any, i: number) => (
+                                {/* {door.crowns.map((crown: any, i: number) => (
                                   <div
                                     key={i}
                                     className="text-xs bg-purple-50 p-1 rounded"
                                   >
-                                    {getProductName(crown.model)} (x
-                                    {crown.quantity})
+                                    {getProductName(crown.model)}
                                   </div>
-                                ))}
+                                ))} */}
                               </div>
                             )}
                           </div>
@@ -2645,8 +2694,7 @@ function StepTwo({
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[0]?.quantity > 0 ? (
                             <div className="bg-blue-50 p-1 rounded">
-                              {getProductName(door.accessories[0].model)} (x
-                              {door.accessories[0].quantity})
+                              {getProductName(door.accessories[0].model)}
                             </div>
                           ) : (
                             <span>0</span>
@@ -2708,8 +2756,7 @@ function StepTwo({
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[1]?.quantity > 0 ? (
                             <div className="bg-orange-50 p-1 rounded">
-                              {getProductName(door.accessories[1].model)} (x
-                              {door.accessories[1].quantity})
+                              {getProductName(door.accessories[1].model)}
                             </div>
                           ) : (
                             <span>0</span>
@@ -2768,16 +2815,7 @@ function StepTwo({
                           min="0"
                         />
                       ) : (
-                        <div className="text-xs text-gray-600">
-                          {door.accessories?.[2]?.quantity > 0 ? (
-                            <div className="bg-cyan-50 p-1 rounded">
-                              {getProductName(door.accessories[2].model)} (x
-                              {door.accessories[2].quantity})
-                            </div>
-                          ) : (
-                            <span>0</span>
-                          )}
-                        </div>
+                        <div className="text-xs text-gray-600"></div>
                       )}
                     </TableCell>
 
@@ -2834,8 +2872,7 @@ function StepTwo({
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[3]?.quantity > 0 ? (
                             <div className="bg-red-50 p-1 rounded">
-                              {getProductName(door.accessories[3].model)} (x
-                              {door.accessories[3].quantity})
+                              {getProductName(door.accessories[3].model)}
                             </div>
                           ) : (
                             <span>0</span>
@@ -2897,8 +2934,7 @@ function StepTwo({
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[4]?.quantity > 0 ? (
                             <div className="bg-indigo-50 p-1 rounded">
-                              {getProductName(door.accessories[4].model)} (x
-                              {door.accessories[4].quantity})
+                              {getProductName(door.accessories[4].model)}
                             </div>
                           ) : (
                             <span>0</span>
@@ -2960,8 +2996,7 @@ function StepTwo({
                         <div className="text-xs text-gray-600">
                           {door.accessories?.[5]?.quantity > 0 ? (
                             <div className="bg-yellow-50 p-1 rounded">
-                              {getProductName(door.accessories[5].model)} (x
-                              {door.accessories[5].quantity})
+                              {getProductName(door.accessories[5].model)}
                             </div>
                           ) : (
                             <span>0</span>
@@ -3016,7 +3051,7 @@ function StepTwo({
                   </TableRow>
                 ))}
 
-                {doors.length === 0 && (
+                {currentDoors.length === 0 && (
                   <TableRow className="h-24">
                     <TableCell
                       colSpan={18}
@@ -3024,9 +3059,9 @@ function StepTwo({
                     >
                       <div className="flex flex-col items-center gap-2">
                         <DoorOpen className="h-8 w-8 text-gray-400" />
-                        <p>{t("forms.no_doors_added")}</p>
+                        <p>Двери не добавлены</p>
                         <p className="text-sm">
-                          {t("forms.click_add_row_to_start")}
+                          Нажмите 'Добавить строку' чтобы начать
                         </p>
                       </div>
                     </TableCell>
@@ -3036,7 +3071,7 @@ function StepTwo({
             </Table>
           </div>
 
-          {doors.length === 0 && (
+          {currentDoors.length === 0 && (
             <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-200">
               <p className="text-amber-700 font-medium">
                 {t("forms.add_at_least_one_door")}
