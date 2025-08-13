@@ -20,6 +20,8 @@
     "create": "Jasaw",
     "submit": "Jiberiw",
     "sending": "Jiberilmekte...",
+    "sent_to_moy_sklad": "Moy Skladqa jiberildi",
+    "send_to_moy_sklad": "Moy Skladqa jiberiw",
     "items": "daneler",
     "filters": "Filtrler",
     "all": "Hámmesi",
@@ -58,6 +60,10 @@
   },
   "navigation": {
     "orders": "Buyırtpalar",
+    "daily_plans": "Kúndelik planlar",
+    "sales_overview": "Maash",
+    "attribute_settings": "Atribut sazlawları",
+    "casing_ranges": "Nalichnik diapazonları",
     "beadings": "Bidingter",
     "colors": "Túsler",
     "materials": "Materialdar",
@@ -69,14 +75,39 @@
     "create_material_type": "Material túrin jasaw",
     "create_patina_color": "Patina túsin jasaw",
     "settings": "Sazlawlar",
+    "material": "Material",
+    "massifs": "Massivler",
+    "glass_types": "Áynek túrleri",
+    "thresholds": "Boságalar",
     "users": "Paydalanıwshılar",
     "create_user": "Paydalanıwshı jasaw",
-    "monthly_salaries": "Aylıq maashlar",
-    "staff_member": "Xızmetker",
     "measures": "Ólshemler",
     "create_measure": "Ólshem jasaw",
-    "yearly_plans": "Jıllıq planlar",
-    "daily_plans": "Kúndelik planlar"
+    "monthly_salaries": "Aylıq maashlar",
+    "yearly_plans": "Jıllıq planlar"
+  },
+  "settings": {
+    "description": "Sistema sazlawların hám konfiguraciyalardı basqarıń",
+    "tabs": {
+      "materials": "Materiallar",
+      "appearance": "Kórinisi",
+      "users": "Paydalanıwshılar",
+      "system": "Sistema"
+    },
+    "descriptions": {
+      "materials": "Materiallar hám olardıń túrlerin basqarıw",
+      "material-types": "Material túrlerin sazlaw",
+      "massifs": "Massivlerdı konfiguraciyalaw",
+      "colors": "Túsler palitrasın basqarıw",
+      "patina-colors": "Patina túslerin sazlaw",
+      "beadings": "Bidinglerdı konfiguraciyalaw",
+      "glass-types": "Áynekler túrlerin basqarıw",
+      "thresholds": "Boságalardı sazlaw",
+      "users": "Paydalanıwshılardı basqarıw",
+      "monthly-salaries": "Aylıq maashlardı sazlaw",
+      "attribute-settings": "Sistema atributlerin konfiguraciyalaw",
+      "casing-ranges": "Nalichnik diapazonların basqarıw"
+    }
   },
   "daily_plans": {
     "daily_breakdown": "Kúndelik bóliniw",
@@ -357,7 +388,9 @@
     "error_creating_measure": "Ólshem jasawda qate",
     "error_updating_measure": "Ólshem jańartwda qate",
     "error_creating_order": "Buyırtpa jasawda qate",
-    "error_updating_order": "Buyırtpa jańartwda qate"
+    "error_updating_order": "Buyırtpanı jańalaw qátesi",
+    "order_sent_to_moy_sklad": "Buyırtpa sátti Moy Skladqa jiberildi",
+    "error_sending_to_moy_sklad": "Buyırtpanı Moy Skladqa jiberiw qátesi"
   },
   "titles": {
     "create_measure": "Ólshem jasaw",

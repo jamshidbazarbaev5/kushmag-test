@@ -37,6 +37,7 @@
     "create": "Создать",
     "submit": "Отправить",
     "sending": "Отправка...",
+    "sent_to_moy_sklad": "Отправлено в Мой Склад",
     "actions": "Действия",
     "loading": "Загрузка...",
     "not_found": "{{item}} не найден",
@@ -150,6 +151,29 @@
     "monthly_salaries": "Месячные зарплаты",
     "yearly_plans": "Годовые планы"
   },
+  "settings": {
+    "description": "Управляйте настройками системы и конфигурациями",
+    "tabs": {
+      "materials": "Материалы",
+      "appearance": "Внешний вид",
+      "users": "Пользователи",
+      "system": "Система"
+    },
+    "descriptions": {
+      "materials": "Управление материалами и их типами",
+      "material-types": "Настройка типов материалов",
+      "massifs": "Конфигурация массивов",
+      "colors": "Управление цветовой палитрой",
+      "patina-colors": "Настройка цветов патины",
+      "beadings": "Конфигурация штапиков",
+      "glass-types": "Управление типами стёкол",
+      "thresholds": "Настройка порогов",
+      "users": "Управление пользователями",
+      "monthly-salaries": "Настройка месячных зарплат",
+      "attribute-settings": "Конфигурация системных атрибутов",
+      "casing-ranges": "Управление диапазонами наличников"
+    }
+  },
   "yearly_plans": {
     "add_yearly_plan": "Добавить годовой план",
     "edit_yearly_plan": "Редактировать годовой план",
@@ -206,7 +230,7 @@
 
   "forms": {
     "date": "Дата",
-    "search_counterparty":"Поиск контрагента",
+    "search_counterparty": "Поиск контрагента",
     "search_doors": "Поиск двери",
     "agreement": "Соглашение",
     "agreement_amount": "Сумма соглашения",
@@ -531,7 +555,9 @@
     "error_creating_measure": "Ошибка при создании замера",
     "error_updating_measure": "Ошибка при обновлении замера",
     "error_creating_order": "Ошибка при создании заказа",
-    "error_updating_order": "Ошибка при обновлении заказа"
+    "error_updating_order": "Ошибка при обновлении заказа",
+    "order_sent_to_moy_sklad": "Заказ успешно отправлен в Мой Склад",
+    "error_sending_to_moy_sklad": "Ошибка при отправке заказа в Мой Склад"
   },
   "placeholders": {
     "search_doors": "Поиск двери",

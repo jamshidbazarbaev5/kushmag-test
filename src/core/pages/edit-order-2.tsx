@@ -2,7 +2,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useGetOrder, useUpdateOrder, useCalculateOrder } from "../api/order";
+import {
+  useGetOrder,
+  useUpdateOrder,
+  useCalculateOrder,
+  useSendToMoySklad,
+} from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import {
   useGetCurrencies,
@@ -64,6 +69,7 @@ import {
   Edit,
   Save,
   X,
+  Send,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave } from "../hooks/useAutoSave";
@@ -109,6 +115,8 @@ export default function EditOrderPage() {
   const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
   const { mutate: calculateOrder, isPending: isCalculating } =
     useCalculateOrder();
+  const { mutate: sendToMoySklad, isPending: isSendingToMoySklad } =
+    useSendToMoySklad();
 
   const [doors, setDoors] = useState<any[]>([]);
   const [_currentStep, _setCurrentStep] = useState(1);
@@ -681,6 +689,22 @@ export default function EditOrderPage() {
     });
   };
 
+  const handleSendToMoySklad = () => {
+    if (!orderData?.id) return;
+
+    sendToMoySklad(orderData.id, {
+      onSuccess: () => {
+        toast.success(t("messages.order_sent_to_moy_sklad"));
+        // You might want to refetch the order data to update the status
+        window.location.reload(); // Simple way to refresh the data
+      },
+      onError: (error: any) => {
+        console.error("Error sending order to Moy Sklad:", error);
+        toast.error(t("messages.error_sending_to_moy_sklad"));
+      },
+    });
+  };
+
   if (isLoadingOrder) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -757,6 +781,8 @@ export default function EditOrderPage() {
             agreementAmountInput={agreementAmountInput}
             setAgreementAmountInput={setAgreementAmountInput}
             orderData={orderData}
+            onSendToMoySklad={handleSendToMoySklad}
+            isSendingToMoySklad={isSendingToMoySklad}
           />
         </div>
       </div>
@@ -2038,6 +2064,13 @@ function StepTwo({
     return t("forms.unknown_product");
   };
 
+  const getDisplayName = (modelId: string | any, isDoor: boolean = false) => {
+    if (isDoor) {
+      return getProductName(modelId);
+    }
+    return ""; // Hide product names for accessories
+  };
+
   return (
     <div>
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur">
@@ -2820,7 +2853,7 @@ function StepTwo({
                                     key={i}
                                     className="text-xs bg-blue-50 p-1 rounded"
                                   >
-                                    {getProductName(ext.model)} (x{ext.quantity}
+                                    {getDisplayName(ext.model)} (x{ext.quantity}
                                     )
                                   </div>
                                 ))}
@@ -3026,7 +3059,7 @@ function StepTwo({
                                     key={i}
                                     className="text-xs bg-green-50 p-1 rounded"
                                   >
-                                    {getProductName(casing.model)} (x
+                                    {getDisplayName(casing.model)} (x
                                     {casing.quantity})
                                   </div>
                                 ))}
@@ -3132,7 +3165,7 @@ function StepTwo({
                                     key={i}
                                     className="text-xs bg-purple-50 p-1 rounded"
                                   >
-                                    {getProductName(crown.model)} (x
+                                    {getDisplayName(crown.model)} (x
                                     {crown.quantity})
                                   </div>
                                 ))}
@@ -3190,7 +3223,7 @@ function StepTwo({
                             );
                             return cubeAccessory?.quantity > 0 ? (
                               <div className="bg-blue-50 p-1 rounded">
-                                {getProductName(cubeAccessory.model)} (x
+                                {getDisplayName(cubeAccessory.model)} (x
                                 {cubeAccessory.quantity})
                               </div>
                             ) : (
@@ -3248,7 +3281,7 @@ function StepTwo({
                             );
                             return legAccessory?.quantity > 0 ? (
                               <div className="bg-orange-50 p-1 rounded">
-                                {getProductName(legAccessory.model)} (x
+                                {getDisplayName(legAccessory.model)} (x
                                 {legAccessory.quantity})
                               </div>
                             ) : (
@@ -3306,7 +3339,7 @@ function StepTwo({
                             );
                             return glassAccessory?.quantity > 0 ? (
                               <div className="bg-cyan-50 p-1 rounded">
-                                {getProductName(glassAccessory.model)} (x
+                                {getDisplayName(glassAccessory.model)} (x
                                 {glassAccessory.quantity})
                               </div>
                             ) : (
@@ -3364,7 +3397,7 @@ function StepTwo({
                             );
                             return lockAccessory?.quantity > 0 ? (
                               <div className="bg-red-50 p-1 rounded">
-                                {getProductName(lockAccessory.model)} (x
+                                {getDisplayName(lockAccessory.model)} (x
                                 {lockAccessory.quantity})
                               </div>
                             ) : (
@@ -3422,7 +3455,7 @@ function StepTwo({
                             );
                             return topsaAccessory?.quantity > 0 ? (
                               <div className="bg-indigo-50 p-1 rounded">
-                                {getProductName(topsaAccessory.model)} (x
+                                {getDisplayName(topsaAccessory.model)} (x
                                 {topsaAccessory.quantity})
                               </div>
                             ) : (
@@ -3480,7 +3513,7 @@ function StepTwo({
                             );
                             return beadingAccessory?.quantity > 0 ? (
                               <div className="bg-yellow-50 p-1 rounded">
-                                {getProductName(beadingAccessory.model)} (x
+                                {getDisplayName(beadingAccessory.model)} (x
                                 {beadingAccessory.quantity})
                               </div>
                             ) : (
@@ -3721,6 +3754,8 @@ function StepThree({
   agreementAmountInput,
   setAgreementAmountInput,
   orderData,
+  onSendToMoySklad,
+  isSendingToMoySklad,
 }: any) {
   const { t } = useTranslation();
 
@@ -4156,6 +4191,34 @@ function StepThree({
                     ? `${t("common.creating")}...`
                     : t("common.create_order")}
                 </Button>
+
+                <Button
+                  onClick={onSendToMoySklad}
+                  disabled={
+                    isSendingToMoySklad ||
+                    orderData?.order_status === "moy_sklad"
+                  }
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 disabled:opacity-50"
+                  size="lg"
+                >
+                  {isSendingToMoySklad ? (
+                    <>
+                      <Send className="h-5 w-5 mr-2 animate-spin" />
+                      {t("common.sending")}...
+                    </>
+                  ) : orderData?.order_status === "moy_sklad" ? (
+                    <>
+                      <Send className="h-5 w-5 mr-2" />
+                      {t("common.sent_to_moy_sklad")}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-5 w-5 mr-2" />
+                      {t("common.send_to_moy_sklad")}
+                    </>
+                  )}
+                </Button>
+
                 <Button variant="outline" onClick={onBack} className="w-full">
                   {t("common.back_to_doors")}
                 </Button>

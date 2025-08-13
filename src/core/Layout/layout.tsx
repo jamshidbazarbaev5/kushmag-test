@@ -14,6 +14,7 @@ import {
   LogOut,
   User,
   Calendar,
+  Settings,
 } from "lucide-react";
 import { useGetMeasures } from "../api/measure";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -283,7 +284,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 }}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                   location.pathname === "/orders"
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                     : "text-sidebar-foreground hover:bg-gray-50"
                 }`}
               >
@@ -308,7 +309,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               }}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                 location.pathname === "/measures"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                   : "text-sidebar-foreground hover:bg-gray-50"
               }`}
             >
@@ -340,7 +341,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/measures"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                       : "text-sidebar-foreground hover:bg-gray-50"
                   }`}
                 >
@@ -364,7 +365,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/yearly-plans"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                       : "text-sidebar-foreground hover:bg-gray-50"
                   }`}
                 >
@@ -394,7 +395,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/monthly-salaries"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                       : "text-sidebar-foreground hover:bg-gray-50"
                   }`}
                 >
@@ -418,7 +419,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   }}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/yearly-plans"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
                       : "text-sidebar-foreground hover:bg-gray-50"
                   }`}
                 >
@@ -438,441 +439,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Desktop Hamburger Menu for Settings */}
+          {/* Desktop Settings Button */}
           <div className="relative">
             <button
               onClick={() => {
-                setMobileMenuOpen(!mobileMenuOpen);
-                setDropdownOpen(false);
+                navigate("/settings");
               }}
-              className="px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2"
+              className={`px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 ${
+                location.pathname === "/settings"
+                  ? "bg-gray-100 text-gray-900"
+                  : "text-gray-600"
+              }`}
             >
-              <span className="font-medium text-gray-600">
-                {t("navigation.settings")}
-              </span>
-              {mobileMenuOpen ? (
-                <X size={20} className="text-gray-600" />
-              ) : (
-                <Menu size={20} className="text-gray-600" />
-              )}
+              <span className="font-medium">{t("navigation.settings")}</span>
+              <Settings size={20} />
             </button>
-
-            {/* Desktop Navigation Dropdown */}
-            {mobileMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-[998]"
-                  onClick={() => setMobileMenuOpen(false)}
-                />
-                <div className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border py-2 min-w-[280px] z-[999]">
-                  {/* Orders - only for ADMIN */}
-                  {/* {currentUser?.role === "ADMIN" && (
-                    <a
-                      href="/orders"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setMobileMenuOpen(false);
-                        navigate("/orders");
-                      }}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        location.pathname === "/orders"
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-gray-50"
-                      }`}
-                    >
-                      <Package
-                        size={20}
-                        className={
-                          location.pathname === "/orders"
-                            ? "text-emerald-500"
-                            : "text-gray-500"
-                        }
-                      />
-                      <span className="font-medium">
-                        {t("navigation.orders")}
-                      </span>
-                    </a>
-                  )} */}
-
-                  {/* Settings with submenu */}
-                  <div className="border-t border-gray-100 pt-2 mt-2">
-                    <div className="px-4 py-2">
-                      <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        {t("navigation.settings")}
-                      </div>
-                    </div>
-
-                    {currentUser?.role === "ADMIN" ? (
-                      <>
-                        <a
-                          href="/materials"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/materials");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/materials"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/materials"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.material")}
-                          </span>
-                        </a>
-                        <a
-                          href="/material-types"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/material-types");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/material-types"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/material-types"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.material_types")}
-                          </span>
-                        </a>
-                        <a
-                          href="/massifs"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/massifs");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/massifs"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/massifs"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.massifs")}
-                          </span>
-                        </a>
-                        <a
-                          href="/colors"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/colors");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/colors"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/colors"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.colors")}
-                          </span>
-                        </a>
-                        <a
-                          href="/patina-colors"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/patina-colors");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/patina-colors"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/patina-colors"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.patina_colors")}
-                          </span>
-                        </a>
-                        <a
-                          href="/beadings"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/beadings");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/beadings"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/beadings"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.beadings")}
-                          </span>
-                        </a>
-                        <a
-                          href="/glass-types"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/glass-types");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/glass-types"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/glass-types"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.glass_types")}
-                          </span>
-                        </a>
-                        <a
-                          href="/thresholds"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/thresholds");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/thresholds"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/thresholds"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.thresholds")}
-                          </span>
-                        </a>
-                        <a
-                          href="/users"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/users");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/users"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <User
-                            size={18}
-                            className={
-                              location.pathname === "/users"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.users")}
-                          </span>
-                        </a>
-                        <a
-                          href="/monthly-salaries"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/monthly-salaries");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/monthly-salaries"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/monthly-salaries"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.monthly_salaries")}
-                          </span>
-                        </a>
-                        <a
-                          href="/attribute-settings"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/attribute-settings");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/attribute-settings"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/attribute-settings"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.attribute_settings")}
-                          </span>
-                        </a>
-                        <a
-                          href="/casing-ranges"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setMobileMenuOpen(false);
-                            navigate("/casing-ranges");
-                          }}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                            location.pathname === "/casing-ranges"
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground hover:bg-gray-50"
-                          }`}
-                        >
-                          <Package
-                            size={18}
-                            className={
-                              location.pathname === "/casing-ranges"
-                                ? "text-emerald-500"
-                                : "text-gray-500"
-                            }
-                          />
-                          <span className="font-medium">
-                            {t("navigation.casing_ranges")}
-                          </span>
-                        </a>
-                      </>
-                    ) : null}
-
-                    {/* Yearly Plans - hidden for ADMIN role */}
-                    {currentUser?.role !== "ADMIN" && (
-                      <a
-                        href="/yearly-plans"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setMobileMenuOpen(false);
-                          navigate("/yearly-plans");
-                        }}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                          location.pathname === "/yearly-plans"
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground hover:bg-gray-50"
-                        }`}
-                      >
-                        <Calendar
-                          size={18}
-                          className={
-                            location.pathname === "/yearly-plans"
-                              ? "text-emerald-500"
-                              : "text-gray-500"
-                          }
-                        />
-                        <span className="font-medium">
-                          {t("navigation.yearly_plans")}
-                        </span>
-                      </a>
-                    )}
-
-                    {/* Measures - hidden for ADMIN role */}
-                    {currentUser?.role !== "ADMIN" && (
-                      <a
-                        href="/measures"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setMobileMenuOpen(false);
-                          navigate("/measures");
-                        }}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                          location.pathname === "/measures"
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground hover:bg-gray-50"
-                        }`}
-                      >
-                        <Package
-                          size={18}
-                          className={
-                            location.pathname === "/measures"
-                              ? "text-emerald-500"
-                              : "text-gray-500"
-                          }
-                        />
-                        <span className="font-medium">
-                          {t("navigation.measures")}
-                        </span>
-                        {newMeasuresCount > 0 && (
-                          <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
-                            {newMeasuresCount}
-                          </div>
-                        )}
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-4">

@@ -29,6 +29,7 @@ import CreateMeasurePage from "./core/pages/create-measure";
 import MeasuresPage from "./core/pages/measures";
 import EditMeasurePage from "./core/pages/edit-measure";
 import AttributeSettingsPage from "./core/pages/attribute-settings";
+import SettingsPage from "./core/pages/settings";
 import CreateCasingRangePage from "./core/pages/create-casing-range";
 import CasingRangesPage from "./core/pages/casing-ranges";
 import OrdersPage from "./core/pages/orders";
@@ -108,6 +109,7 @@ function App() {
             <Route path="/measures/create" element={<CreateMeasurePage />} />
             <Route path="/measures/:id/edit" element={<EditMeasurePage />} />
 
+            <Route path="/settings" element={<SettingsPage />} />
             <Route
               path="/attribute-settings"
               element={<AttributeSettingsPage />}

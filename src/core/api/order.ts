@@ -1,4 +1,4 @@
-import { createResourceApiHooks } from '../helpers/createResourceApi';
+import { createResourceApiHooks } from "../helpers/createResourceApi";
 
 interface ModelMeta {
   href: string;
@@ -50,7 +50,7 @@ interface Door {
   }[];
   accessories?: {
     model: ModelReference;
-    accessory_type: 'cube' | 'leg' | 'glass' | 'lock' | 'topsa' | 'beading';
+    accessory_type: "cube" | "leg" | "glass" | "lock" | "topsa" | "beading";
     quantity: number;
     price: string;
   }[];
@@ -82,7 +82,7 @@ export interface Order {
   doors: Door[];
 }
 
-const ORDER_URL = 'orders/';
+const ORDER_URL = "orders/";
 
 export const {
   useGetResources: useGetOrders,
@@ -90,11 +90,11 @@ export const {
   useCreateResource: useCreateOrder,
   useUpdateResource: useUpdateOrder,
   useDeleteResource: useDeleteOrder,
-} = createResourceApiHooks<Order>(ORDER_URL, 'orders');
+} = createResourceApiHooks<Order>(ORDER_URL, "orders");
 
 // Add calculate order functionality
-import { useMutation } from '@tanstack/react-query';
-import api from './api';
+import { useMutation } from "@tanstack/react-query";
+import api from "./api";
 
 export interface CalculateOrderResponse {
   total_sum: number;
@@ -108,7 +108,16 @@ export interface CalculateOrderResponse {
 export const useCalculateOrder = () => {
   return useMutation<CalculateOrderResponse, Error, any>({
     mutationFn: async (orderData: any) => {
-      const response = await api.post('orders/calculate/', orderData);
+      const response = await api.post("orders/calculate/", orderData);
+      return response.data;
+    },
+  });
+};
+
+export const useSendToMoySklad = () => {
+  return useMutation<any, Error, number>({
+    mutationFn: async (orderId: number) => {
+      const response = await api.post(`orders/${orderId}/moy_sklad/`, {});
       return response.data;
     },
   });
