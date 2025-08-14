@@ -117,8 +117,6 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
   return defaultValue;
 };
 
-
-
 export default function EditOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -864,7 +862,7 @@ function StepOne({
                 isSubmitting={isLoading}
                 hideSubmitButton={true}
                 form={orderForm}
-                gridClassName="grid-cols-1 gap-6"
+                gridClassName="md:grid-cols-3 gap-6"
               />
 
               {/* Custom Counterparty Select Field */}
@@ -898,7 +896,7 @@ function StepOne({
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-3 gap-6">
                 {/* Material */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none">
@@ -1875,8 +1873,6 @@ function StepTwo({
     }
   }, materialAttributes);
 
-
-
   return (
     <div className="space-y-6">
       {/* Add New Table Button */}
@@ -1888,7 +1884,7 @@ function StepTwo({
           className="h-8 flex items-center gap-1"
         >
           <Plus className="h-3 w-3" />
-         Добавить новую модель двери
+          Добавить новую модель двери
         </Button>
       </div>
 
@@ -1990,6 +1986,7 @@ function StepTwo({
                     setTables(updatedTables);
                   }}
                   placeholder={t("forms.search_doors")}
+                  selectedProduct={table.doorModel}
                   onProductSelect={(product) => {
                     const updatedTables = tables.map((t) => {
                       if (t.id === table.id) {
@@ -2033,8 +2030,10 @@ function StepTwo({
                             value={extensionSearch}
                             onChange={setExtensionSearch}
                             placeholder={t("forms.search_extensions")}
+                            selectedProduct={selectedExtensionProduct}
                             onProductSelect={(product) => {
                               setSelectedExtensionProduct(product);
+                              setExtensionSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2048,8 +2047,10 @@ function StepTwo({
                             value={casingSearch}
                             onChange={setCasingSearch}
                             placeholder={t("forms.search_casings")}
+                            selectedProduct={selectedCasingProduct}
                             onProductSelect={(product) => {
                               setSelectedCasingProduct(product);
+                              setCasingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2063,8 +2064,10 @@ function StepTwo({
                             value={crownSearch}
                             onChange={setCrownSearch}
                             placeholder={t("forms.search_crowns")}
+                            selectedProduct={selectedCrownProduct}
                             onProductSelect={(product) => {
                               setSelectedCrownProduct(product);
+                              setCrownSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2078,8 +2081,10 @@ function StepTwo({
                             value={cubeSearch}
                             onChange={setCubeSearch}
                             placeholder={t("forms.search_cubes")}
+                            selectedProduct={selectedCubeProduct}
                             onProductSelect={(product) => {
                               setSelectedCubeProduct(product);
+                              setCubeSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2093,8 +2098,10 @@ function StepTwo({
                             value={legSearch}
                             onChange={setLegSearch}
                             placeholder={t("forms.search_legs")}
+                            selectedProduct={selectedLegProduct}
                             onProductSelect={(product) => {
                               setSelectedLegProduct(product);
+                              setLegSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2108,8 +2115,10 @@ function StepTwo({
                             value={glassSearch}
                             onChange={setGlassSearch}
                             placeholder={t("forms.search_glass")}
+                            selectedProduct={selectedGlassProduct}
                             onProductSelect={(product) => {
                               setSelectedGlassProduct(product);
+                              setGlassSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2123,8 +2132,10 @@ function StepTwo({
                             value={lockSearch}
                             onChange={setLockSearch}
                             placeholder={t("forms.search_locks")}
+                            selectedProduct={selectedLockProduct}
                             onProductSelect={(product) => {
                               setSelectedLockProduct(product);
+                              setLockSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2138,8 +2149,10 @@ function StepTwo({
                             value={topsaSearch}
                             onChange={setTopsaSearch}
                             placeholder={t("forms.search_topsas")}
+                            selectedProduct={selectedTopsaProduct}
                             onProductSelect={(product) => {
                               setSelectedTopsaProduct(product);
+                              setTopsaSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2153,8 +2166,10 @@ function StepTwo({
                             value={beadingSearch}
                             onChange={setBeadingSearch}
                             placeholder={t("forms.search_beading")}
+                            selectedProduct={selectedBeadingProduct}
                             onProductSelect={(product) => {
                               setSelectedBeadingProduct(product);
+                              setBeadingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2957,11 +2972,13 @@ function HeaderSearch({
   onChange,
   placeholder,
   onProductSelect,
+  selectedProduct,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   onProductSelect?: (product: any) => void;
+  selectedProduct?: any;
 }) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -2972,6 +2989,12 @@ function HeaderSearch({
   useEffect(() => {
     const searchProducts = async () => {
       if (value.length < 1) {
+        setProducts([]);
+        return;
+      }
+
+      // Don't search if the current value exactly matches the selected product name
+      if (selectedProduct && value === selectedProduct.name) {
         setProducts([]);
         return;
       }
@@ -2995,7 +3018,7 @@ function HeaderSearch({
 
     const debounceTimeout = setTimeout(searchProducts, 300);
     return () => clearTimeout(debounceTimeout);
-  }, [value]);
+  }, [value, selectedProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -3031,8 +3054,12 @@ function HeaderSearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onMouseEnter={() => {
-            // Auto-open dropdown on hover if there are results
-            if (value.length >= 1 && products.length > 0) {
+            // Auto-open dropdown on hover if there are results and no product is selected
+            if (
+              value.length >= 1 &&
+              products.length > 0 &&
+              !(selectedProduct && value === selectedProduct.name)
+            ) {
               setIsOpen(true);
             }
           }}

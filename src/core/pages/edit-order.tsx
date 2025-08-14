@@ -1253,10 +1253,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             extensions:
-              door.extensions?.map((ext:any) => ({
+              door.extensions?.map((ext: any) => ({
                 ...ext,
                 model: selectedExtensionProduct.id,
                 price: selectedExtensionProduct.salePrices?.find(
@@ -1279,10 +1279,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             casings:
-              door.casings?.map((casing:any) => ({
+              door.casings?.map((casing: any) => ({
                 ...casing,
                 model: selectedCasingProduct.id,
                 price: selectedCasingProduct.salePrices?.find(
@@ -1305,10 +1305,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             crowns:
-              door.crowns?.map((crown:any) => ({
+              door.crowns?.map((crown: any) => ({
                 ...crown,
                 model: selectedCrownProduct.id,
                 price: selectedCrownProduct.salePrices?.find(
@@ -1660,15 +1660,15 @@ function StepTwo({
 
     const updatedTables = tables.map((table) => {
       const convertToNumber = (value: any, defaultValue: number = 0) => {
-  if (typeof value === "number") return value;
-  if (typeof value === "string") {
-    const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
-    if (normalized === "" || normalized === ".") return defaultValue;
-    const parsed = parseFloat(normalized);
-    return isNaN(parsed) ? defaultValue : parsed;
-  }
-  return defaultValue;
-};
+        if (typeof value === "number") return value;
+        if (typeof value === "string") {
+          const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+          if (normalized === "" || normalized === ".") return defaultValue;
+          const parsed = parseFloat(normalized);
+          return isNaN(parsed) ? defaultValue : parsed;
+        }
+        return defaultValue;
+      };
 
       if (table.id === tableId) {
         const updatedDoors = [...table.doors];
@@ -1734,16 +1734,16 @@ function StepTwo({
     casingSize: number,
   ) => {
     if (!doorData) return casing;
-const convertToNumber = (value: any, defaultValue: number = 0) => {
-  if (typeof value === "number") return value;
-  if (typeof value === "string") {
-    const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
-    if (normalized === "" || normalized === ".") return defaultValue;
-    const parsed = parseFloat(normalized);
-    return isNaN(parsed) ? defaultValue : parsed;
-  }
-  return defaultValue;
-};
+    const convertToNumber = (value: any, defaultValue: number = 0) => {
+      if (typeof value === "number") return value;
+      if (typeof value === "string") {
+        const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+        if (normalized === "" || normalized === ".") return defaultValue;
+        const parsed = parseFloat(normalized);
+        return isNaN(parsed) ? defaultValue : parsed;
+      }
+      return defaultValue;
+    };
 
     const doorWidth = convertToNumber(doorData.width, 0);
     const doorHeight = convertToNumber(doorData.height, 0);
@@ -1909,6 +1909,7 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                     setTables(updatedTables);
                   }}
                   placeholder={t("forms.search_doors")}
+                  selectedProduct={table.doorModel}
                   onProductSelect={(product) => {
                     const updatedTables = tables.map((t) => {
                       if (t.id === table.id) {
@@ -1966,8 +1967,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={extensionSearch}
                             onChange={setExtensionSearch}
                             placeholder={t("forms.search_extensions")}
+                            selectedProduct={selectedExtensionProduct}
                             onProductSelect={(product) => {
                               setSelectedExtensionProduct(product);
+                              setExtensionSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1982,8 +1985,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={casingSearch}
                             onChange={setCasingSearch}
                             placeholder={t("forms.search_casings")}
+                            selectedProduct={selectedCasingProduct}
                             onProductSelect={(product) => {
                               setSelectedCasingProduct(product);
+                              setCasingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1998,8 +2003,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={crownSearch}
                             onChange={setCrownSearch}
                             placeholder={t("forms.search_crowns")}
+                            selectedProduct={selectedCrownProduct}
                             onProductSelect={(product) => {
                               setSelectedCrownProduct(product);
+                              setCrownSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2013,8 +2020,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={cubeSearch}
                             onChange={setCubeSearch}
                             placeholder={t("forms.search_cubes")}
+                            selectedProduct={selectedCubeProduct}
                             onProductSelect={(product) => {
                               setSelectedCubeProduct(product);
+                              setCubeSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2028,8 +2037,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={legSearch}
                             onChange={setLegSearch}
                             placeholder={t("forms.search_legs")}
+                            selectedProduct={selectedLegProduct}
                             onProductSelect={(product) => {
                               setSelectedLegProduct(product);
+                              setLegSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2043,8 +2054,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={glassSearch}
                             onChange={setGlassSearch}
                             placeholder={t("forms.search_glass")}
+                            selectedProduct={selectedGlassProduct}
                             onProductSelect={(product) => {
                               setSelectedGlassProduct(product);
+                              setGlassSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2058,8 +2071,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={lockSearch}
                             onChange={setLockSearch}
                             placeholder={t("forms.search_locks")}
+                            selectedProduct={selectedLockProduct}
                             onProductSelect={(product) => {
                               setSelectedLockProduct(product);
+                              setLockSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2073,8 +2088,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={topsaSearch}
                             onChange={setTopsaSearch}
                             placeholder={t("forms.search_topsas")}
+                            selectedProduct={selectedTopsaProduct}
                             onProductSelect={(product) => {
                               setSelectedTopsaProduct(product);
+                              setTopsaSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2088,8 +2105,10 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
                             value={beadingSearch}
                             onChange={setBeadingSearch}
                             placeholder={t("forms.search_beading")}
+                            selectedProduct={selectedBeadingProduct}
                             onProductSelect={(product) => {
                               setSelectedBeadingProduct(product);
+                              setBeadingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2951,11 +2970,13 @@ function HeaderSearch({
   onChange,
   placeholder,
   onProductSelect,
+  selectedProduct,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   onProductSelect?: (product: any) => void;
+  selectedProduct?: any;
 }) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -2966,6 +2987,12 @@ function HeaderSearch({
   useEffect(() => {
     const searchProducts = async () => {
       if (value.length < 1) {
+        setProducts([]);
+        return;
+      }
+
+      // Don't search if the current value exactly matches the selected product name
+      if (selectedProduct && value === selectedProduct.name) {
         setProducts([]);
         return;
       }
@@ -2989,7 +3016,7 @@ function HeaderSearch({
 
     const debounceTimeout = setTimeout(searchProducts, 300);
     return () => clearTimeout(debounceTimeout);
-  }, [value]);
+  }, [value, selectedProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -3025,8 +3052,12 @@ function HeaderSearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onMouseEnter={() => {
-            // Auto-open dropdown on hover if there are results
-            if (value.length >= 1 && products.length > 0) {
+            // Auto-open dropdown on hover if there are results and no product is selected
+            if (
+              value.length >= 1 &&
+              products.length > 0 &&
+              !(selectedProduct && value === selectedProduct.name)
+            ) {
               setIsOpen(true);
             }
           }}

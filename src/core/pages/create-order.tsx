@@ -38,7 +38,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
+
 import { Separator } from "../../components/ui/separator";
 import {
   Table,
@@ -957,10 +957,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             extensions:
-              door.extensions?.map((ext:any) => ({
+              door.extensions?.map((ext: any) => ({
                 ...ext,
                 model: selectedExtensionProduct.id,
                 price: selectedExtensionProduct.salePrices?.find(
@@ -983,10 +983,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             casings:
-              door.casings?.map((casing:any) => ({
+              door.casings?.map((casing: any) => ({
                 ...casing,
                 model: selectedCasingProduct.id,
                 price: selectedCasingProduct.salePrices?.find(
@@ -1009,10 +1009,10 @@ function StepTwo({
       setTables((prevTables) =>
         prevTables.map((table) => ({
           ...table,
-          doors: table.doors.map((door:any) => ({
+          doors: table.doors.map((door: any) => ({
             ...door,
             crowns:
-              door.crowns?.map((crown:any) => ({
+              door.crowns?.map((crown: any) => ({
                 ...crown,
                 model: selectedCrownProduct.id,
                 price: selectedCrownProduct.salePrices?.find(
@@ -1504,110 +1504,75 @@ function StepTwo({
           >
             <CardHeader className="pb-6">
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex items-center gap-4 flex-1">
                   <CardTitle className="flex items-center gap-3 text-2xl">
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
                     {t("forms.doors_configuration")} - Таблица {table.id}
-                    <Badge variant="secondary" className="ml-3 px-3 py-1">
-                      {tableCurrentDoors.length} {t("forms.doors_added")}
-                    </Badge>
-                    {table.doorModel && (
-                      <Badge
-                        variant="outline"
-                        className="ml-2 px-2 py-1 text-xs"
-                      >
-                        {table.doorModel.name}
-                      </Badge>
-                    )}
                   </CardTitle>
-                  <p className="text-gray-600 mt-2">
-                    {t("forms.add_doors_description")}
-                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <div className="w-80">
+                      <HeaderSearch
+                        value={table.doorSearch}
+                        onChange={(value) => {
+                          const updatedTables = tables.map((t) => {
+                            if (t.id === table.id) {
+                              return { ...t, doorSearch: value };
+                            }
+                            return t;
+                          });
+                          setTables(updatedTables);
+                        }}
+                        placeholder={t("forms.search_doors")}
+                        selectedProduct={table.doorModel}
+                        onProductSelect={(product) => {
+                          const updatedTables = tables.map((t) => {
+                            if (t.id === table.id) {
+                              return {
+                                ...t,
+                                doorModel: product,
+                                doorSearch: product?.name || "",
+                              };
+                            }
+                            return t;
+                          });
+                          setTables(updatedTables);
+                        }}
+                      />
+                    </div>
+
+                    {tableCurrentDoors.length > 0 && (
+                      <Button
+                        onClick={() => handleSaveTable(table.id)}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      >
+                        <Save className="h-4 w-4" />
+                        Сохранит таблицу
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                {tables.length > 1 && (
                   <Button
-                    onClick={() => {
-                      handleAddNewRow(table.id);
-                    }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                    size="lg"
-                    disabled={!table.doorModel}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveTable(table.id)}
+                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
                   >
-                    <Plus className="h-5 w-5" />
-                    {t("forms.add_row")}
+                    ×
                   </Button>
-                  {tables.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveTable(table.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
               {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
                   Выбирете модель двери
                 </p>
               )}
-
-              {/* Single Save Button for entire table */}
-              {tableCurrentDoors.length > 0 && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => handleSaveTable(table.id)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="h-4 w-4" />
-                    Сохранит таблицу
-                  </Button>
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Door Model Selection */}
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{t("forms.door_model")}</span>
-                  {table.doorModel && (
-                    <Badge variant="outline" className="px-2 py-1 text-xs">
-                      {table.doorModel.name}
-                    </Badge>
-                  )}
-                </div>
-                <HeaderSearch
-                  value={table.doorSearch}
-                  onChange={(value) => {
-                    const updatedTables = tables.map((t) => {
-                      if (t.id === table.id) {
-                        return { ...t, doorSearch: value };
-                      }
-                      return t;
-                    });
-                    setTables(updatedTables);
-                  }}
-                  placeholder={t("forms.search_doors")}
-                  onProductSelect={(product) => {
-                    const updatedTables = tables.map((t) => {
-                      if (t.id === table.id) {
-                        return {
-                          ...t,
-                          doorModel: product,
-                          doorSearch: product?.name || "",
-                        };
-                      }
-                      return t;
-                    });
-                    setTables(updatedTables);
-                  }}
-                />
-              </div>
-
               <div className="rounded-lg border overflow-x-auto relative">
                 <Table>
                   <TableHeader>
@@ -1636,8 +1601,10 @@ function StepTwo({
                             value={extensionSearch}
                             onChange={setExtensionSearch}
                             placeholder={t("forms.search_extensions")}
+                            selectedProduct={selectedExtensionProduct}
                             onProductSelect={(product) => {
                               setSelectedExtensionProduct(product);
+                              setExtensionSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1652,8 +1619,10 @@ function StepTwo({
                             value={casingSearch}
                             onChange={setCasingSearch}
                             placeholder={t("forms.search_casings")}
+                            selectedProduct={selectedCasingProduct}
                             onProductSelect={(product) => {
                               setSelectedCasingProduct(product);
+                              setCasingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1668,8 +1637,10 @@ function StepTwo({
                             value={crownSearch}
                             onChange={setCrownSearch}
                             placeholder={t("forms.search_crowns")}
+                            selectedProduct={selectedCrownProduct}
                             onProductSelect={(product) => {
                               setSelectedCrownProduct(product);
+                              setCrownSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1683,8 +1654,10 @@ function StepTwo({
                             value={cubeSearch}
                             onChange={setCubeSearch}
                             placeholder={t("forms.search_cubes")}
+                            selectedProduct={selectedCubeProduct}
                             onProductSelect={(product) => {
                               setSelectedCubeProduct(product);
+                              setCubeSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1698,8 +1671,10 @@ function StepTwo({
                             value={legSearch}
                             onChange={setLegSearch}
                             placeholder={t("forms.search_legs")}
+                            selectedProduct={selectedLegProduct}
                             onProductSelect={(product) => {
                               setSelectedLegProduct(product);
+                              setLegSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1713,8 +1688,10 @@ function StepTwo({
                             value={glassSearch}
                             onChange={setGlassSearch}
                             placeholder={t("forms.search_glass")}
+                            selectedProduct={selectedGlassProduct}
                             onProductSelect={(product) => {
                               setSelectedGlassProduct(product);
+                              setGlassSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1728,8 +1705,10 @@ function StepTwo({
                             value={lockSearch}
                             onChange={setLockSearch}
                             placeholder={t("forms.search_locks")}
+                            selectedProduct={selectedLockProduct}
                             onProductSelect={(product) => {
                               setSelectedLockProduct(product);
+                              setLockSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1743,8 +1722,10 @@ function StepTwo({
                             value={topsaSearch}
                             onChange={setTopsaSearch}
                             placeholder={t("forms.search_topsas")}
+                            selectedProduct={selectedTopsaProduct}
                             onProductSelect={(product) => {
                               setSelectedTopsaProduct(product);
+                              setTopsaSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -1758,8 +1739,10 @@ function StepTwo({
                             value={beadingSearch}
                             onChange={setBeadingSearch}
                             placeholder={t("forms.search_beading")}
+                            selectedProduct={selectedBeadingProduct}
                             onProductSelect={(product) => {
                               setSelectedBeadingProduct(product);
+                              setBeadingSearch(product?.name || "");
                             }}
                           />
                         </div>
@@ -2599,13 +2582,20 @@ function StepTwo({
                 </Table>
               </div>
 
-              {tableCurrentDoors.length === 0 && (
-                <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-amber-700 font-medium">
-                    {t("forms.add_at_least_one_door")}
-                  </p>
-                </div>
-              )}
+              {/* Add Row Button - Bottom Right */}
+              <div className="flex justify-end mt-4">
+                <Button
+                  onClick={() => {
+                    handleAddNewRow(table.id);
+                  }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                  size="lg"
+                  disabled={!table.doorModel}
+                >
+                  <Plus className="h-5 w-5" />
+                  {t("forms.add_row")}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         );
@@ -2621,11 +2611,13 @@ function HeaderSearch({
   onChange,
   placeholder,
   onProductSelect,
+  selectedProduct,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   onProductSelect?: (product: any) => void;
+  selectedProduct?: any;
 }) {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -2636,6 +2628,12 @@ function HeaderSearch({
   useEffect(() => {
     const searchProducts = async () => {
       if (value.length < 1) {
+        setProducts([]);
+        return;
+      }
+
+      // Don't search if the current value exactly matches the selected product name
+      if (selectedProduct && value === selectedProduct.name) {
         setProducts([]);
         return;
       }
@@ -2659,7 +2657,7 @@ function HeaderSearch({
 
     const debounceTimeout = setTimeout(searchProducts, 300);
     return () => clearTimeout(debounceTimeout);
-  }, [value]);
+  }, [value, selectedProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -2695,8 +2693,12 @@ function HeaderSearch({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onMouseEnter={() => {
-            // Auto-open dropdown on hover if there are results
-            if (value.length >= 1 && products.length > 0) {
+            // Auto-open dropdown on hover if there are results and no product is selected
+            if (
+              value.length >= 1 &&
+              products.length > 0 &&
+              !(selectedProduct && value === selectedProduct.name)
+            ) {
               setIsOpen(true);
             }
           }}
