@@ -26,6 +26,7 @@ import { useGetGlassTypes } from "../api/glassType";
 import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
 import { useGetAttributeSettings } from "../api/attributeSettings";
+import { useGetPriceSettings } from "../api/priceSettings";
 import { useState, useEffect, useMemo, useRef } from "react";
 import React from "react";
 import { formatReferenceOptions } from "../helpers/formatters";
@@ -62,9 +63,9 @@ import {
   DoorOpen,
   Package,
   Calculator,
-  Edit,
+  // Edit,
   Save,
-  X,
+  // X,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave, useOrderDraftRecovery } from "../hooks/useAutoSave";
@@ -112,25 +113,17 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
 };
 
 // Price type mapping for different product types
-const getPriceTypeByProduct = (productName: string): string => {
-  const priceTypeMapping: { [key: string]: string } = {
-    door: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    leg: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    casing: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    beading: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    topsa: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    lock: "6a3ceb22-dd31-11ef-0a80-028d0002a3b1",
-    glass: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    cube: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    crown: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-    extension: "0f4d57e2-f0b0-11ee-0a80-16ce00046acd",
-  };
-
-  // Default price type if product not found in mapping
-  return (
-    priceTypeMapping[productName.toLowerCase()] ||
-    "0f4d57e2-f0b0-11ee-0a80-16ce00046acd"
+const getPriceTypeByProduct = (
+  productName: string,
+  priceSettings: { product: string; price_type: string }[] = [],
+): string => {
+  // Find the price setting for this product
+  const priceSetting = priceSettings.find(
+    (setting) => setting.product === productName.toLowerCase(),
   );
+
+  // Return the price_type from the setting, or a default value
+  return priceSetting?.price_type || "0f4d57e2-f0b0-11ee-0a80-16ce00046acd";
 };
 
 export default function CreateOrderPage() {
@@ -234,10 +227,12 @@ export default function CreateOrderPage() {
   const { data: thresholds } = useGetThresholds();
   const { data: zamershiks } = useGetZamershiks();
   const { data: casingRanges } = useGetCasingRanges();
+  const { data: priceSettings } = useGetPriceSettings();
   const productsList = useMemo(
     () => (Array.isArray(products) ? products : products?.results || []),
     [products],
   );
+  const priceSettingsList = useMemo(() => priceSettings || [], [priceSettings]);
 
   // --- Format Options for Selects ---
   const fieldOptions = {
@@ -463,8 +458,8 @@ export default function CreateOrderPage() {
           ...door,
           model: doorModel,
           price_type: doorModel
-            ? getPriceTypeByProduct(doorModel.name || "door")
-            : getPriceTypeByProduct("door"),
+            ? getPriceTypeByProduct(doorModel.name || "door", priceSettingsList)
+            : getPriceTypeByProduct("door", priceSettingsList),
           extensions:
             door.extensions
               ?.map((ext: any) => {
@@ -473,13 +468,14 @@ export default function CreateOrderPage() {
                   ...ext,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "extension")
-                    : getPriceTypeByProduct("extension"),
+                    ? getPriceTypeByProduct(
+                        model.name || "extension",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("extension", priceSettingsList),
                 };
               })
-              .filter(
-                (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
-              ) || [],
+              .filter((ext: any) => ext.quantity > 0) || [],
           casings:
             door.casings
               ?.map((casing: any) => {
@@ -488,14 +484,14 @@ export default function CreateOrderPage() {
                   ...casing,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "casing")
-                    : getPriceTypeByProduct("casing"),
+                    ? getPriceTypeByProduct(
+                        model.name || "casing",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("casing", priceSettingsList),
                 };
               })
-              .filter(
-                (casing: any) =>
-                  casing.model && casing.model.id && casing.quantity > 0,
-              ) || [],
+              .filter((casing: any) => casing.quantity > 0) || [],
           crowns:
             door.crowns
               ?.map((crown: any) => {
@@ -504,14 +500,14 @@ export default function CreateOrderPage() {
                   ...crown,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "crown")
-                    : getPriceTypeByProduct("crown"),
+                    ? getPriceTypeByProduct(
+                        model.name || "crown",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("crown", priceSettingsList),
                 };
               })
-              .filter(
-                (crown: any) =>
-                  crown.model && crown.model.id && crown.quantity > 0,
-              ) || [],
+              .filter((crown: any) => crown.quantity > 0) || [],
           accessories:
             door.accessories
               ?.map((acc: any) => {
@@ -520,12 +516,20 @@ export default function CreateOrderPage() {
                   ...acc,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "lock")
-                    : getPriceTypeByProduct("lock"),
+                    ? getPriceTypeByProduct(
+                        model.name || "lock",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("lock", priceSettingsList),
                 };
               })
               .filter(
-                (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
+                (acc: any) =>
+                  (acc.model && acc.model.id && acc.quantity > 0) ||
+                  (acc.model &&
+                    typeof acc.model === "string" &&
+                    acc.model !== "" &&
+                    acc.quantity > 0),
               ) || [],
         };
       }),
@@ -623,12 +627,13 @@ export default function CreateOrderPage() {
       // Hydrate door data with full product info and add price_type
       doors: doors.map((door: any) => {
         const doorModel = getProductById(productsList, door.model);
+
         return {
           ...door,
           model: doorModel,
           price_type: doorModel
-            ? getPriceTypeByProduct(doorModel.name || "door")
-            : getPriceTypeByProduct("door"),
+            ? getPriceTypeByProduct(doorModel.name || "door", priceSettingsList)
+            : getPriceTypeByProduct("door", priceSettingsList),
           extensions:
             door.extensions
               ?.map((ext: any) => {
@@ -637,13 +642,14 @@ export default function CreateOrderPage() {
                   ...ext,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "extension")
-                    : getPriceTypeByProduct("extension"),
+                    ? getPriceTypeByProduct(
+                        model.name || "extension",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("extension", priceSettingsList),
                 };
               })
-              .filter(
-                (ext: any) => ext.model && ext.model.id && ext.quantity > 0,
-              ) || [],
+              .filter((ext: any) => ext.quantity > 0) || [],
           casings:
             door.casings
               ?.map((casing: any) => {
@@ -652,14 +658,14 @@ export default function CreateOrderPage() {
                   ...casing,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "casing")
-                    : getPriceTypeByProduct("casing"),
+                    ? getPriceTypeByProduct(
+                        model.name || "casing",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("casing", priceSettingsList),
                 };
               })
-              .filter(
-                (casing: any) =>
-                  casing.model && casing.model.id && casing.quantity > 0,
-              ) || [],
+              .filter((casing: any) => casing.quantity > 0) || [],
           crowns:
             door.crowns
               ?.map((crown: any) => {
@@ -668,14 +674,14 @@ export default function CreateOrderPage() {
                   ...crown,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "crown")
-                    : getPriceTypeByProduct("crown"),
+                    ? getPriceTypeByProduct(
+                        model.name || "crown",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("crown", priceSettingsList),
                 };
               })
-              .filter(
-                (crown: any) =>
-                  crown.model && crown.model.id && crown.quantity > 0,
-              ) || [],
+              .filter((crown: any) => crown.quantity > 0) || [],
           accessories:
             door.accessories
               ?.map((acc: any) => {
@@ -684,12 +690,20 @@ export default function CreateOrderPage() {
                   ...acc,
                   model,
                   price_type: model
-                    ? getPriceTypeByProduct(model.name || "lock")
-                    : getPriceTypeByProduct("lock"),
+                    ? getPriceTypeByProduct(
+                        model.name || "lock",
+                        priceSettingsList,
+                      )
+                    : getPriceTypeByProduct("lock", priceSettingsList),
                 };
               })
               .filter(
-                (acc: any) => acc.model && acc.model.id && acc.quantity > 0,
+                (acc: any) =>
+                  (acc.model && acc.model.id && acc.quantity > 0) ||
+                  (acc.model &&
+                    typeof acc.model === "string" &&
+                    acc.model !== "" &&
+                    acc.quantity > 0),
               ) || [],
         };
       }),
@@ -937,7 +951,83 @@ function StepTwo({
     }
   }, [doors]);
 
-  console.log("cube search", selectedCubeProduct);
+  // Auto-apply selected extension product to all existing extensions
+  useEffect(() => {
+    if (selectedExtensionProduct) {
+      setTables((prevTables) =>
+        prevTables.map((table) => ({
+          ...table,
+          doors: table.doors.map((door:any) => ({
+            ...door,
+            extensions:
+              door.extensions?.map((ext:any) => ({
+                ...ext,
+                model: selectedExtensionProduct.id,
+                price: selectedExtensionProduct.salePrices?.find(
+                  (p: any) => p.priceType.name === "Цена продажи",
+                )?.value
+                  ? (selectedExtensionProduct.salePrices.find(
+                      (p: any) => p.priceType.name === "Цена продажи",
+                    )?.value || 0) / 100
+                  : 0,
+              })) || [],
+          })),
+        })),
+      );
+    }
+  }, [selectedExtensionProduct]);
+
+  // Auto-apply selected casing product to all existing casings
+  useEffect(() => {
+    if (selectedCasingProduct) {
+      setTables((prevTables) =>
+        prevTables.map((table) => ({
+          ...table,
+          doors: table.doors.map((door:any) => ({
+            ...door,
+            casings:
+              door.casings?.map((casing:any) => ({
+                ...casing,
+                model: selectedCasingProduct.id,
+                price: selectedCasingProduct.salePrices?.find(
+                  (p: any) => p.priceType.name === "Цена продажи",
+                )?.value
+                  ? (selectedCasingProduct.salePrices.find(
+                      (p: any) => p.priceType.name === "Цена продажи",
+                    )?.value || 0) / 100
+                  : 0,
+              })) || [],
+          })),
+        })),
+      );
+    }
+  }, [selectedCasingProduct]);
+
+  // Auto-apply selected crown product to all existing crowns
+  useEffect(() => {
+    if (selectedCrownProduct) {
+      setTables((prevTables) =>
+        prevTables.map((table) => ({
+          ...table,
+          doors: table.doors.map((door:any) => ({
+            ...door,
+            crowns:
+              door.crowns?.map((crown:any) => ({
+                ...crown,
+                model: selectedCrownProduct.id,
+                price: selectedCrownProduct.salePrices?.find(
+                  (p: any) => p.priceType.name === "Цена продажи",
+                )?.value
+                  ? (selectedCrownProduct.salePrices.find(
+                      (p: any) => p.priceType.name === "Цена продажи",
+                    )?.value || 0) / 100
+                  : 0,
+              })) || [],
+          })),
+        })),
+      );
+    }
+  }, [selectedCrownProduct]);
 
   // Add new table functionality
   const handleAddNewTable = () => {
@@ -1400,7 +1490,7 @@ function StepTwo({
           className="h-8 flex items-center gap-1"
         >
           <Plus className="h-3 w-3" />
-          Add Table
+          Добавить новую модель двери
         </Button>
       </div>
 
@@ -1419,7 +1509,7 @@ function StepTwo({
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
-                    {t("forms.doors_configuration")} - Table {table.id}
+                    {t("forms.doors_configuration")} - Таблица {table.id}
                     <Badge variant="secondary" className="ml-3 px-3 py-1">
                       {tableCurrentDoors.length} {t("forms.doors_added")}
                     </Badge>
@@ -1462,7 +1552,7 @@ function StepTwo({
               </div>
               {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
-                  Select door model first
+                  Выбирете модель двери
                 </p>
               )}
 
@@ -1474,7 +1564,7 @@ function StepTwo({
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                   >
                     <Save className="h-4 w-4" />
-                    Save Table
+                    Сохранит таблицу
                   </Button>
                 </div>
               )}
@@ -1552,7 +1642,7 @@ function StepTwo({
                           />
                         </div>
                       </TableHead>
-                      <TableHead className="min-w-[570px]">
+                      <TableHead className="min-w-[250px]">
                         <div className="space-y-2">
                           <div className="flex items-center gap-1">
                             <span>{t("forms.casings")}</span>
@@ -1832,6 +1922,10 @@ function StepTwo({
                                           ];
                                           updatedExtensions[extIndex] = {
                                             ...updatedExtensions[extIndex],
+                                            model: selectedExtensionProduct
+                                              ? selectedExtensionProduct.id
+                                              : updatedExtensions[extIndex]
+                                                  ?.model || "",
                                             quantity: e.target.value,
                                           };
                                           handleFieldChange(
@@ -1939,6 +2033,10 @@ function StepTwo({
                                           ];
                                           updatedCasings[casIndex] = {
                                             ...updatedCasings[casIndex],
+                                            model: selectedCasingProduct
+                                              ? selectedCasingProduct.id
+                                              : updatedCasings[casIndex]
+                                                  ?.model || "",
                                             quantity: e.target.value,
                                           };
                                           handleFieldChange(
@@ -1985,7 +2083,7 @@ function StepTwo({
                                         }
                                       />
                                     </div>
-                                    <div>
+                                    {/* <div>
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
                                           Formula
@@ -2085,7 +2183,7 @@ function StepTwo({
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                    )}
+                                    )} */}
                                   </div>
                                 </div>
                               ),
@@ -2118,6 +2216,10 @@ function StepTwo({
                                           ];
                                           updatedCrowns[crownIndex] = {
                                             ...updatedCrowns[crownIndex],
+                                            model: selectedCrownProduct
+                                              ? selectedCrownProduct.id
+                                              : updatedCrowns[crownIndex]
+                                                  ?.model || "",
                                             quantity: e.target.value,
                                           };
                                           handleFieldChange(

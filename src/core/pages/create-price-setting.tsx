@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
-import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import {
   type PriceSetting,
@@ -67,9 +66,7 @@ export default function CreatePriceSettingPage() {
     });
   };
 
-  const handleCancel = () => {
-    navigate("/price-settings");
-  };
+
 
   if (isLoadingPriceTypes) {
     return (
@@ -81,30 +78,18 @@ export default function CreatePriceSettingPage() {
 
   return (
     <div className="container mx-auto py-6">
-      <div className="mb-6">
+      <div className="mx-auto">
         <h1 className="text-2xl font-bold">
-          {t("forms.create")} {t("navigation.price_settings")}
+         {t("navigation.price_settings")}
         </h1>
       </div>
 
-      <div className="max-w-md mx-auto">
         <ResourceForm
           fields={fields}
           onSubmit={handleSubmit}
           isSubmitting={isCreating}
-          title={t("forms.create")}
         />
-        <div className="mt-4 flex justify-center">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isCreating}
-          >
-            {t("common.cancel")}
-          </Button>
-        </div>
-      </div>
+        
     </div>
   );
 }

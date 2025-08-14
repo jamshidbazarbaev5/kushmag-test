@@ -46,6 +46,12 @@ export interface UpdateYearlyPlanRequest {
   }[];
 }
 
+export interface YearlyPlanParams {
+  year?: number;
+  user?: number;
+  role?: string;
+}
+
 const YEARLY_PLAN_URL = "yearly-plans/";
 
 export const {

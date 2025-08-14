@@ -29,6 +29,7 @@ export interface DailyPlanParams {
   month?: number;
   day?: number;
   user?: number;
+  role?: string;
 }
 
 const DAILY_PLAN_URL = "daily-plans/";

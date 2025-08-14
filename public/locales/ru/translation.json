@@ -607,6 +607,7 @@
     "select_status": "Выберите статус",
     "select_zamershik": "Выберите замерщика",
     "select_admin": "Выберите администратора",
+    "select_role": "Выберите роль",
     "order_status": "Статус заказа",
     "order_date_after": "Дата заказа с",
     "order_date_before": "Дата заказа по",

@@ -20,6 +20,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CalendarIcon, Target } from "lucide-react";
 import { format } from "date-fns";
 
@@ -27,6 +34,7 @@ export default function YearlyPlansPage() {
   const { t } = useTranslation();
   const [selectedUser] = useState<string>("");
   const [selectedYear] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
   const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
@@ -35,6 +43,7 @@ export default function YearlyPlansPage() {
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
     params: {
       year: 2025,
+      ...(selectedRole && { role: selectedRole }),
     },
   });
   const { data: dailyPlans, isLoading: isDailyLoading } = useGetDailyPlans({
@@ -42,6 +51,7 @@ export default function YearlyPlansPage() {
       year: selectedDate.getFullYear(),
       month: selectedDate.getMonth() + 1,
       day: selectedDate.getDate(),
+      ...(selectedRole && { role: selectedRole }),
     },
   });
   const { mutate: createYearlyPlan } = useCreateYearlyPlan();
@@ -60,6 +70,9 @@ export default function YearlyPlansPage() {
     if (selectedYear && plan.year.toString() !== selectedYear) return false;
     return true;
   });
+
+  // Since role filtering is now handled by the API, we don't need client-side filtering for role
+  const filteredDailyPlans = dailyPlansList;
 
   const formatPercentage = (percentage: number) => {
     return `${percentage.toFixed(1)}%`;
@@ -90,36 +103,62 @@ export default function YearlyPlansPage() {
         </TabsList>
 
         <TabsContent value="yearly" className="space-y-6">
-          {/* View Toggle */}
+          {/* Filters and View Toggle */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium">
-                    {t("yearly_plans.view_mode")}:
-                  </span>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  {/* Role Filter */}
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant={viewMode === "planned" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setViewMode("planned")}
-                      className="flex items-center gap-2"
+                    <span className="text-sm font-medium">
+                      {t("forms.role")}:
+                    </span>
+                    <Select
+                      value={selectedRole || "all"}
+                      onValueChange={(value) => setSelectedRole(value === "all" ? "" : value)}
                     >
-                      <Target className="w-4 h-4" />
-                      {t("yearly_plans.planned_values")}
-                    </Button>
+                      <SelectTrigger className="h-9 min-w-[150px]">
+                        <SelectValue placeholder={t("placeholders.select_role")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                        <SelectItem value="ADMIN">{t("roles.admin")}</SelectItem>
+                        <SelectItem value="PRODAVEC">{t("roles.prodavec")}</SelectItem>
+                        <SelectItem value="ZAMERSHIK">{t("roles.zamershik")}</SelectItem>
+                        <SelectItem value="OPERATOR">{t("roles.operator")}</SelectItem>
+                        <SelectItem value="SOTRUDNIK">{t("roles.sotrudnik")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <Button
-                      variant={
-                        viewMode === "comparison" ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setViewMode("comparison")}
-                      className="flex items-center gap-2"
-                    >
-                      <CalendarIcon className="w-4 h-4" />
-                      {t("yearly_plans.comparison_view")}
-                    </Button>
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {t("yearly_plans.view_mode")}:
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={viewMode === "planned" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setViewMode("planned")}
+                        className="flex items-center gap-2"
+                      >
+                        <Target className="w-4 h-4" />
+                        {t("yearly_plans.planned_values")}
+                      </Button>
+
+                      <Button
+                        variant={
+                          viewMode === "comparison" ? "default" : "outline"
+                        }
+                        size="sm"
+                        onClick={() => setViewMode("comparison")}
+                        className="flex items-center gap-2"
+                      >
+                        <CalendarIcon className="w-4 h-4" />
+                        {t("yearly_plans.comparison_view")}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -210,6 +249,7 @@ export default function YearlyPlansPage() {
                 }}
                 users={usersList
                   .filter((user) => user.id !== undefined)
+                  .filter((user) => !selectedRole || user.role === selectedRole)
                   .map((user) => ({
                     id: user.id!,
                     full_name: user.full_name,
@@ -220,7 +260,7 @@ export default function YearlyPlansPage() {
         </TabsContent>
 
         <TabsContent value="daily" className="space-y-6">
-          {/* Date Selector */}
+          {/* Date Selector and Filters */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -229,19 +269,44 @@ export default function YearlyPlansPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4">
-                <input
-                  type="date"
-                  value={format(selectedDate, "yyyy-MM-dd")}
-                  onChange={(e) => setSelectedDate(new Date(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedDate(new Date())}
-                >
-                  {t("daily_plans.today")}
-                </Button>
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="date"
+                    value={format(selectedDate, "yyyy-MM-dd")}
+                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedDate(new Date())}
+                  >
+                    {t("daily_plans.today")}
+                  </Button>
+                </div>
+
+                {/* Role Filter for Daily Plans */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {t("forms.role")}:
+                  </span>
+                  <Select
+                    value={selectedRole || "all"}
+                    onValueChange={(value) => setSelectedRole(value === "all" ? "" : value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[150px]">
+                      <SelectValue placeholder={t("placeholders.select_role")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("common.all")}</SelectItem>
+                      <SelectItem value="ADMIN">{t("roles.admin")}</SelectItem>
+                      <SelectItem value="PRODAVEC">{t("roles.prodavec")}</SelectItem>
+                      <SelectItem value="ZAMERSHIK">{t("roles.zamershik")}</SelectItem>
+                      <SelectItem value="OPERATOR">{t("roles.operator")}</SelectItem>
+                      <SelectItem value="SOTRUDNIK">{t("roles.sotrudnik")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <p className="text-sm text-gray-600 mt-2">
                 {t("daily_plans.selected_date")}:{" "}
@@ -263,7 +328,7 @@ export default function YearlyPlansPage() {
                 <div className="text-center py-8">
                   <div className="text-lg">{t("common.loading")}</div>
                 </div>
-              ) : dailyPlansList.length === 0 ? (
+              ) : filteredDailyPlans.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">{t("daily_plans.no_data")}</p>
                 </div>
@@ -305,7 +370,7 @@ export default function YearlyPlansPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dailyPlansList.map((plan) => {
+                      {filteredDailyPlans.map((plan) => {
                         const detail = plan.details[0]; // Since we're getting data for a single day
                         return (
                           <TableRow key={plan.user.id}>
