@@ -807,7 +807,7 @@ function StepOne({
                 isSubmitting={isLoading}
                 hideSubmitButton={true}
                 form={orderForm}
-                gridClassName="grid-cols-1 gap-6"
+                gridClassName="md:grid-cols-3 gap-6"
               />
 
               {/* Custom Counterparty Select Field */}
@@ -841,7 +841,7 @@ function StepOne({
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-3 gap-6">
                 {/* Material */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium leading-none">
@@ -2128,8 +2128,9 @@ function StepTwo({
                         {/* Quantity - Always editable */}
                         <TableCell className="align-middle">
                           <Input
-                            type="number"
-                            value={door.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={door.quantity?.toString() || ""}
                             onChange={(e) =>
                               handleFieldChange(
                                 index,
@@ -2263,8 +2264,11 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={extension.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.quantity?.toString() || ""
+                                        }
                                         onChange={(e) => {
                                           const updatedExtensions = [
                                             ...door.extensions,
@@ -2374,8 +2378,11 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={casing.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          casing.quantity?.toString() || ""
+                                        }
                                         onChange={(e) => {
                                           const updatedCasings = [
                                             ...door.casings,
@@ -2557,8 +2564,9 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={crown.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={crown.quantity?.toString() || ""}
                                         onChange={(e) => {
                                           const updatedCrowns = [
                                             ...door.crowns,
@@ -2621,8 +2629,11 @@ function StepTwo({
                         {/* Кубик - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[0]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[0]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -2670,8 +2681,11 @@ function StepTwo({
                         {/* Ножка - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[1]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[1]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -2719,8 +2733,11 @@ function StepTwo({
                         {/* Стекло - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[2]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[2]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -2768,8 +2785,11 @@ function StepTwo({
                         {/* Замок - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[3]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[3]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -2817,8 +2837,11 @@ function StepTwo({
                         {/* Топса - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[4]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[4]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -2866,8 +2889,11 @@ function StepTwo({
                         {/* Шпингалет - Always editable */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
-                            value={door.accessories?.[5]?.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={
+                              door.accessories?.[5]?.quantity?.toString() || ""
+                            }
                             onChange={(e) => {
                               const updatedAccessories = [
                                 ...(door.accessories || []),
@@ -3353,8 +3379,9 @@ function StepThree({
                       {t("forms.discount_amount")} (сум)
                     </label>
                     <Input
-                      type="number"
-                      value={discountAmount || ""}
+                      type="text"
+                      inputMode="decimal"
+                      value={discountAmount?.toString() || ""}
                       onChange={(e) =>
                         handleDiscountAmountChange(e.target.value)
                       }
@@ -3369,9 +3396,9 @@ function StepThree({
                       {t("forms.discount_percentage")} (%)
                     </label>
                     <Input
-                      type="number"
-                      step="0.1"
-                      value={discountPercentage || ""}
+                      type="text"
+                      inputMode="decimal"
+                      value={discountPercentage?.toString() || ""}
                       onChange={(e) =>
                         handleDiscountPercentageChange(e.target.value)
                       }
@@ -3440,8 +3467,9 @@ function StepThree({
                       {t("forms.advance_payment")} (сум)
                     </label>
                     <Input
-                      type="number"
-                      value={advancePayment || ""}
+                      type="text"
+                      inputMode="decimal"
+                      value={advancePayment?.toString() || ""}
                       onChange={(e) =>
                         handleAdvancePaymentChange(e.target.value)
                       }
@@ -3468,8 +3496,9 @@ function StepThree({
                       {t("forms.agreement_amount")} (сум)
                     </label>
                     <Input
-                      type="number"
-                      value={agreementAmountInput || ""}
+                      type="text"
+                      inputMode="decimal"
+                      value={agreementAmountInput?.toString() || ""}
                       onChange={(e) => {
                         let value = e.target.value;
                         // Handle comma as decimal separator

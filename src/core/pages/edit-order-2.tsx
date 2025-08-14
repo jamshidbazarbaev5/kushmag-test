@@ -2189,8 +2189,9 @@ function StepTwo({
                         {/* Quantity - Always editable */}
                         <TableCell className="align-middle">
                           <Input
-                            type="number"
-                            value={door.quantity || ""}
+                            type="text"
+                            inputMode="decimal"
+                            value={door.quantity?.toString() || ""}
                             onChange={(e) =>
                               handleFieldChange(
                                 index,
@@ -2324,8 +2325,11 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={extension.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.quantity?.toString() || ""
+                                        }
                                         onChange={(e) => {
                                           const updatedExtensions = [
                                             ...door.extensions,
@@ -2431,8 +2435,11 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={casing.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          casing.quantity?.toString() || ""
+                                        }
                                         onChange={(e) => {
                                           const updatedCasings = [
                                             ...door.casings,
@@ -2610,8 +2617,9 @@ function StepTwo({
                                         </label>
                                       )}
                                       <Input
-                                        type="number"
-                                        value={crown.quantity || ""}
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={crown.quantity?.toString() || ""}
                                         onChange={(e) => {
                                           const updatedCrowns = [
                                             ...door.crowns,
@@ -2671,11 +2679,14 @@ function StepTwo({
                         {/* Кубик */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "cube",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) => acc.accessory_type === "cube",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(
@@ -2712,11 +2723,14 @@ function StepTwo({
                         {/* Ножка */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "leg",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) => acc.accessory_type === "leg",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(
@@ -2753,11 +2767,14 @@ function StepTwo({
                         {/* Стекло */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "glass",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) => acc.accessory_type === "glass",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(
@@ -2794,11 +2811,14 @@ function StepTwo({
                         {/* Замок */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "lock",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) => acc.accessory_type === "lock",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(
@@ -2835,11 +2855,14 @@ function StepTwo({
                         {/* Топса */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "topsa",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) => acc.accessory_type === "topsa",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(
@@ -2876,11 +2899,15 @@ function StepTwo({
                         {/* Шпингалет */}
                         <TableCell className="align-top">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={
-                              door.accessories?.find(
-                                (acc: any) => acc.accessory_type === "beading",
-                              )?.quantity || ""
+                              door.accessories
+                                ?.find(
+                                  (acc: any) =>
+                                    acc.accessory_type === "beading",
+                                )
+                                ?.quantity?.toString() || ""
                             }
                             onChange={(e) => {
                               const updatedAccessories = updateAccessoryByType(

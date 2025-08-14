@@ -217,7 +217,17 @@ export default function OrdersPage() {
     return params;
   };
 
-  const { data: orders } = useGetOrders({ params: buildQueryParams() });
+  const {
+    data: orders,
+    isLoading,
+    isFetching,
+  } = useGetOrders({ params: buildQueryParams() });
+
+  // Debug logging
+  console.log("Current page:", currentPage);
+  console.log("Query params:", buildQueryParams());
+  console.log("Orders data:", orders);
+  console.log("Is loading:", isLoading, "Is fetching:", isFetching);
   const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
   const { mutate: deleteOrder } = useDeleteOrder();
 
@@ -228,6 +238,13 @@ export default function OrdersPage() {
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const hasNextPage = !Array.isArray(orders) && orders?.next !== null;
   const hasPreviousPage = !Array.isArray(orders) && orders?.previous !== null;
+
+  // Debug logging for pagination
+  console.log("Orders data length:", ordersData.length);
+  console.log("Total count:", totalCount);
+  console.log("Total pages:", totalPages);
+  console.log("Has next page:", hasNextPage);
+  console.log("Has previous page:", hasPreviousPage);
 
   // Extract totals data from API response
   const overallTotals = !Array.isArray(orders) ? orders?.overall_totals : null;
@@ -878,292 +895,318 @@ export default function OrdersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {ordersData.map((order: any, index: number) => (
-              <tr
-                key={order.id}
-                className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
-                onClick={() => handleRowClick(order)}
-              >
-                {visibleColumns.number && (
-                  <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
-                    {(currentPage - 1) * itemsPerPage + index + 1}
-                  </td>
-                )}
-                {visibleColumns.order_status && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div className="truncate" title={formatDate(order.status)}>
-                      {order.order_status
-                        ? t(`order_status.${order.order_status}`)
-                        : "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.moy_sklad_id && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div className="truncate" title={order.name}>
-                      {order.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.client_name && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div className="truncate" title={order.client_name}>
-                      {order.client_name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.client_phone && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div className="truncate" title={order.client_phone}>
-                      {order.client_phone || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.created_at && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div
-                      className="truncate"
-                      title={formatDate(order.created_at)}
-                    >
-                      {formatDate(order.created_at)}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.deadline_date && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div
-                      className="truncate"
-                      title={formatDate(order.deadline_date)}
-                    >
-                      {formatDate(order.deadline_date)}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.counterparty && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate font-medium text-gray-900"
-                      title={order.agent?.name}
-                    >
-                      {order.agent?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.organization && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.organization?.name}
-                    >
-                      {order.organization?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.address && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.address}
-                    >
-                      {order.address || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.total_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
-                    {order.total_amount
-                      ? Number(order.total_amount).toLocaleString()
-                      : "0"}
-                  </td>
-                )}
-                {visibleColumns.advance_payment && (
-                  <td className="px-3 py-2 text-right text-sm text-blue-600">
-                    {order.advance_payment
-                      ? Number(order.advance_payment).toLocaleString()
-                      : "0"}
-                  </td>
-                )}
-                {visibleColumns.discount_amount && (
-                  <td className="px-3 py-2 text-right text-sm text-orange-600">
-                    {order.discount_amount
-                      ? Number(order.discount_amount).toLocaleString()
-                      : "0"}
-                  </td>
-                )}
-                {visibleColumns.discount_percentage && (
-                  <td className="px-3 py-2 text-right text-sm text-purple-600">
-                    {order.discount_percentage
-                      ? `${order.discount_percentage}%`
-                      : "0%"}
-                  </td>
-                )}
-                {visibleColumns.agreement_amount && (
-                  <td className="px-3 py-2 text-right text-sm text-indigo-600">
-                    {order.agreement_amount
-                      ? Number(order.agreement_amount).toLocaleString()
-                      : "0"}
-                  </td>
-                )}
-                {visibleColumns.remaining_balance && (
-                  <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
-                    {order.remaining_balance
-                      ? Number(order.remaining_balance).toLocaleString()
-                      : "0"}
-                  </td>
-                )}
-                {visibleColumns.project && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.project?.name}
-                    >
-                      {order.project?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.store && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.store?.name}
-                    >
-                      {order.store?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.sales_channel && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.salesChannel?.name}
-                    >
-                      {order.salesChannel?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.description && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-600"
-                      title={order?.description}
-                    >
-                      {formatToTruncate(order?.description)}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.seller && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.seller?.name}
-                    >
-                      {order.seller?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.zamershik && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.zamershik?.name}
-                    >
-                      {order.zamershik?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.admin && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.admin?.name}
-                    >
-                      {order.admin?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.operator && (
-                  <td className="px-3 py-2 text-sm">
-                    <div
-                      className="truncate text-gray-700"
-                      title={order.operator?.name}
-                    >
-                      {order.operator?.name || "-"}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.measure_date && (
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    <div
-                      className="truncate"
-                      title={formatDate(order.measure_date)}
-                    >
-                      {formatDate(order.measure_date)}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.actions && (
-                  <td
-                    className="px-3 py-2 relative"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex justify-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 px-2"
-                        onClick={() =>
-                          setOpenActionMenu(
-                            openActionMenu === order.id ? null : order.id,
-                          )
-                        }
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-
-                      {openActionMenu === order.id && (
-                        <div
-                          ref={menuRef}
-                          className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-36"
-                        >
-                          <div className="py-1">
-                            <button
-                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={() => {
-                                navigate(`/orders/edit/${order.id}`);
-                                setOpenActionMenu(null);
-                              }}
-                            >
-                              <Pencil className="h-4 w-4 mr-2" />
-                              {t("common.edit")}
-                            </button>
-                            <button
-                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              onClick={() => {
-                                handleExportOrder(order);
-                                setOpenActionMenu(null);
-                              }}
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              {t("common.export")}
-                            </button>
-                            <button
-                              className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                              onClick={() => {
-                                handleDeleteClick(order);
-                                setOpenActionMenu(null);
-                              }}
-                            >
-                              <Trash className="h-4 w-4 mr-2" />
-                              {t("common.delete")}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                )}
+            {isLoading || isFetching ? (
+              <tr>
+                <td
+                  colSpan={Object.values(visibleColumns).filter(Boolean).length}
+                  className="px-3 py-8 text-center text-gray-500"
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="ml-2">{t("common.loading")}</span>
+                  </div>
+                </td>
               </tr>
-            ))}
+            ) : ordersData.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={Object.values(visibleColumns).filter(Boolean).length}
+                  className="px-3 py-8 text-center text-gray-500"
+                >
+                  {t("common.no_data")}
+                </td>
+              </tr>
+            ) : (
+              ordersData.map((order: any, index: number) => (
+                <tr
+                  key={order.id}
+                  className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                  onClick={() => handleRowClick(order)}
+                >
+                  {visibleColumns.number && (
+                    <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
+                  )}
+                  {visibleColumns.order_status && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div
+                        className="truncate"
+                        title={formatDate(order.status)}
+                      >
+                        {order.order_status
+                          ? t(`order_status.${order.order_status}`)
+                          : "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.moy_sklad_id && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div className="truncate" title={order.name}>
+                        {order.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.client_name && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div className="truncate" title={order.client_name}>
+                        {order.client_name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.client_phone && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div className="truncate" title={order.client_phone}>
+                        {order.client_phone || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.created_at && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div
+                        className="truncate"
+                        title={formatDate(order.created_at)}
+                      >
+                        {formatDate(order.created_at)}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.deadline_date && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div
+                        className="truncate"
+                        title={formatDate(order.deadline_date)}
+                      >
+                        {formatDate(order.deadline_date)}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.counterparty && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate font-medium text-gray-900"
+                        title={order.agent?.name}
+                      >
+                        {order.agent?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.organization && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.organization?.name}
+                      >
+                        {order.organization?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.address && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.address}
+                      >
+                        {order.address || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.total_amount && (
+                    <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
+                      {order.total_amount
+                        ? Number(order.total_amount).toLocaleString()
+                        : "0"}
+                    </td>
+                  )}
+                  {visibleColumns.advance_payment && (
+                    <td className="px-3 py-2 text-right text-sm text-blue-600">
+                      {order.advance_payment
+                        ? Number(order.advance_payment).toLocaleString()
+                        : "0"}
+                    </td>
+                  )}
+                  {visibleColumns.discount_amount && (
+                    <td className="px-3 py-2 text-right text-sm text-orange-600">
+                      {order.discount_amount
+                        ? Number(order.discount_amount).toLocaleString()
+                        : "0"}
+                    </td>
+                  )}
+                  {visibleColumns.discount_percentage && (
+                    <td className="px-3 py-2 text-right text-sm text-purple-600">
+                      {order.discount_percentage
+                        ? `${order.discount_percentage}%`
+                        : "0%"}
+                    </td>
+                  )}
+                  {visibleColumns.agreement_amount && (
+                    <td className="px-3 py-2 text-right text-sm text-indigo-600">
+                      {order.agreement_amount
+                        ? Number(order.agreement_amount).toLocaleString()
+                        : "0"}
+                    </td>
+                  )}
+                  {visibleColumns.remaining_balance && (
+                    <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
+                      {order.remaining_balance
+                        ? Number(order.remaining_balance).toLocaleString()
+                        : "0"}
+                    </td>
+                  )}
+                  {visibleColumns.project && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.project?.name}
+                      >
+                        {order.project?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.store && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.store?.name}
+                      >
+                        {order.store?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.sales_channel && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.salesChannel?.name}
+                      >
+                        {order.salesChannel?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.description && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-600"
+                        title={order?.description}
+                      >
+                        {formatToTruncate(order?.description)}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.seller && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.seller?.name}
+                      >
+                        {order.seller?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.zamershik && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.zamershik?.name}
+                      >
+                        {order.zamershik?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.admin && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.admin?.name}
+                      >
+                        {order.admin?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.operator && (
+                    <td className="px-3 py-2 text-sm">
+                      <div
+                        className="truncate text-gray-700"
+                        title={order.operator?.name}
+                      >
+                        {order.operator?.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.measure_date && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div
+                        className="truncate"
+                        title={formatDate(order.measure_date)}
+                      >
+                        {formatDate(order.measure_date)}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.actions && (
+                    <td
+                      className="px-3 py-2 relative"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex justify-center">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2"
+                          onClick={() =>
+                            setOpenActionMenu(
+                              openActionMenu === order.id ? null : order.id,
+                            )
+                          }
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+
+                        {openActionMenu === order.id && (
+                          <div
+                            ref={menuRef}
+                            className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-36"
+                          >
+                            <div className="py-1">
+                              <button
+                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => {
+                                  navigate(`/orders/edit/${order.id}`);
+                                  setOpenActionMenu(null);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4 mr-2" />
+                                {t("common.edit")}
+                              </button>
+                              <button
+                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => {
+                                  handleExportOrder(order);
+                                  setOpenActionMenu(null);
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                {t("common.export")}
+                              </button>
+                              <button
+                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                onClick={() => {
+                                  handleDeleteClick(order);
+                                  setOpenActionMenu(null);
+                                }}
+                              >
+                                <Trash className="h-4 w-4 mr-2" />
+                                {t("common.delete")}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))
+            )}
 
             {/* Overall Totals Row */}
             {overallTotals && (
@@ -1310,7 +1353,13 @@ export default function OrdersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => {
+                console.log(
+                  "Previous page clicked, current page:",
+                  currentPage,
+                );
+                setCurrentPage((prev) => Math.max(1, prev - 1));
+              }}
               disabled={!hasPreviousPage && currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -1327,7 +1376,10 @@ export default function OrdersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage((prev) => prev + 1)}
+              onClick={() => {
+                console.log("Next page clicked, current page:", currentPage);
+                setCurrentPage((prev) => prev + 1);
+              }}
               disabled={!hasNextPage && currentPage >= totalPages}
             >
               {t("pagination.next")}
