@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
-import type { Order, OrdersResponse } from "../api/order";
+import type { Order } from "../api/order";
 import {
   useGetProjects,
   useGetStores,
