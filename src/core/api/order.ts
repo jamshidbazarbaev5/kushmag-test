@@ -82,6 +82,22 @@ export interface Order {
   doors: Door[];
 }
 
+export interface OrderTotals {
+  total_discount_amount: number;
+  total_total_amount: number;
+  total_advance_payment: number;
+  total_remaining_balance: number;
+}
+
+export interface OrdersResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Order[];
+  overall_totals?: OrderTotals;
+  page_totals?: OrderTotals;
+}
+
 const ORDER_URL = "orders/";
 
 export const {
@@ -90,7 +106,7 @@ export const {
   useCreateResource: useCreateOrder,
   useUpdateResource: useUpdateOrder,
   useDeleteResource: useDeleteOrder,
-} = createResourceApiHooks<Order>(ORDER_URL, "orders");
+} = createResourceApiHooks<Order, OrdersResponse>(ORDER_URL, "orders");
 
 // Add calculate order functionality
 import { useMutation } from "@tanstack/react-query";

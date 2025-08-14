@@ -35,7 +35,8 @@
     "show_columns": "Báganaları kórsetиw",
     "toggle_columns": "Báganaları almaştırıw",
     "done": "Tayın",
-    "total": "jámi"
+    "total": "jámi",
+    "current_formula": "Házirgi formula"
   },
   "roles": {
     "admin": "Administrator",
@@ -256,6 +257,8 @@
     "casing_range": "Qutı aralıǵı",
     "formula_1": "Formula 1",
     "formula_2": "Formula 2",
+    "formula_1_description": "Qutı biyikligin esaplaw esik ólshemleri hám qutı ólshemi negizinde",
+    "formula_2_description": "Qutı biyikligin esaplaw salınǵan qutı aralıǵı negizinde",
     "range": "Aralıq",
     "casing_size": "Qutı ólshemi",
     "casing_type_side": "Yan",

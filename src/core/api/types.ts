@@ -37,6 +37,7 @@ export interface AttributeSettings {
   id: number;
   casing_size: number;
   crown_size: number;
+  casing_formula: boolean;
 }
 
 export interface Color {

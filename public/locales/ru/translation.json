@@ -22,6 +22,7 @@
     "next_step": "Следующий шаг",
     "back": "Назад",
     "review_order": "Обзор заказа",
+    "current_formula": "Текущая формула",
 
     "search": "Поиск",
     "search_placeholder": "Введите текст для поиска",
@@ -381,6 +382,8 @@
     "casing_range": "Диапазон наличника",
     "formula_1": "Формула 1",
     "formula_2": "Формула 2",
+    "formula_1_description": "Расчет высоты наличника на основе размеров двери и размера наличника",
+    "formula_2_description": "Расчет высоты наличника на основе выбранного диапазона наличника",
     "range": "Диапазон",
     "casing_size": "Размер наличника",
     "casing_type_side": "Боковой",
@@ -568,7 +571,8 @@
     "select_crown_model": "Выберите модель короны",
     "select_casing_model": "Поиск модели наличника",
     "select_branch": "Выберите филиал",
-
+    "search_attribute_settings":"Поиск настроек атрибутов",
+    "search_price_setting":"Поиск настроек цен",
     "select_accessory_model": "Выберите модель аксессуара",
     "select_accessory_type": "Выберите тип аксессуара",
     "select_extension_model": "Выберите модель добора",

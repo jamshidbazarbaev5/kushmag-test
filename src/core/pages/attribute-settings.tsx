@@ -23,6 +23,19 @@ const attributeSettingsFields = (t: any) => [
     placeholder: t('placeholders.enter_crown_size'),
     required: true,
   },
+  {
+    name: 'casing_formula',
+    label: t('forms.casing_formula'),
+    type: 'select',
+    // step: '0.01',
+    placeholder: t('placeholders.enter_crown_size'),
+    options:[
+      { value: 'true', label: t('forms.formula_1') },
+      { value: 'false', label: t('forms.formula_2') },
+    ],
+    required: true,
+  },
+  
 ];
 
 export default function AttributeSettingsPage() {
@@ -85,6 +98,10 @@ export default function AttributeSettingsPage() {
           <div>
             <label className="font-medium">{t('forms.crown_size')}</label>
             <p>{attributeSettings.crown_size}</p>
+          </div>
+          <div>
+            <label className="font-medium">{t('forms.casing_formula')}</label>
+            <p>{attributeSettings.casing_formula ? t('forms.formula_1') : t('forms.formula_2')}</p>
           </div>
         </div>
       </div>
