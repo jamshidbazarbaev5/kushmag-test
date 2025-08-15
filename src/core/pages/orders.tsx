@@ -357,11 +357,30 @@ export default function OrdersPage() {
     });
   };
 
-  const handleExportOrder = (order: Order) => {
+  const handleExportOrder = async (order: Order) => {
     if (!order.id) return;
 
-    const exportUrl = `https://kushmag.uz/api/orders/${order.id}/export/`;
-    window.open(exportUrl, "_blank");
+    try {
+      const response = await api.get(`/orders/${order.id}/export/`, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/octet-stream",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `order_${order.id}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting order:", error);
+      toast.error("Failed to export order");
+    }
   };
 
   const handleRowClick = (order: Order) => {

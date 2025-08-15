@@ -165,6 +165,7 @@ export default function EditOrderPage() {
     : attributeSettings?.results || [];
   const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
   const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
+  const casingFormula = attributeSettingsArray[0]?.casing_formula ?? true; // Default to true (formula 1)
 
   const orderForm = useForm();
 
@@ -466,9 +467,7 @@ export default function EditOrderPage() {
       : casingRanges?.results || []
     ).map((range) => ({
       value: String(range.id), // Convert to string for Select component
-      label: `$ ${range.id} (${range.min_size}-${range.max_size}, ${t(
-        "forms.casing_size",
-      )}: ${range.casing_size})`,
+      label: `${range.casing_size}`,
       ...range,
     })),
   };
@@ -479,6 +478,7 @@ export default function EditOrderPage() {
     "Formatted Casing Range Options:",
     fieldOptions.casingRangeOptions,
   );
+  console.log("Casing Formula from API:", casingFormula);
 
   const orderFields = [
     {
@@ -570,6 +570,19 @@ export default function EditOrderPage() {
 
   // --- API-based Calculation Function ---
   const handleCalculateOrder = () => {
+    // First, apply global door settings to all doors
+    const updatedDoors = doors.map((door: any) => ({
+      ...door,
+      material: globalDoorSettings.material,
+      material_type: globalDoorSettings.material_type,
+      massif: globalDoorSettings.massif,
+      color: globalDoorSettings.color,
+      patina_color: globalDoorSettings.patina_color,
+      beading_main: globalDoorSettings.beading_main,
+      beading_additional: globalDoorSettings.beading_additional,
+    }));
+    setDoors(updatedDoors);
+
     const orderData = orderForm.getValues();
 
     // Prepare order data for calculation
@@ -589,7 +602,7 @@ export default function EditOrderPage() {
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
       zamershik: getMetaById(zamershiks, orderData.zamershik),
-      doors: doors.map((door: any) => ({
+      doors: updatedDoors.map((door: any) => ({
         ...door,
         model: getProductById(productsList, door.model),
         extensions: door.extensions?.map((ext: any) => ({
@@ -795,6 +808,7 @@ export default function EditOrderPage() {
             orderForm={orderForm}
             casingSize={casingSize}
             crownSize={crownSize}
+            casingFormula={casingFormula}
           />
 
           <StepThree
@@ -831,8 +845,8 @@ function StepOne({
   globalDoorSettings,
   setGlobalDoorSettings,
   fieldOptions,
-  doors,
-  setDoors,
+  // doors,
+  // setDoors,
 }: any) {
   const { t } = useTranslation();
 
@@ -1146,44 +1160,26 @@ function StepOne({
             </div> */}
               </div>
 
-              {/* Apply to All Doors Button */}
-              {doors.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center justify-between">
+              {/* Informative message about automatic material application */}
+              {/* {doors.length > 0 && (
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Calculator className="h-5 w-5 text-green-600" />
+                    </div>
                     <div>
-                      <h4 className="text-sm font-medium text-blue-900">
-                        {t("forms.apply_to_all_doors")}
+                      <h4 className="text-sm font-medium text-green-900">
+                        {t("forms.automatic_material_application")}
                       </h4>
-                      <p className="text-xs text-blue-700 mt-1">
-                        {t("forms.apply_to_all_doors_description")}
+                      <p className="text-xs text-green-700 mt-1">
+                        When you click "Calculate & Apply Materials", the
+                        material settings above will be automatically applied to
+                        all doors before calculation.
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const updatedDoors = doors.map((door: any) => ({
-                          ...door,
-                          material: globalDoorSettings.material,
-                          material_type: globalDoorSettings.material_type,
-                          massif: globalDoorSettings.massif,
-                          color: globalDoorSettings.color,
-                          patina_color: globalDoorSettings.patina_color,
-                          beading_main: globalDoorSettings.beading_main,
-                          beading_additional:
-                            globalDoorSettings.beading_additional,
-                          // glass_type: globalDoorSettings.glass_type,
-                          // threshold: globalDoorSettings.threshold,
-                        }));
-                        setDoors(updatedDoors);
-                      }}
-                      className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                    >
-                      {t("forms.apply_to_all")}
-                    </Button>
                   </div>
                 </div>
-              )}
+              )} */}
             </CardContent>
           </Card>
         </div>
@@ -1200,6 +1196,7 @@ function StepTwo({
   orderForm,
   casingSize,
   crownSize,
+  casingFormula,
 }: any) {
   const { t } = useTranslation();
 
@@ -1255,23 +1252,24 @@ function StepTwo({
     doorData: any,
     fieldOptions: any,
     casingSize: number,
+    useApiFormula: boolean,
   ) => {
     if (!doorData) return casing;
 
     const doorWidth = convertToNumber(doorData.width, 0);
     const doorHeight = convertToNumber(doorData.height, 0);
 
-    // Auto-calculate height based on formula
-    if (casing.casing_formula === "formula2" && casing.casing_range) {
-      // Find the selected casing range object to get its casing_size
+    // Auto-calculate height based on API casing_formula setting
+    if (!useApiFormula && casing.casing_range) {
+      // Formula 2: Use casing ranges when casing_formula is false
       const selectedRange = fieldOptions.casingRangeOptions?.find(
         (range: any) => range.value === String(casing.casing_range),
       );
       if (selectedRange && selectedRange.casing_size !== undefined) {
         casing.height = selectedRange.casing_size;
       }
-    } else if (casing.casing_formula === "formula1" || !casing.casing_formula) {
-      // Original logic using door dimensions
+    } else {
+      // Formula 1: Use door dimensions when casing_formula is true
       if (casing.casing_type === "боковой") {
         casing.height = doorHeight + casingSize;
       } else if (casing.casing_type === "прямой") {
@@ -1570,7 +1568,6 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "боковой",
-        casing_formula: "formula1",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1585,7 +1582,6 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "прямой",
-        casing_formula: "formula1",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1706,6 +1702,17 @@ function StepTwo({
       accessories: defaultAccessories,
     };
 
+    // Calculate casing dimensions after door is created
+    newDoor.casings = newDoor.casings.map((casing: any) =>
+      calculateCasingDimensions(
+        { ...casing },
+        newDoor,
+        fieldOptions,
+        casingSize,
+        casingFormula,
+      ),
+    );
+
     // Add door to target table
     const updatedTables = tables.map((table) => {
       if (table.id === targetTableId) {
@@ -1792,6 +1799,7 @@ function StepTwo({
                 updatedDoor,
                 fieldOptions,
                 casingSize,
+                casingFormula,
               ),
             );
           }
@@ -1983,7 +1991,6 @@ function StepTwo({
                                     : 0,
                                   quantity: 1,
                                   casing_type: "боковой",
-                                  casing_formula: "formula1",
                                   casing_range: "",
                                   height: 0,
                                   width: casingSize,
@@ -2001,7 +2008,6 @@ function StepTwo({
                                     : 0,
                                   quantity: 1,
                                   casing_type: "прямой",
-                                  casing_formula: "formula1",
                                   casing_range: "",
                                   height: 0,
                                   width: casingSize,
@@ -2143,6 +2149,18 @@ function StepTwo({
                                 crowns: defaultCrowns,
                                 accessories: defaultAccessories,
                               };
+
+                              // Calculate casing dimensions after door is created
+                              newDoor.casings = newDoor.casings.map(
+                                (casing: any) =>
+                                  calculateCasingDimensions(
+                                    { ...casing },
+                                    newDoor,
+                                    fieldOptions,
+                                    casingSize,
+                                    casingFormula,
+                                  ),
+                              );
                               newDoors = [newDoor];
                             }
 
@@ -2703,69 +2721,24 @@ function StepTwo({
                                           );
                                         }}
                                         className="h-8"
-                                        placeholder="Auto-calc"
-                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                        disabled={
-                                          casing.casing_formula === "formula2"
+                                        placeholder={
+                                          casingFormula ? "Auto-calc" : "Manual"
                                         }
+                                        // title={
+                                        //   casingFormula
+                                        //     ? `Formula 1: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`
+                                        //     : "Formula 2: Height set by selected range"
+                                        // }
+                                        disabled={!casingFormula}
                                       />
                                     </div>
-                                    {/* <div>
-                                      {casIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Formula
-                                        </label>
-                                      )}
-                                      <Select
-                                        value={
-                                          casing.casing_formula || "formula1"
-                                        }
-                                        onValueChange={(value) => {
-                                          const updatedCasings = [
-                                            ...door.casings,
-                                          ];
-                                          const updatedCasing = {
-                                            ...updatedCasings[casIndex],
-                                            casing_formula: value,
-                                          };
-                                          if (value === "formula1") {
-                                            updatedCasing.casing_range = "";
-                                          }
-                                          const recalculatedCasing =
-                                            calculateCasingDimensions(
-                                              updatedCasing,
-                                              door,
-                                              fieldOptions,
-                                              casingSize,
-                                            );
-                                          updatedCasings[casIndex] =
-                                            recalculatedCasing;
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "casings",
-                                            updatedCasings,
-                                          );
-                                        }}
-                                      >
-                                        <SelectTrigger className="h-8">
-                                          <SelectValue placeholder="Formula" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
-                                          <SelectItem value="formula1">
-                                            Formula 1
-                                          </SelectItem>
-                                          <SelectItem value="formula2">
-                                            Formula 2
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div> */}
-                                    {/* {casing.casing_formula === "formula2" && (
+                                    {!casingFormula && (
                                       <div>
-                                        <label className="text-xs text-gray-600">
-                                          Диапазон
-                                        </label>
+                                        {casIndex === 0 && (
+                                          <label className="text-xs text-gray-600 bg-yellow-100 px-1 rounded">
+                                            Диапазон
+                                          </label>
+                                        )}
                                         <Select
                                           value={casing.casing_range || ""}
                                           onValueChange={(value) => {
@@ -2782,6 +2755,7 @@ function StepTwo({
                                                 door,
                                                 fieldOptions,
                                                 casingSize,
+                                                casingFormula,
                                               );
                                             updatedCasings[casIndex] =
                                               recalculatedCasing;
@@ -2803,12 +2777,17 @@ function StepTwo({
                                                   key={option.value}
                                                   value={option.value}
                                                 >
-                                                  {option.casing_size}
+                                                  {option.label}
                                                 </SelectItem>
                                               ),
                                             )}
                                           </SelectContent>
                                         </Select>
+                                      </div>
+                                    )}
+                                    {/* {casingFormula && casIndex === 0 && (
+                                      <div className="text-xs text-blue-600 bg-blue-50 px-1 rounded mt-1">
+                                        Formula 1: Auto-calculated
                                       </div>
                                     )} */}
                                   </div>
@@ -3568,7 +3547,7 @@ function StepThree({
                   ) : (
                     <>
                       <Calculator className="h-4 w-4 mr-2" />
-                      {t("forms.calculate")}
+                        {t("forms.calculate")}
                     </>
                   )}
                 </Button>
@@ -3732,21 +3711,10 @@ function StepThree({
                             setDiscountAmount(totalDiscountAmount);
                           }}
                         />
-                        <span className="text-xs text-gray-500 mt-1 block">
-                          {t("forms.agreement_amount")}
-                        </span>
+                       
                       </div>
                     </div>
-                    {agreementAmountInput > 0 && (
-                      <p className="text-sm text-blue-600">
-                        {t("forms.agreement_amount")}:{" "}
-                        {agreementAmountInput.toFixed(0)} сум
-                        <br />
-                        <span className="text-xs text-gray-500">
-                          {t("forms.agreement_amount_description")}
-                        </span>
-                      </p>
-                    )}
+                   
                   </div>
                 </div>
               </div>

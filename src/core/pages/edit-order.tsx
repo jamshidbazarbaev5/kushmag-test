@@ -500,6 +500,19 @@ export default function CreateOrderPage() {
 
   // --- API-based Calculation Function ---
   const handleCalculateOrder = () => {
+    // First, apply global door settings to all doors
+    const updatedDoors = doors.map((door: any) => ({
+      ...door,
+      material: globalDoorSettings.material,
+      material_type: globalDoorSettings.material_type,
+      massif: globalDoorSettings.massif,
+      color: globalDoorSettings.color,
+      patina_color: globalDoorSettings.patina_color,
+      beading_main: globalDoorSettings.beading_main,
+      beading_additional: globalDoorSettings.beading_additional,
+    }));
+    setDoors(updatedDoors);
+
     const orderData = orderForm.getValues();
 
     // Prepare order data for calculation
@@ -518,7 +531,7 @@ export default function CreateOrderPage() {
       operator: getMetaById(operators, orderData.operator),
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
-      doors: doors.map((door: any) => ({
+      doors: updatedDoors.map((door: any) => ({
         ...door,
         model: getProductById(productsList, door.model),
         extensions: door.extensions?.map((ext: any) => ({
@@ -771,8 +784,8 @@ function StepOne({
   globalDoorSettings,
   setGlobalDoorSettings,
   fieldOptions,
-  doors,
-  setDoors,
+  // doors,
+  // setDoors,
 }: any) {
   const { t } = useTranslation();
 
@@ -1117,45 +1130,27 @@ function StepOne({
                 </SelectContent>
               </Select>
             </div> */}
-                {/* Apply to All Doors Button */}
+                {/* Informative message about automatic material application */}
               </div>
-              {doors?.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center justify-between">
+              {/* {doors?.length > 0 && (
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Calculator className="h-5 w-5 text-green-600" />
+                    </div>
                     <div>
-                      <h4 className="text-sm font-medium text-blue-900">
-                        {t("forms.apply_to_all_doors")}
+                      <h4 className="text-sm font-medium text-green-900">
+                        {t("forms.automatic_material_application")}
                       </h4>
-                      <p className="text-xs text-blue-700 mt-1">
-                        {t("forms.apply_to_all_doors_description")}
+                      <p className="text-xs text-green-700 mt-1">
+                        When you click "Calculate & Apply Materials", the
+                        material settings above will be automatically applied to
+                        all doors before calculation.
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const updatedDoors = doors.map((door: any) => ({
-                          ...door,
-                          material: globalDoorSettings.material,
-                          material_type: globalDoorSettings.material_type,
-                          massif: globalDoorSettings.massif,
-                          color: globalDoorSettings.color,
-                          patina_color: globalDoorSettings.patina_color,
-                          beading_main: globalDoorSettings.beading_main,
-                          beading_additional:
-                            globalDoorSettings.beading_additional,
-                          // glass_type: globalDoorSettings.glass_type,
-                          // threshold: globalDoorSettings.threshold,
-                        }));
-                        setDoors(updatedDoors);
-                      }}
-                      className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                    >
-                      {t("forms.apply_to_all")}
-                    </Button>
                   </div>
                 </div>
-              )}
+              )} */}
             </CardContent>
           </Card>
         </div>
@@ -3107,7 +3102,7 @@ function HeaderSearch({
 }
 // Accessory Manager Component for managing extensions, casings, crowns, and accessories
 
-function StepThree({
+function  StepThree({
   orderForm,
   doors,
   totals,
@@ -3323,7 +3318,7 @@ function StepThree({
                   ) : (
                     <>
                       <Calculator className="h-4 w-4 mr-2" />
-                      {t("forms.calculate")}
+                   {t("forms.calculate")}
                     </>
                   )}
                 </Button>

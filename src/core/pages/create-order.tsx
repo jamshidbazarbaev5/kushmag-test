@@ -1587,7 +1587,9 @@ function StepTwo({
                                       : 0,
                                     quantity: 1,
                                     casing_type: "боковой",
-                                    casing_formula: casingFormula ? "formula1" : "formula2",
+                                    casing_formula: casingFormula
+                                      ? "formula1"
+                                      : "formula2",
                                     casing_range: "",
                                     height: 0,
                                     width: casingSize,
@@ -1605,7 +1607,9 @@ function StepTwo({
                                       : 0,
                                     quantity: 1,
                                     casing_type: "прямой",
-                                    casing_formula: casingFormula ? "formula1" : "formula2",
+                                    casing_formula: casingFormula
+                                      ? "formula1"
+                                      : "formula2",
                                     casing_range: "",
                                     height: 0,
                                     width: casingSize,
@@ -2277,9 +2281,7 @@ function StepTwo({
                                         className="h-8"
                                         placeholder="Auto-calc"
                                         title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                        disabled={
-                                          !casingFormula
-                                        }
+                                        disabled={!casingFormula}
                                       />
                                     </div>
                                     {/* Show formula info for reference */}
@@ -3401,7 +3403,7 @@ function StepThree({
                   <Calculator className="h-4 w-4" />
                   {isCalculating
                     ? t("forms.calculating")
-                    : t("forms.calculate")}
+                    : "Calculate & Apply Materials"}
                 </Button>
               </div>
             </CardContent>
