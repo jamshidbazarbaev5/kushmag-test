@@ -1903,7 +1903,7 @@ function StepTwo({
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
-                    {t("forms.doors_configuration")} - Table {table.id}
+                    {/* {t("forms.doors_configuration")} - Table {table.id}
                     <Badge variant="secondary" className="ml-3 px-3 py-1">
                       {tableCurrentDoors.length} {t("forms.doors_added")}
                     </Badge>
@@ -1914,11 +1914,11 @@ function StepTwo({
                       >
                         {table.doorModel.name}
                       </Badge>
-                    )}
+                    )} */}
                   </CardTitle>
-                  <p className="text-gray-600 mt-2">
-                    {t("forms.add_doors_description")}
-                  </p>
+                    {/* <p className="text-gray-600 mt-2">
+                      {t("forms.add_doors_description")}
+                    </p> */}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1944,11 +1944,11 @@ function StepTwo({
                   )}
                 </div>
               </div>
-              {!table.doorModel && (
+              {/* {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
                   Select door model first
                 </p>
-              )}
+              )} */}
 
               {/* Single Save Button for entire table */}
               {tableCurrentDoors.length > 0 && (

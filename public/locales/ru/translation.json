@@ -234,8 +234,11 @@
     "edit": "Редактировать"
   },
 
+
   "forms": {
+    "quantity_of":"Кол-во",
     "date": "Дата",
+    "quantity_of":"Кол-во",
     "search_counterparty": "Поиск контрагента",
     "search_doors": "Поиск двери",
     "agreement": "Соглашение",

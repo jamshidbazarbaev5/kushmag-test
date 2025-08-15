@@ -370,7 +370,7 @@ export default function CreateOrderPage() {
     {
       name: "description",
       label: t("forms.description"),
-      type: "textarea",
+      type: "text",
       placeholder: t("placeholders.enter_description"),
     },
   ];
@@ -740,9 +740,9 @@ export default function CreateOrderPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {t("pages.create_order")}
               </h1>
-              <p className="text-gray-600">
+              {/* <p className="text-gray-600">
                 {t("forms.create_order_description")}
-              </p>
+              </p> */}
             </div>
             <Button
               variant="outline"
@@ -814,21 +814,12 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 </div>
                 {t("forms.order_information")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.basic_order_info_description")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-              <ResourceForm
-                fields={orderFields}
-                onSubmit={() => {}}
-                isSubmitting={isLoading}
-                hideSubmitButton={true}
-                form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
-              />
-
-              {/* Custom Counterparty Select Field */}
+                {/* Custom Counterparty Select Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   {t("forms.agent")} *
@@ -840,6 +831,16 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                   required={true}
                 />
               </div>
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="md:grid-cols-3 gap-6"
+              />
+
+            
             </CardContent>
           </Card>
         </div>
@@ -854,10 +855,10 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 </div>
                 {t("forms.material_attributes")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.material_attributes_description")} -{" "}
                 {t("forms.applies_to_all_doors")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
               <ResourceForm
@@ -866,7 +867,7 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 isSubmitting={isLoading}
                 hideSubmitButton={true}
                 form={orderForm}
-                gridClassName="grid-cols-3 gap-6"
+                gridClassName="md:grid-cols-3 gap-6"
               />
             </CardContent>
           </Card>
@@ -1509,7 +1510,6 @@ function StepTwo({
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
-                    {t("forms.doors_configuration")} - Таблица {table.id}
                   </CardTitle>
 
                   <div className="flex items-center gap-2">
@@ -1566,11 +1566,11 @@ function StepTwo({
                   </Button>
                 )}
               </div>
-              {!table.doorModel && (
+              {/* {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
                   Выбирете модель двери
                 </p>
-              )}
+              )} */}
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="rounded-lg border overflow-x-auto relative">
@@ -1579,7 +1579,7 @@ function StepTwo({
                     <TableRow className="bg-gray-50">
                       <TableHead className="w-12">#</TableHead>
                       <TableHead className="w-16">
-                        {t("forms.quantity")}
+                        {t("forms.quantity_of")}
                       </TableHead>
                       <TableHead className="w-20">
                         {t("forms.height")}
@@ -1609,7 +1609,7 @@ function StepTwo({
                           />
                         </div>
                       </TableHead>
-                      <TableHead className="min-w-[250px]">
+                      <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
                           <div className="flex items-center gap-1">
                             <span>{t("forms.casings")}</span>
@@ -1773,7 +1773,7 @@ function StepTwo({
                                 e.target.value,
                               )
                             }
-                            className="w-16"
+                            className="w-15"
                           />
                         </TableCell>
 
@@ -2003,7 +2003,7 @@ function StepTwo({
                                   key={casIndex}
                                   className="bg-green-50 p-2 rounded border space-y-1"
                                 >
-                                  <div className="grid grid-cols-4 gap-1">
+                                  <div className="flex items-center justify-between gap-1">
                                     <div>
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
@@ -2258,7 +2258,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Кубик - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2303,14 +2303,14 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
                         </TableCell>
 
                         {/* Ножка - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2355,14 +2355,14 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
                         </TableCell>
 
                         {/* Стекло - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2407,14 +2407,14 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
                         </TableCell>
 
                         {/* Замок - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2459,14 +2459,14 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
                         </TableCell>
 
                         {/* Топса - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2511,14 +2511,14 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
                         </TableCell>
 
                         {/* Шпингалет - Always editable */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2563,7 +2563,7 @@ function StepTwo({
                                 updatedAccessories,
                               );
                             }}
-                            className="w-16"
+                            className="w-45"
                             placeholder="Кол-во"
                             min="0"
                           />
@@ -2894,7 +2894,7 @@ function StepThree({
               </div>
 
               {/* Door Details */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.door_details")}
                 </h4>
@@ -2923,7 +2923,7 @@ function StepThree({
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </div>
@@ -2934,28 +2934,18 @@ function StepThree({
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-xl">
                 <span>{t("forms.pricing_summary")}</span>
-                <Button
-                  onClick={onCalculate}
-                  disabled={isCalculating || doors.length === 0}
-                  className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                  size="sm"
-                >
-                  <Calculator className="h-4 w-4" />
-                  {isCalculating
-                    ? t("forms.calculating")
-                    : t("forms.calculate")}
-                </Button>
+               
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Discount and Payment Fields */}
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold text-gray-800">
-                  {t("forms.discount")} & {t("forms.advance_payment")} &
+                  {/* {t("forms.discount")} & {t("forms.advance_payment")} & */}
                   {/* Additional Agreement Discount */}
                 </h4>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
                       {t("forms.discount")}
@@ -3105,7 +3095,7 @@ function StepThree({
                           inputMode="decimal"
                           placeholder="0"
                           value={agreementAmountInput || ""}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-150 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           onChange={(e) => {
                             let value = e.target.value;
                             // Handle comma as decimal separator
@@ -3219,11 +3209,11 @@ function StepThree({
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 flex items-center gap-4">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
                   disabled={isLoading}
-                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="w-80 h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
                   {isLoading
@@ -3236,6 +3226,17 @@ function StepThree({
                   className="w-full hidden"
                 >
                   {t("common.back_to_doors")}
+                </Button>
+                 <Button
+                  onClick={onCalculate}
+                  disabled={isCalculating || doors.length === 0}
+                  className="flex items-center h-12 w-80 gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+                  size="sm"
+                >
+                  <Calculator className="h-4 w-4" />
+                  {isCalculating
+                    ? t("forms.calculating")
+                    : t("forms.calculate")}
                 </Button>
               </div>
             </CardContent>
