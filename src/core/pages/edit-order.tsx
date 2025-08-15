@@ -36,7 +36,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
+// import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
 import {
   Table,
@@ -500,7 +500,7 @@ export default function CreateOrderPage() {
     {
       name: "description",
       label: t("forms.description"),
-      type: "textarea",
+      type: "text",
       placeholder: t("placeholders.enter_description"),
     },
   ];
@@ -704,9 +704,9 @@ export default function CreateOrderPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {t("pages.create_order")}
               </h1>
-              <p className="text-gray-600">
+              {/* <p className="text-gray-600">
                 {t("forms.create_order_description")}
-              </p>
+              </p> */}
             </div>
             <Button
               variant="outline"
@@ -796,21 +796,12 @@ function StepOne({
                 </div>
                 {t("forms.order_information")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.basic_order_info_description")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-              <ResourceForm
-                fields={orderFields}
-                onSubmit={() => {}}
-                isSubmitting={isLoading}
-                hideSubmitButton={true}
-                form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
-              />
-
-              {/* Custom Counterparty Select Field */}
+                {/* Custom Counterparty Select Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   {t("forms.agent")} *
@@ -822,6 +813,16 @@ function StepOne({
                   required={true}
                 />
               </div>
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="md:grid-cols-3 gap-6"
+              />
+
+            
             </CardContent>
           </Card>
         </div>
@@ -836,9 +837,9 @@ function StepOne({
                 </div>
                 {t("forms.global_door_settings")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.global_door_settings_description")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-3 gap-6">
@@ -1826,8 +1827,8 @@ function StepTwo({
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
-                    {t("forms.doors_configuration")} - Таблица {table.id}
-                    <Badge variant="secondary" className="ml-3 px-3 py-1">
+                    {/* {t("forms.doors_configuration")} - Таблица {table.id} */}
+                    {/* <Badge variant="secondary" className="ml-3 px-3 py-1">
                       {tableCurrentDoors.length} {t("forms.doors_added")}
                     </Badge>
                     {table.doorModel && (
@@ -1837,67 +1838,8 @@ function StepTwo({
                       >
                         {table.doorModel.name}
                       </Badge>
-                    )}
-                  </CardTitle>
-                  <p className="text-gray-600 mt-2">
-                    {t("forms.add_doors_description")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => {
-                      handleAddNewRow(table.id);
-                    }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                    size="lg"
-                    disabled={!table.doorModel}
-                  >
-                    <Plus className="h-5 w-5" />
-                    {t("forms.add_row")}
-                  </Button>
-                  {tables.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveTable(table.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {!table.doorModel && (
-                <p className="text-xs text-red-500 mt-2">
-                  Выбирете модель двери
-                </p>
-              )}
-
-              {/* Single Save Button for entire table */}
-              {tableCurrentDoors.length > 0 && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => handleSaveTable(table.id)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="h-4 w-4" />
-                    Сохранит таблицу
-                  </Button>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Door Model Selection */}
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{t("forms.door_model")}</span>
-                  {table.doorModel && (
-                    <Badge variant="outline" className="px-2 py-1 text-xs">
-                      {table.doorModel.name}
-                    </Badge>
-                  )}
-                </div>
-                <HeaderSearch
+                    )} */}
+                      <HeaderSearch
                   value={table.doorSearch}
                   onChange={(value) => {
                     const updatedTables = tables.map((t) => {
@@ -1937,7 +1879,57 @@ function StepTwo({
                     setTables(updatedTables);
                   }}
                 />
+                  </CardTitle>
+                  {/* <p className="text-gray-600 mt-2">
+                    {t("forms.add_doors_description")}
+                  </p> */}
+                </div>
+                <div className="flex items-center gap-2">
+                 
+                  {tables.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveTable(table.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </Button>
+                  )}
+                </div>
               </div>
+              {/* {!table.doorModel && (
+                <p className="text-xs text-red-500 mt-2">
+                  Выбирете модель двери
+                </p>
+              )} */}
+
+              {/* Single Save Button for entire table */}
+              {tableCurrentDoors.length > 0 && (
+                <div className="flex justify-end mt-4">
+                  <Button
+                    onClick={() => handleSaveTable(table.id)}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="h-4 w-4" />
+                    Сохранит таблицу
+                  </Button>
+                </div>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Door Model Selection */}
+              {/* <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{t("forms.door_model")}</span>
+                  {table.doorModel && (
+                    <Badge variant="outline" className="px-2 py-1 text-xs">
+                      {table.doorModel.name}
+                    </Badge>
+                  )}
+                </div>
+              
+              </div> */}
 
               <div className="rounded-lg border overflow-x-auto relative">
                 <Table>
@@ -2973,14 +2965,19 @@ function StepTwo({
                   </TableBody>
                 </Table>
               </div>
-
-              {tableCurrentDoors.length === 0 && (
-                <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-amber-700 font-medium">
-                    {t("forms.add_at_least_one_door")}
-                  </p>
-                </div>
-              )}
+               <div className="flex justify-end mt-4">
+             <Button
+                    onClick={() => {
+                      handleAddNewRow(table.id);
+                    }}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                    size="lg"
+                    disabled={!table.doorModel}
+                  >
+                    <Plus className="h-5 w-5" />
+                    {t("forms.add_row")}
+                  </Button>
+                  </div>
             </CardContent>
           </Card>
         );
@@ -3298,7 +3295,7 @@ function StepThree({
               </div>
 
               {/* Door Details */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.door_details")}
                 </h4>
@@ -3327,7 +3324,7 @@ function StepThree({
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </div>
@@ -3358,8 +3355,8 @@ function StepThree({
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
+            <CardContent className="grid grid-colums-2">
+              <div className="grid grid-colums-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold">

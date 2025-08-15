@@ -440,8 +440,81 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Desktop Settings Button */}
-          <div className="relative">
+          {/* Desktop Settings Navigation */}
+          <div className="flex items-center gap-4">
+            {/* Settings dropdown for ADMIN users */}
+            {currentUser?.role === "ADMIN" && (
+              <>
+                <a
+                  href="/users"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/users");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === "/users"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <User
+                    size={16}
+                    className={
+                      location.pathname === "/users"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">{t("navigation.users")}</span>
+                </a>
+                {/* <a
+                  href="/materials"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/materials");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === "/materials"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/materials"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">{t("navigation.material")}</span>
+                </a> */}
+                {/* <a
+                  href="/price-settings"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/price-settings");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    location.pathname === "/price-settings"
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <DollarSign
+                    size={16}
+                    className={
+                      location.pathname === "/price-settings"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">{t("navigation.price_settings")}</span>
+                </a> */}
+              </>
+            )}
+
+            {/* Settings button for unified settings page */}
             <button
               onClick={() => {
                 navigate("/settings");

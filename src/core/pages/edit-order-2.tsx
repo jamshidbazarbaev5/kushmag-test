@@ -42,7 +42,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
 import { Separator } from "../../components/ui/separator";
 import {
   Table,
@@ -565,7 +564,7 @@ export default function EditOrderPage() {
     {
       name: "description",
       label: t("forms.description"),
-      type: "textarea",
+      type: "text",
       placeholder: t("placeholders.enter_description"),
     },
   ];
@@ -851,21 +850,12 @@ function StepOne({
                 </div>
                 {t("forms.order_information")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.basic_order_info_description")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-              <ResourceForm
-                fields={orderFields}
-                onSubmit={() => {}}
-                isSubmitting={isLoading}
-                hideSubmitButton={true}
-                form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
-              />
-
-              {/* Custom Counterparty Select Field */}
+               {/* Custom Counterparty Select Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   {t("forms.agent")} *
@@ -877,6 +867,16 @@ function StepOne({
                   required={true}
                 />
               </div>
+              <ResourceForm
+                fields={orderFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="md:grid-cols-3 gap-6"
+              />
+
+             
             </CardContent>
           </Card>
         </div>
@@ -891,9 +891,9 @@ function StepOne({
                 </div>
                 {t("forms.global_door_settings")}
               </CardTitle>
-              <p className="text-gray-600 mt-2">
+              {/* <p className="text-gray-600 mt-2">
                 {t("forms.global_door_settings_description")}
-              </p>
+              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-3 gap-6">
@@ -1474,12 +1474,12 @@ function StepTwo({
   };
 
   // Remove table functionality
-  const handleRemoveTable = (tableId: number) => {
-    if (tables.length <= 1) return; // Don't allow removing the last table
+  // const handleRemoveTable = (tableId: number) => {
+  //   if (tables.length <= 1) return; // Don't allow removing the last table
 
-    const updatedTables = tables.filter((table) => table.id !== tableId);
-    setTables(updatedTables);
-  };
+  //   const updatedTables = tables.filter((table) => table.id !== tableId);
+  //   setTables(updatedTables);
+  // };
 
   // Helper function to update accessories by type instead of hardcoded index
   const updateAccessoryByType = (
@@ -1903,78 +1903,7 @@ function StepTwo({
                     <div className="p-2 bg-green-100 rounded-lg">
                       <DoorOpen className="h-6 w-6 text-green-600" />
                     </div>
-                    {/* {t("forms.doors_configuration")} - Table {table.id}
-                    <Badge variant="secondary" className="ml-3 px-3 py-1">
-                      {tableCurrentDoors.length} {t("forms.doors_added")}
-                    </Badge>
-                    {table.doorModel && (
-                      <Badge
-                        variant="outline"
-                        className="ml-2 px-2 py-1 text-xs"
-                      >
-                        {table.doorModel.name}
-                      </Badge>
-                    )} */}
-                  </CardTitle>
-                    {/* <p className="text-gray-600 mt-2">
-                      {t("forms.add_doors_description")}
-                    </p> */}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => {
-                      handleAddNewRow(table.id);
-                    }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                    size="lg"
-                    disabled={!table.doorModel}
-                  >
-                    <Plus className="h-5 w-5" />
-                    {t("forms.add_row")}
-                  </Button>
-                  {tables.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveTable(table.id)}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {/* {!table.doorModel && (
-                <p className="text-xs text-red-500 mt-2">
-                  Select door model first
-                </p>
-              )} */}
-
-              {/* Single Save Button for entire table */}
-              {tableCurrentDoors.length > 0 && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => handleSaveTable(table.id)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="h-4 w-4" />
-                    Сохранить таблицу
-                  </Button>
-                </div>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Door Model Selection */}
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{t("forms.door_model")}</span>
-                  {table.doorModel && (
-                    <Badge variant="outline" className="px-2 py-1 text-xs">
-                      {table.doorModel.name}
-                    </Badge>
-                  )}
-                </div>
-                <HeaderSearch
+                      <HeaderSearch
                   value={table.doorSearch}
                   onChange={(value) => {
                     const updatedTables = tables.map((t) => {
@@ -2001,7 +1930,79 @@ function StepTwo({
                     setTables(updatedTables);
                   }}
                 />
+                    {/* {t("forms.doors_configuration")} - Table {table.id}
+                    <Badge variant="secondary" className="ml-3 px-3 py-1">
+                      {tableCurrentDoors.length} {t("forms.doors_added")}
+                    </Badge>
+                    {table.doorModel && (
+                      <Badge
+                        variant="outline"
+                        className="ml-2 px-2 py-1 text-xs"
+                      >
+                        {table.doorModel.name}
+                      </Badge>
+                    )} */}
+                  </CardTitle>
+                    {/* <p className="text-gray-600 mt-2">
+                      {t("forms.add_doors_description")}
+                    </p> */}
+                </div>
+                {/* <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => {
+                      handleAddNewRow(table.id);
+                    }}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                    size="lg"
+                    disabled={!table.doorModel}
+                  >
+                    <Plus className="h-5 w-5" />
+                    {t("forms.add_row")}
+                  </Button>
+                  {tables.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveTable(table.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </Button>
+                  )}
+                </div> */}
               </div>
+              {/* {!table.doorModel && (
+                <p className="text-xs text-red-500 mt-2">
+                  Select door model first
+                </p>
+              )} */}
+
+              {/* Single Save Button for entire table */}
+              {tableCurrentDoors.length > 0 && (
+                <div className="flex justify-end mt-4">
+                  <Button
+                    onClick={() => handleSaveTable(table.id)}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="h-4 w-4" />
+                    Сохранить таблицу
+                  </Button>
+                </div>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Door Model Selection */}
+              {/* <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{t("forms.door_model")}</span>
+                  {table.doorModel && (
+                    <Badge variant="outline" className="px-2 py-1 text-xs">
+                      {table.doorModel.name}
+                    </Badge>
+                  )}
+                </div>
+              
+              </div> */}
 
               <div className="rounded-lg border overflow-x-auto relative">
                 <Table>
@@ -2009,7 +2010,7 @@ function StepTwo({
                     <TableRow className="bg-gray-50">
                       <TableHead className="w-12">#</TableHead>
                       <TableHead className="w-16">
-                        {t("forms.quantity")}
+                        {t("forms.quantity_of")}
                       </TableHead>
                       <TableHead className="w-20">
                         {t("forms.height")}
@@ -2677,7 +2678,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Кубик */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2721,7 +2722,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Ножка */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-middle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2765,7 +2766,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Стекло */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2809,7 +2810,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Замок */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2853,7 +2854,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Топса */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2897,7 +2898,7 @@ function StepTwo({
                         </TableCell>
 
                         {/* Шпингалет */}
-                        <TableCell className="align-top">
+                        <TableCell className="align-midlle">
                           <Input
                             type="text"
                             inputMode="decimal"
@@ -2977,13 +2978,26 @@ function StepTwo({
                 </Table>
               </div>
 
-              {tableCurrentDoors.length === 0 && (
+              {/* {tableCurrentDoors.length === 0 && (
                 <div className="text-center p-6 bg-amber-50 rounded-lg border border-amber-200">
                   <p className="text-amber-700 font-medium">
                     {t("forms.add_at_least_one_door")}
                   </p>
                 </div>
-              )}
+              )} */}
+               <div className="flex justify-end mt-4">
+                              <Button
+                                onClick={() => {
+                                  handleAddNewRow(table.id);
+                                }}
+                                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                                size="lg"
+                                disabled={!table.doorModel}
+                              >
+                                <Plus className="h-5 w-5" />
+                                {t("forms.add_row")}
+                              </Button>
+                            </div>
             </CardContent>
           </Card>
         );
@@ -3283,7 +3297,7 @@ function StepThree({
               </div>
 
               {/* Door Details */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h4 className="font-semibold text-gray-800">
                   {t("forms.door_details")}
                 </h4>
@@ -3312,7 +3326,7 @@ function StepThree({
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </div>
@@ -3351,7 +3365,7 @@ function StepThree({
                   {/* Additional Agreement Discount */}
                 </h4>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">
                       {t("forms.discount")}
@@ -3382,9 +3396,9 @@ function StepThree({
                             handleDiscountAmountChange(amount.toString());
                           }}
                         />
-                        <span className="text-xs text-gray-500 mt-1 block">
+                        {/* <span className="text-xs text-gray-500 mt-1 block">
                           {t("forms.discount_amount")}
-                        </span>
+                        </span> */}
                       </div>
                       <div className="w-20">
                         <input
@@ -3410,12 +3424,12 @@ function StepThree({
                             handleDiscountPercentageChange(value);
                           }}
                         />
-                        <span className="text-xs text-gray-500 mt-1 block text-center">
+                        {/* <span className="text-xs text-gray-500 mt-1 block text-center">
                           %
-                        </span>
+                        </span> */}
                       </div>
                     </div>
-                    {(discountPercentage > 0 || discountAmount > 0) && (
+                    {/* {(discountPercentage > 0 || discountAmount > 0) && (
                       <p className="text-sm text-green-600">
                         {t("forms.discount_amount")}:{" "}
                         {discountAmount > 0
@@ -3427,7 +3441,7 @@ function StepThree({
                         сум
                         {discountPercentage > 0 && ` (${discountPercentage}%)`}
                       </p>
-                    )}
+                    )} */}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
