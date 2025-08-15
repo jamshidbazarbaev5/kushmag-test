@@ -581,12 +581,12 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                       <h4 className="font-medium text-gray-800">{t("forms.formula_1")}:</h4>
                       <div className="text-sm text-gray-700 space-y-1">
-                        <p>• {t("forms.casing_type_side")}: height = doorHeight + casingSize</p>
-                        <p>• {t("forms.casing_type_straight")}: height = doorWidth + (2 × casingSize)</p>
+                        <p>• {t("forms.casing_type_side")}: высота = высота двери + размер наличника</p>
+                        <p>• {t("forms.casing_type_straight")}: высота = ширина двери + (2 × размер наличника)</p>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">
+                      {/* <p className="text-xs text-gray-500 mt-2">
                         {t("forms.formula_1_description")}
-                      </p>
+                      </p> */}
                     </div>
                   ) : (
                     // Formula 2 (when casing_formula is false)

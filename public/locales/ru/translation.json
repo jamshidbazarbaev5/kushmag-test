@@ -239,6 +239,8 @@
     "quantity_of":"Кол-во",
     "date": "Дата",
     "quantity_of":"Кол-во",
+    "additional":"Дополнительный",
+    "main":"Основная",
     "search_counterparty": "Поиск контрагента",
     "search_doors": "Поиск двери",
     "agreement": "Соглашение",

@@ -55,14 +55,7 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 // import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
-import {
-  Plus,
-  Trash2,
-  DoorOpen,
-  Package,
-  Calculator,
-  Save,
-} from "lucide-react";
+import { Plus, Trash2, DoorOpen, Package, Calculator } from "lucide-react";
 import api from "../api/api";
 import { useGetMeasure } from "../api/measure";
 import React from "react";
@@ -801,7 +794,7 @@ function StepOne({
               </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Custom Counterparty Select Field */}
+              {/* Custom Counterparty Select Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   {t("forms.agent")} *
@@ -821,8 +814,6 @@ function StepOne({
                 form={orderForm}
                 gridClassName="md:grid-cols-3 gap-6"
               />
-
-            
             </CardContent>
           </Card>
         </div>
@@ -1599,22 +1590,16 @@ function StepTwo({
     }
   }, materialAttributes);
 
-  // Save all doors in a table
-  const handleSaveTable = (tableId: number) => {
-    const targetTable = tables.find((table) => table.id === tableId);
-    if (!targetTable) {
-      toast.error("Table not found");
-      return;
-    }
-
-    // Validate that table has door model selected
-    if (!targetTable.doorModel) {
-      toast.error("Please select a door model in the table header");
-      return;
-    }
-
-    toast.success(t("forms.doors_saved_successfully"));
-  };
+  // Auto-sync tables data to main doors state whenever tables change
+  useEffect(() => {
+    const allDoors = tables.flatMap((table) =>
+      table.doors.map((door: any) => ({
+        ...door,
+        model: table.doorModel?.id || door.model,
+      })),
+    );
+    setDoors(allDoors);
+  }, [tables, setDoors]);
 
   const handleRemoveDoor = (index: number, tableId: number) => {
     const updatedTables = tables.map((table) => {
@@ -1839,53 +1824,53 @@ function StepTwo({
                         {table.doorModel.name}
                       </Badge>
                     )} */}
-                      <HeaderSearch
-                  value={table.doorSearch}
-                  onChange={(value) => {
-                    const updatedTables = tables.map((t) => {
-                      if (t.id === table.id) {
-                        return { ...t, doorSearch: value };
-                      }
-                      return t;
-                    });
-                    setTables(updatedTables);
-                  }}
-                  placeholder={t("forms.search_doors")}
-                  selectedProduct={table.doorModel}
-                  onProductSelect={(product) => {
-                    const updatedTables = tables.map((t) => {
-                      if (t.id === table.id) {
-                        // Calculate the price for the selected product
-                        const productPrice = product
-                          ? (product.salePrices?.find(
-                              (p: any) => p.priceType.name === "Цена продажи",
-                            )?.value || 0) / 100
-                          : 0;
+                    <HeaderSearch
+                      value={table.doorSearch}
+                      onChange={(value) => {
+                        const updatedTables = tables.map((t) => {
+                          if (t.id === table.id) {
+                            return { ...t, doorSearch: value };
+                          }
+                          return t;
+                        });
+                        setTables(updatedTables);
+                      }}
+                      placeholder={t("forms.search_doors")}
+                      selectedProduct={table.doorModel}
+                      onProductSelect={(product) => {
+                        const updatedTables = tables.map((t) => {
+                          if (t.id === table.id) {
+                            // Calculate the price for the selected product
+                            const productPrice = product
+                              ? (product.salePrices?.find(
+                                  (p: any) =>
+                                    p.priceType.name === "Цена продажи",
+                                )?.value || 0) / 100
+                              : 0;
 
-                        return {
-                          ...t,
-                          doorModel: product,
-                          doorSearch: product?.name || "",
-                          // Update all existing doors in this table with the new model
-                          doors: t.doors.map((door: any) => ({
-                            ...door,
-                            model: product?.id || "",
-                            price: productPrice,
-                          })),
-                        };
-                      }
-                      return t;
-                    });
-                    setTables(updatedTables);
-                  }}
-                />
+                            return {
+                              ...t,
+                              doorModel: product,
+                              doorSearch: product?.name || "",
+                              // Update all existing doors in this table with the new model
+                              doors: t.doors.map((door: any) => ({
+                                ...door,
+                                model: product?.id || "",
+                                price: productPrice,
+                              })),
+                            };
+                          }
+                          return t;
+                        });
+                        setTables(updatedTables);
+                      }}
+                    />
                   </CardTitle>
                   {/* <p className="text-gray-600 mt-2">
                     {t("forms.add_doors_description")}
                   </p> */}
                 </div>
                 <div className="flex items-center gap-2">
-                 
                   {tables.length > 1 && (
                     <Button
                       variant="ghost"
@@ -1905,17 +1890,6 @@ function StepTwo({
               )} */}
 
               {/* Single Save Button for entire table */}
-              {tableCurrentDoors.length > 0 && (
-                <div className="flex justify-end mt-4">
-                  <Button
-                    onClick={() => handleSaveTable(table.id)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="h-4 w-4" />
-                    Сохранит таблицу
-                  </Button>
-                </div>
-              )}
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Door Model Selection */}
@@ -1928,7 +1902,7 @@ function StepTwo({
                     </Badge>
                   )}
                 </div>
-              
+
               </div> */}
 
               <div className="rounded-lg border overflow-x-auto relative">
@@ -2965,19 +2939,19 @@ function StepTwo({
                   </TableBody>
                 </Table>
               </div>
-               <div className="flex justify-end mt-4">
-             <Button
-                    onClick={() => {
-                      handleAddNewRow(table.id);
-                    }}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                    size="lg"
-                    disabled={!table.doorModel}
-                  >
-                    <Plus className="h-5 w-5" />
-                    {t("forms.add_row")}
-                  </Button>
-                  </div>
+              <div className="flex justify-end mt-4">
+                <Button
+                  onClick={() => {
+                    handleAddNewRow(table.id);
+                  }}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                  size="lg"
+                  disabled={!table.doorModel}
+                >
+                  <Plus className="h-5 w-5" />
+                  {t("forms.add_row")}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         );

@@ -64,7 +64,6 @@ import {
   Package,
   Calculator,
   // Edit,
-  Save,
   // X,
 } from "lucide-react";
 import api from "../api/api";
@@ -819,7 +818,7 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
               </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Custom Counterparty Select Field */}
+              {/* Custom Counterparty Select Field */}
               <div className="space-y-2">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   {t("forms.agent")} *
@@ -839,8 +838,6 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 form={orderForm}
                 gridClassName="md:grid-cols-3 gap-6"
               />
-
-            
             </CardContent>
           </Card>
         </div>
@@ -1303,22 +1300,16 @@ function StepTwo({
     }
   }, materialAttributes);
 
-  // Save all doors in a table
-  const handleSaveTable = (tableId: number) => {
-    const targetTable = tables.find((table) => table.id === tableId);
-    if (!targetTable) {
-      toast.error("Table not found");
-      return;
-    }
-
-    // Validate that table has door model selected
-    if (!targetTable.doorModel) {
-      toast.error("Please select a door model in the table header");
-      return;
-    }
-
-    toast.success(t("forms.doors_saved_successfully"));
-  };
+  // Auto-sync tables data to main doors state whenever tables change
+  useEffect(() => {
+    const allDoors = tables.flatMap((table) =>
+      table.doors.map((door: any) => ({
+        ...door,
+        model: table.doorModel?.id || door.model,
+      })),
+    );
+    setDoors(allDoors);
+  }, [tables, setDoors]);
 
   const handleRemoveDoor = (index: number, tableId: number) => {
     const updatedTables = tables.map((table) => {
@@ -1530,10 +1521,237 @@ function StepTwo({
                         onProductSelect={(product) => {
                           const updatedTables = tables.map((t) => {
                             if (t.id === table.id) {
+                              // If this table was empty and we're selecting a model, add one row automatically
+                              const shouldAddRow =
+                                t.doors.length === 0 && product;
+
+                              let newDoors = t.doors;
+                              if (shouldAddRow) {
+                                const orderData = orderForm.getValues();
+                                const defaultDoorPrice = product
+                                  ? (product.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.name === "Цена продажи",
+                                    )?.value || 0) / 100
+                                  : 0;
+
+                                // Create 2 default extensions (dobors) - with selected product if available, otherwise empty entries
+                                const defaultExtensions = [
+                                  {
+                                    model: selectedExtensionProduct
+                                      ? selectedExtensionProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedExtensionProduct
+                                      ? (selectedExtensionProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 1,
+                                    height: 0,
+                                    width: 0,
+                                  },
+                                  {
+                                    model: selectedExtensionProduct
+                                      ? selectedExtensionProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedExtensionProduct
+                                      ? (selectedExtensionProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 1,
+                                    height: 0,
+                                    width: 0,
+                                  },
+                                ];
+
+                                // Create 2 default casings - with selected product if available, otherwise empty entries
+                                const defaultCasings = [
+                                  {
+                                    model: selectedCasingProduct
+                                      ? selectedCasingProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedCasingProduct
+                                      ? (selectedCasingProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 1,
+                                    casing_type: "боковой",
+                                    casing_formula: "formula1",
+                                    casing_range: "",
+                                    height: 0,
+                                    width: casingSize,
+                                  },
+                                  {
+                                    model: selectedCasingProduct
+                                      ? selectedCasingProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedCasingProduct
+                                      ? (selectedCasingProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 1,
+                                    casing_type: "прямой",
+                                    casing_formula: "formula1",
+                                    casing_range: "",
+                                    height: 0,
+                                    width: casingSize,
+                                  },
+                                ];
+
+                                // Create 1 default crown - with selected product if available, otherwise empty entry
+                                const defaultCrowns = [
+                                  {
+                                    model: selectedCrownProduct
+                                      ? selectedCrownProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedCrownProduct
+                                      ? (selectedCrownProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 1,
+                                    height: 0,
+                                    width: 0 + crownSize, // Will be recalculated when door width is set
+                                  },
+                                ];
+
+                                // Create 6 predefined accessories with selected products
+                                const defaultAccessories = [
+                                  {
+                                    model: selectedCubeProduct
+                                      ? selectedCubeProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedCubeProduct
+                                      ? (selectedCubeProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "cube",
+                                    name: "Кубик",
+                                  },
+                                  {
+                                    model: selectedLegProduct
+                                      ? selectedLegProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedLegProduct
+                                      ? (selectedLegProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "leg",
+                                    name: "Ножка",
+                                  },
+                                  {
+                                    model: selectedGlassProduct
+                                      ? selectedGlassProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedGlassProduct
+                                      ? (selectedGlassProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "glass",
+                                    name: "Стекло",
+                                  },
+                                  {
+                                    model: selectedLockProduct
+                                      ? selectedLockProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedLockProduct
+                                      ? (selectedLockProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "lock",
+                                    name: "Замок",
+                                  },
+                                  {
+                                    model: selectedTopsaProduct
+                                      ? selectedTopsaProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedTopsaProduct
+                                      ? (selectedTopsaProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "topsa",
+                                    name: "Топса",
+                                  },
+                                  {
+                                    model: selectedBeadingProduct
+                                      ? selectedBeadingProduct.id
+                                      : "",
+                                    price_type: "",
+                                    price: selectedBeadingProduct
+                                      ? (selectedBeadingProduct.salePrices?.find(
+                                          (p: any) =>
+                                            p.priceType.name === "Цена продажи",
+                                        )?.value || 0) / 100
+                                      : 0,
+                                    quantity: 0,
+                                    accessory_type: "beading",
+                                    name: "Шпингалет",
+                                  },
+                                ];
+
+                                const newDoor = {
+                                  model: product.id,
+                                  price_type: "",
+                                  price: defaultDoorPrice,
+                                  quantity: 1,
+                                  height: 0,
+                                  width: 0,
+                                  material: orderData.material || "",
+                                  material_type: orderData.material_type || "",
+                                  massif: orderData.massif || "",
+                                  color: orderData.color || "",
+                                  patina_color: orderData.patina_color || "",
+                                  beading_main: orderData.beading_main || "",
+                                  beading_additional:
+                                    orderData.beading_additional || "2",
+                                  glass_type: "",
+                                  threshold: "",
+                                  extensions: defaultExtensions,
+                                  casings: defaultCasings,
+                                  crowns: defaultCrowns,
+                                  accessories: defaultAccessories,
+                                };
+                                newDoors = [newDoor];
+                              }
+
                               return {
                                 ...t,
                                 doorModel: product,
                                 doorSearch: product?.name || "",
+                                doors: newDoors,
                               };
                             }
                             return t;
@@ -1542,16 +1760,6 @@ function StepTwo({
                         }}
                       />
                     </div>
-
-                    {tableCurrentDoors.length > 0 && (
-                      <Button
-                        onClick={() => handleSaveTable(table.id)}
-                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      >
-                        <Save className="h-4 w-4" />
-                        Сохранит таблицу
-                      </Button>
-                    )}
                   </div>
                 </div>
 
@@ -2934,7 +3142,6 @@ function StepThree({
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-xl">
                 <span>{t("forms.pricing_summary")}</span>
-               
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -3227,7 +3434,7 @@ function StepThree({
                 >
                   {t("common.back_to_doors")}
                 </Button>
-                 <Button
+                <Button
                   onClick={onCalculate}
                   disabled={isCalculating || doors.length === 0}
                   className="flex items-center h-12 w-80 gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
