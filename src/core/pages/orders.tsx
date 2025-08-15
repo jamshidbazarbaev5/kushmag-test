@@ -38,6 +38,7 @@ import {
   Eye,
   Search,
   Plus,
+  Info,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -58,6 +59,9 @@ export default function OrdersPage() {
   const [showCounterpartDropdown, setShowCounterpartDropdown] = useState(false);
   const [isCounterpartLoading, setIsCounterpartLoading] = useState(false);
   const counterpartDropdownRef = useRef<HTMLDivElement>(null);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [statuses, setStatuses] = useState<any[]>([]);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState({
     project: "",
@@ -113,6 +117,7 @@ export default function OrdersPage() {
       discount_percentage: false,
       agreement_amount: false,
       measure_date: false,
+      status: true,
       actions: true,
     };
   });
@@ -123,6 +128,51 @@ export default function OrdersPage() {
     { key: "moy_sklad", label: t("order_status.moy_sklad") },
     { key: "cancelled", label: t("order_status.cancelled") },
   ];
+
+  // Fetch statuses from API
+  useEffect(() => {
+    const fetchStatuses = async () => {
+      try {
+        const response = await api.get("statuses/");
+        // Handle both array and paginated response formats
+        const statusData = Array.isArray(response.data)
+          ? response.data
+          : response.data?.results || [];
+        setStatuses(statusData);
+      } catch (error) {
+        console.error("Error fetching statuses:", error);
+        // Set empty array on error to prevent loading indefinitely
+        setStatuses([]);
+      }
+    };
+    fetchStatuses();
+  }, []);
+
+  // Function to render status badge
+  const renderStatusBadge = (statusObject: any) => {
+    if (!statusObject || typeof statusObject !== "object") {
+      return <span className="text-gray-500">-</span>;
+    }
+
+    // Ensure we have the required properties
+    const bgColor = statusObject.bg_color || "#gray-400";
+    const textColor = statusObject.text_color || "#ffffff";
+    const statusText = statusObject.status || "Unknown";
+
+    return (
+      <span
+        className="px-3 py-1 rounded-full text-xs font-medium inline-block shadow-sm border"
+        style={{
+          backgroundColor: bgColor,
+          color: textColor,
+          borderColor: bgColor,
+        }}
+        title={`Status: ${statusText} (ID: ${statusObject.id || "N/A"})`}
+      >
+        {statusText}
+      </span>
+    );
+  };
 
   const handleColumnVisibilityChange = (column: string, checked: boolean) => {
     const newColumns = {
@@ -145,16 +195,22 @@ export default function OrdersPage() {
       ) {
         setShowCounterpartDropdown(false);
       }
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowStatusDropdown(false);
+      }
     };
 
-    if (openActionMenu || showCounterpartDropdown) {
+    if (openActionMenu || showCounterpartDropdown || showStatusDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [openActionMenu, showCounterpartDropdown]);
+  }, [openActionMenu, showCounterpartDropdown, showStatusDropdown]);
 
   // Counterpart search functionality
   useEffect(() => {
@@ -404,6 +460,50 @@ export default function OrdersPage() {
             <Eye className="h-4 w-4 mr-2" />
             {t("common.show_columns")}
           </Button>
+
+          <div className="relative" ref={statusDropdownRef}>
+            <Button
+              variant="outline"
+              onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+            >
+              <Info className="h-4 w-4 mr-2" />
+              {t("common.status_legend") || "Status Legend"}
+            </Button>
+
+            {showStatusDropdown && (
+              <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="p-3">
+                  <div className="text-sm font-medium text-gray-700 mb-2">
+                    Status Colors
+                  </div>
+                  <div className="space-y-2">
+                    {statuses.length === 0 ? (
+                      <div className="text-xs text-gray-500 text-center py-2">
+                        Loading...
+                      </div>
+                    ) : (
+                      statuses.map((status) => (
+                        <div
+                          key={status.id}
+                          className="flex items-center gap-2"
+                        >
+                          <span
+                            className="px-2 py-1 rounded text-xs font-medium flex-1 text-center"
+                            style={{
+                              backgroundColor: status.bg_color,
+                              color: status.text_color,
+                            }}
+                          >
+                            {status.status}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           <Button onClick={() => navigate("/orders/create")}>
             <Plus className="h-4 w-4 mr-2" />
@@ -791,6 +891,20 @@ export default function OrdersPage() {
                   {t("forms.order_status")}
                 </th>
               )}
+              {visibleColumns.status && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  <div className="flex items-center gap-1">
+                    {t("forms.status")}
+                    <button
+                      onClick={() => setShowStatusDropdown(true)}
+                      className="p-1 hover:bg-gray-200 rounded"
+                      title="Show status legend"
+                    >
+                      <Info className="h-3 w-3" />
+                    </button>
+                  </div>
+                </th>
+              )}
               {visibleColumns.moy_sklad_id && (
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   {t("forms.moy_sklad_id")}
@@ -956,6 +1070,13 @@ export default function OrdersPage() {
                         {order.order_status
                           ? t(`order_status.${order.order_status}`)
                           : "-"}
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.status && (
+                    <td className="px-3 py-2">
+                      <div className="flex items-center justify-start">
+                        {renderStatusBadge(order.status)}
                       </div>
                     </td>
                   )}
