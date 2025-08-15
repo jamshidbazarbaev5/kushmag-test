@@ -3403,7 +3403,7 @@ function StepThree({
                   <Calculator className="h-4 w-4" />
                   {isCalculating
                     ? t("forms.calculating")
-                    : "Calculate & Apply Materials"}
+                    : "Рассчитать"}
                 </Button>
               </div>
             </CardContent>
