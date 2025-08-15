@@ -43,6 +43,7 @@ const userFields = (t: any, { sellers, operators, zamershiks }: { sellers?: any[
     options: [
       { value: 'ADMIN', label: t('roles.admin') },
       { value: 'PRODAVEC', label: t('roles.prodavec') },
+            { value: 'MANUFACTURE', label: t('forms.manufacture') },
       { value: 'ZAMERSHIK', label: t('roles.zamershik') },
       { value: 'OPERATOR', label: t('roles.operator') },
       { value: 'SOTRUDNIK', label: t('roles.sotrudnik') },

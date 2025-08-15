@@ -1208,70 +1208,6 @@ export default function OrdersPage() {
               ))
             )}
 
-            {/* Overall Totals Row */}
-            {overallTotals && (
-              <tr className="bg-blue-50 border-t-2 border-blue-200">
-                <td
-                  className="px-3 py-2 text-sm font-bold text-blue-900"
-                  colSpan={visibleColumns.number ? 1 : 0}
-                >
-                  {visibleColumns.number && "Общее"}
-                </td>
-                {!visibleColumns.number && visibleColumns.order_status && (
-                  <td className="px-3 py-2 text-sm font-bold text-blue-900">
-                    Общее
-                  </td>
-                )}
-                {visibleColumns.order_status && visibleColumns.number && (
-                  <td className="px-3 py-2"></td>
-                )}
-                {visibleColumns.moy_sklad_id && <td className="px-3 py-2"></td>}
-                {visibleColumns.client_name && <td className="px-3 py-2"></td>}
-                {visibleColumns.client_phone && <td className="px-3 py-2"></td>}
-                {visibleColumns.created_at && <td className="px-3 py-2"></td>}
-                {visibleColumns.deadline_date && (
-                  <td className="px-3 py-2"></td>
-                )}
-                {visibleColumns.counterparty && <td className="px-3 py-2"></td>}
-                {visibleColumns.organization && <td className="px-3 py-2"></td>}
-                {visibleColumns.address && <td className="px-3 py-2"></td>}
-                {visibleColumns.advance_payment && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
-                    {Number(
-                      overallTotals.total_advance_payment || 0,
-                    ).toLocaleString()}
-                  </td>
-                )}
-                {visibleColumns.discount_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
-                    {Number(
-                      overallTotals.total_discount_amount || 0,
-                    ).toLocaleString()}
-                  </td>
-                )}
-                {visibleColumns.remaining_balance && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
-                    {Number(
-                      overallTotals.total_remaining_balance || 0,
-                    ).toLocaleString()}
-                  </td>
-                )}
-                {visibleColumns.total_amount && <td className="px-3 py-2"></td>}
-                {visibleColumns.project && <td className="px-3 py-2"></td>}
-                {visibleColumns.store && <td className="px-3 py-2"></td>}
-                {visibleColumns.sales_channel && (
-                  <td className="px-3 py-2"></td>
-                )}
-                {visibleColumns.description && <td className="px-3 py-2"></td>}
-                {visibleColumns.seller && <td className="px-3 py-2"></td>}
-                {visibleColumns.zamershik && <td className="px-3 py-2"></td>}
-                {visibleColumns.admin && <td className="px-3 py-2"></td>}
-                {visibleColumns.operator && <td className="px-3 py-2"></td>}
-                {visibleColumns.measure_date && <td className="px-3 py-2"></td>}
-                {visibleColumns.actions && <td className="px-3 py-2"></td>}
-              </tr>
-            )}
-
             {/* Page Totals Row */}
             {pageTotals && (
               <tr className="bg-gray-100 border-t border-gray-300">
@@ -1317,6 +1253,70 @@ export default function OrdersPage() {
                   <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
                     {Number(
                       pageTotals.total_remaining_balance || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
+                {visibleColumns.total_amount && <td className="px-3 py-2"></td>}
+                {visibleColumns.project && <td className="px-3 py-2"></td>}
+                {visibleColumns.store && <td className="px-3 py-2"></td>}
+                {visibleColumns.sales_channel && (
+                  <td className="px-3 py-2"></td>
+                )}
+                {visibleColumns.description && <td className="px-3 py-2"></td>}
+                {visibleColumns.seller && <td className="px-3 py-2"></td>}
+                {visibleColumns.zamershik && <td className="px-3 py-2"></td>}
+                {visibleColumns.admin && <td className="px-3 py-2"></td>}
+                {visibleColumns.operator && <td className="px-3 py-2"></td>}
+                {visibleColumns.measure_date && <td className="px-3 py-2"></td>}
+                {visibleColumns.actions && <td className="px-3 py-2"></td>}
+              </tr>
+            )}
+
+            {/* Overall Totals Row */}
+            {overallTotals && (
+              <tr className="bg-blue-50 border-t-2 border-blue-200">
+                <td
+                  className="px-3 py-2 text-sm font-bold text-blue-900"
+                  colSpan={visibleColumns.number ? 1 : 0}
+                >
+                  {visibleColumns.number && "Общее"}
+                </td>
+                {!visibleColumns.number && visibleColumns.order_status && (
+                  <td className="px-3 py-2 text-sm font-bold text-blue-900">
+                    Общее
+                  </td>
+                )}
+                {visibleColumns.order_status && visibleColumns.number && (
+                  <td className="px-3 py-2"></td>
+                )}
+                {visibleColumns.moy_sklad_id && <td className="px-3 py-2"></td>}
+                {visibleColumns.client_name && <td className="px-3 py-2"></td>}
+                {visibleColumns.client_phone && <td className="px-3 py-2"></td>}
+                {visibleColumns.created_at && <td className="px-3 py-2"></td>}
+                {visibleColumns.deadline_date && (
+                  <td className="px-3 py-2"></td>
+                )}
+                {visibleColumns.counterparty && <td className="px-3 py-2"></td>}
+                {visibleColumns.organization && <td className="px-3 py-2"></td>}
+                {visibleColumns.address && <td className="px-3 py-2"></td>}
+                {visibleColumns.advance_payment && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_advance_payment || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
+                {visibleColumns.discount_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_discount_amount || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
+                {visibleColumns.remaining_balance && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_remaining_balance || 0,
                     ).toLocaleString()}
                   </td>
                 )}

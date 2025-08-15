@@ -303,8 +303,10 @@ export default function YearlyPlansPage() {
                       <SelectItem value="PRODAVEC">{t("roles.prodavec")}</SelectItem>
                       <SelectItem value="ZAMERSHIK">{t("roles.zamershik")}</SelectItem>
                       <SelectItem value="OPERATOR">{t("roles.operator")}</SelectItem>
+                       <SelectItem value="MANUFACTURE">{t("roles.manufacture")}</SelectItem>
                       <SelectItem value="SOTRUDNIK">{t("roles.sotrudnik")}</SelectItem>
                     </SelectContent>
+
                   </Select>
                 </div>
               </div>

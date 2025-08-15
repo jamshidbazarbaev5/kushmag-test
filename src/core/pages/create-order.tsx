@@ -160,6 +160,7 @@ export default function CreateOrderPage() {
     : attributeSettings?.results || [];
   const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
   const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
+  const casingFormula = attributeSettingsArray[0]?.casing_formula ?? true; // Default to true (Formula 1)
 
   // Auto-save order form data and doors (will be filtered in the hook based on hasCheckedForDraft)
   useAutoSave(orderFormData, STORAGE_KEYS.ORDER_DRAFT);
@@ -772,6 +773,7 @@ export default function CreateOrderPage() {
             orderForm={orderForm}
             casingSize={casingSize}
             crownSize={crownSize}
+            casingFormula={casingFormula}
           />
 
           {/* Step 3: Summary and Submit */}
@@ -882,6 +884,7 @@ function StepTwo({
   orderForm,
   casingSize,
   crownSize,
+  casingFormula,
 }: any) {
   const { t } = useTranslation();
 
@@ -1106,7 +1109,7 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "боковой",
-        casing_formula: "formula1",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1121,7 +1124,7 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "прямой",
-        casing_formula: "formula1",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1424,16 +1427,16 @@ function StepTwo({
     const doorHeight = convertToNumber(doorData.height, 0);
 
     // Auto-calculate height based on formula
-    if (casing.casing_formula === "formula2" && casing.casing_range) {
-      // Find the selected casing range object to get its casing_size
+    if (!casingFormula && casing.casing_range) {
+      // Formula 2: Use casing ranges
       const selectedRange = fieldOptions.casingRangeOptions?.find(
         (range: any) => range.value === String(casing.casing_range),
       );
       if (selectedRange && selectedRange.casing_size !== undefined) {
         casing.height = selectedRange.casing_size;
       }
-    } else if (casing.casing_formula === "formula1" || !casing.casing_formula) {
-      // Original logic using door dimensions
+    } else {
+      // Formula 1: Calculate based on door dimensions
       if (casing.casing_type === "боковой") {
         casing.height = doorHeight + casingSize;
       } else if (casing.casing_type === "прямой") {
@@ -1584,7 +1587,7 @@ function StepTwo({
                                       : 0,
                                     quantity: 1,
                                     casing_type: "боковой",
-                                    casing_formula: "formula1",
+                                    casing_formula: casingFormula ? "formula1" : "formula2",
                                     casing_range: "",
                                     height: 0,
                                     width: casingSize,
@@ -1602,7 +1605,7 @@ function StepTwo({
                                       : 0,
                                     quantity: 1,
                                     casing_type: "прямой",
-                                    casing_formula: "formula1",
+                                    casing_formula: casingFormula ? "formula1" : "formula2",
                                     casing_range: "",
                                     height: 0,
                                     width: casingSize,
@@ -2275,62 +2278,17 @@ function StepTwo({
                                         placeholder="Auto-calc"
                                         title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
                                         disabled={
-                                          casing.casing_formula === "formula2"
+                                          !casingFormula
                                         }
                                       />
                                     </div>
-                                    {/* <div>
-                                      {casIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Formula
-                                        </label>
-                                      )}
-                                      <Select
-                                        value={
-                                          casing.casing_formula || "formula1"
-                                        }
-                                        onValueChange={(value) => {
-                                          const updatedCasings = [
-                                            ...door.casings,
-                                          ];
-                                          const updatedCasing = {
-                                            ...updatedCasings[casIndex],
-                                            casing_formula: value,
-                                          };
-                                          if (value === "formula1") {
-                                            updatedCasing.casing_range = "";
-                                          }
-                                          const recalculatedCasing =
-                                            calculateCasingDimensions(
-                                              updatedCasing,
-                                              door,
-                                              fieldOptions,
-                                              casingSize,
-                                            );
-                                          updatedCasings[casIndex] =
-                                            recalculatedCasing;
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "casings",
-                                            updatedCasings,
-                                          );
-                                        }}
-                                      >
-                                        <SelectTrigger className="h-8">
-                                          <SelectValue placeholder="Formula" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999]">
-                                          <SelectItem value="formula1">
-                                            Formula 1
-                                          </SelectItem>
-                                          <SelectItem value="formula2">
-                                            Formula 2
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                    {casing.casing_formula === "formula2" && (
+                                    {/* Show formula info for reference */}
+                                    {/* {casIndex === 0 && (
+                                      <div className="text-xs text-gray-600 mb-1">
+                                        {casingFormula ? "Formula 1 (Auto)" : "Formula 2 (Ranges)"}
+                                      </div>
+                                    )} */}
+                                    {!casingFormula && (
                                       <div>
                                         <label className="text-xs text-gray-600">
                                           Диапазон
@@ -2379,7 +2337,7 @@ function StepTwo({
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                    )} */}
+                                    )}
                                   </div>
                                 </div>
                               ),
