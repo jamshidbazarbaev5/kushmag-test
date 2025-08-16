@@ -275,8 +275,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Main Navigation Items */}
           <div className="flex items-center gap-4">
-            {/* Orders - only for ADMIN */}
-            {currentUser?.role === "ADMIN" && (
+            {/* Orders - for ADMIN and MANUFACTURE */}
+            {(currentUser?.role === "ADMIN" ||
+              currentUser?.role === "MANUFACTURE") && (
               <a
                 href="/orders"
                 onClick={(e) => {
@@ -332,7 +333,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {(currentUser?.role === "ZAMERSHIK" ||
               currentUser?.role === "PRODAVEC" ||
               currentUser?.role === "OPERATOR" ||
-              currentUser?.role === "SOTRUDNIK") && (
+              currentUser?.role === "SOTRUDNIK" ||
+              currentUser?.role === "MANUFACTURE") && (
               <>
                 <a
                   href="/salary-overview"
@@ -1103,7 +1105,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       {(currentUser?.role === "ZAMERSHIK" ||
                         currentUser?.role === "PRODAVEC" ||
                         currentUser?.role === "OPERATOR" ||
-                        currentUser?.role === "SOTRUDNIK") && (
+                        currentUser?.role === "SOTRUDNIK" ||
+                        currentUser?.role === "MANUFACTURE") && (
                         <a
                           href="/salary-overview"
                           onClick={(e) => {

@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function RoleBasedRedirect() {
   const navigate = useNavigate();
@@ -8,12 +8,16 @@ export default function RoleBasedRedirect() {
 
   useEffect(() => {
     if (!isLoading && currentUser) {
-      // If user is admin (superuser), redirect to orders page
-      if (currentUser.role === 'ADMIN' || currentUser.is_superuser) {
-        navigate('/orders', { replace: true });
+      // If user is admin (superuser) or manufacture, redirect to orders page
+      if (
+        currentUser.role === "ADMIN" ||
+        currentUser.role === "MANUFACTURE" ||
+        currentUser.is_superuser
+      ) {
+        navigate("/orders", { replace: true });
       } else {
         // For all other roles, redirect to measures page
-        navigate('/measures', { replace: true });
+        navigate("/measures", { replace: true });
       }
     }
   }, [currentUser, isLoading, navigate]);

@@ -4,6 +4,7 @@ import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useCreateOrder, useCalculateOrder } from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
+import { useAuth } from "../context/AuthContext";
 import {
   useGetCurrencies,
   useGetStores,
@@ -128,6 +129,7 @@ const getPriceTypeByProduct = (
 export default function CreateOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
   const { mutate: calculateOrder, isPending: isCalculating } =
     useCalculateOrder();
@@ -777,21 +779,23 @@ export default function CreateOrderPage() {
           />
 
           {/* Step 3: Summary and Submit */}
-          <StepThree
-            orderForm={orderForm}
-            doors={doors}
-            totals={totals}
-            isLoading={isLoading}
-            isCalculating={isCalculating}
-            onSubmit={onSubmit}
-            onCalculate={handleCalculateOrder}
-            discount_percentage={discount_percentage}
-            advance_payment={advance_payment}
-            discountAmountInput={discountAmountInput}
-            setDiscountAmountInput={setDiscountAmountInput}
-            agreementAmountInput={agreementAmountInput}
-            setAgreementAmountInput={setAgreementAmountInput}
-          />
+          {currentUser?.role !== "MANUFACTURE" && (
+            <StepThree
+              orderForm={orderForm}
+              doors={doors}
+              totals={totals}
+              isLoading={isLoading}
+              isCalculating={isCalculating}
+              onSubmit={onSubmit}
+              onCalculate={handleCalculateOrder}
+              discount_percentage={discount_percentage}
+              advance_payment={advance_payment}
+              discountAmountInput={discountAmountInput}
+              setDiscountAmountInput={setDiscountAmountInput}
+              agreementAmountInput={agreementAmountInput}
+              setAgreementAmountInput={setAgreementAmountInput}
+            />
+          )}
         </div>
       </div>
     </div>

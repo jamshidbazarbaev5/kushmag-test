@@ -8,6 +8,7 @@
     "actions": "Действия"
   },
   "common": {
+    "current":"Текущий",
     "change_status": "Cтатус",
     "status_legend": "Фильтровать по статусу",
     "yes": "Да",
@@ -75,7 +76,8 @@
     "prodavec": "Продавец",
     "zamershik": "Замерщик",
     "operator": "Оператор",
-    "sotrudnik": "Сотрудник"
+    "sotrudnik": "Сотрудник",
+    "manufacture":"Пройздводство"
   },
   "daily_plans": {
     "daily_breakdown": "Ежедневный разбив",

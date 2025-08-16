@@ -42,10 +42,43 @@ import {
 } from "lucide-react";
 import api from "../api/api";
 import { StatusChangeModal } from "@/components/modals/StatusChangeModal";
+import { useAuth } from "../context/AuthContext";
+
+// Utility function to make status-based API requests
+export const getOrdersByStatus = async (
+  statusId: number,
+  additionalParams?: Record<string, any>,
+) => {
+  try {
+    const params = {
+      status: statusId,
+      ...additionalParams,
+    };
+    const response = await api.get("orders/", { params });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching orders with status ${statusId}:`, error);
+    throw error;
+  }
+};
+
+// Utility function to get all available statuses
+export const getAllStatuses = async () => {
+  try {
+    const response = await api.get("statuses/");
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data?.results || [];
+  } catch (error) {
+    console.error("Error fetching statuses:", error);
+    throw error;
+  }
+};
 
 export default function OrdersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -124,7 +157,7 @@ export default function OrdersPage() {
       measure_date: false,
       status: true,
       actions: true,
-      order_code:true,
+      order_code: true,
     };
   });
 
@@ -272,7 +305,13 @@ export default function OrdersPage() {
 
     // Add status filter based on active tab
     if (activeStatusTab !== "all") {
-      params.order_status = activeStatusTab;
+      // Check if activeStatusTab is a numeric status ID
+      if (!isNaN(Number(activeStatusTab))) {
+        params.status = Number(activeStatusTab);
+      } else {
+        // Fallback to old behavior for string-based status
+        params.order_status = activeStatusTab;
+      }
     }
 
     params.page = currentPage;
@@ -289,6 +328,7 @@ export default function OrdersPage() {
   // Debug logging
   console.log("Current page:", currentPage);
   console.log("Query params:", buildQueryParams());
+  console.log("Active status tab:", activeStatusTab);
   console.log("Orders data:", orders);
   console.log("Is loading:", isLoading, "Is fetching:", isFetching);
   const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
@@ -484,6 +524,20 @@ export default function OrdersPage() {
                     Status Colors
                   </div>
                   <div className="space-y-2">
+                    {/* Clear Filter Option */}
+                    <div
+                      className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded cursor-pointer border-b border-gray-100 pb-2 mb-2"
+                      onClick={() => {
+                        setActiveStatusTab("all");
+                        setCurrentPage(1);
+                        setShowStatusDropdown(false);
+                      }}
+                    >
+                      <span className="px-2 py-1 rounded text-xs font-medium flex-1 text-center bg-gray-100 text-gray-700">
+                        Очистить фильтры
+                      </span>
+                    </div>
+
                     {statuses.length === 0 ? (
                       <div className="text-xs text-gray-500 text-center py-2">
                         Loading...
@@ -492,7 +546,12 @@ export default function OrdersPage() {
                       statuses.map((status) => (
                         <div
                           key={status.id}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded cursor-pointer"
+                          onClick={() => {
+                            setActiveStatusTab(status.id.toString());
+                            setCurrentPage(1);
+                            setShowStatusDropdown(false);
+                          }}
                         >
                           <span
                             className="px-2 py-1 rounded text-xs font-medium flex-1 text-center"
@@ -534,6 +593,22 @@ export default function OrdersPage() {
             {tab.label}
           </button>
         ))}
+
+        {/* Show active status filter if numeric ID is selected */}
+        {!isNaN(Number(activeStatusTab)) && activeStatusTab !== "all" && (
+          <div className="flex items-center ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+            <span>
+              {statuses.find((s) => s.id.toString() === activeStatusTab)
+                ?.status || `Status ${activeStatusTab}`}
+            </span>
+            <button
+              onClick={() => setActiveStatusTab("all")}
+              className="ml-2 text-blue-600 hover:text-blue-800"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </div>
 
       {showFilters && (
@@ -917,7 +992,7 @@ export default function OrdersPage() {
                   {t("forms.moy_sklad_id")}
                 </th>
               )}
-               {visibleColumns.order_code && (
+              {visibleColumns.order_code && (
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   {t("forms.order_code")}
                 </th>
@@ -1099,7 +1174,7 @@ export default function OrdersPage() {
                       </div>
                     </td>
                   )}
-                    {visibleColumns.order_code && (
+                  {visibleColumns.order_code && (
                     <td className="px-3 py-2 text-xs text-gray-600">
                       <div className="truncate" title={order.order_cde}>
                         {order.order_code || "-"}
@@ -1347,27 +1422,31 @@ export default function OrdersPage() {
                                 <Download className="h-4 w-4 mr-2" />
                                 {t("common.export")}
                               </button>
-                              <button
-                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                onClick={() => {
-                                  setOrderToChangeStatus(order);
-                                  setIsStatusChangeModalOpen(true);
-                                  setOpenActionMenu(null);
-                                }}
-                              >
-                                <Info className="h-4 w-4 mr-2" />
-                                {t("common.change_status") || "Change Status"}
-                              </button>
-                              <button
-                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                                onClick={() => {
-                                  handleDeleteClick(order);
-                                  setOpenActionMenu(null);
-                                }}
-                              >
-                                <Trash className="h-4 w-4 mr-2" />
-                                {t("common.delete")}
-                              </button>
+                              {currentUser?.role !== "MANUFACTURE" && (
+                                <button
+                                  className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  onClick={() => {
+                                    setOrderToChangeStatus(order);
+                                    setIsStatusChangeModalOpen(true);
+                                    setOpenActionMenu(null);
+                                  }}
+                                >
+                                  <Info className="h-4 w-4 mr-2" />
+                                  {t("common.change_status") || "Change Status"}
+                                </button>
+                              )}
+                              {currentUser?.role !== "MANUFACTURE" && (
+                                <button
+                                  className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                  onClick={() => {
+                                    handleDeleteClick(order);
+                                    setOpenActionMenu(null);
+                                  }}
+                                >
+                                  <Trash className="h-4 w-4 mr-2" />
+                                  {t("common.delete")}
+                                </button>
+                              )}
                             </div>
                           </div>
                         )}

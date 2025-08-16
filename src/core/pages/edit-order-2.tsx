@@ -10,6 +10,7 @@ import {
   useSendToMoySklad,
 } from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
+import { useAuth } from "../context/AuthContext";
 import {
   useGetCurrencies,
   useGetStores,
@@ -119,6 +120,7 @@ export default function EditOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { currentUser } = useAuth();
 
   const { data: orderData, isLoading: isLoadingOrder } = useGetOrder(id!);
   const { mutate: updateOrder, isPending: isUpdating } = useUpdateOrder();
@@ -334,7 +336,7 @@ export default function EditOrderPage() {
             return items.map((item: any) => ({
               ...item,
               // Store the model ID directly for proper selection in editing
-              model: item.model?.id || item.model,
+              model: item.model?.id || (item.model === "" ? null : item.model),
               // Detect and store price_type based on actual price
               price_type: item.price_type || detectPriceType(item),
             }));
@@ -355,6 +357,7 @@ export default function EditOrderPage() {
         });
 
         console.log("Normalized doors for editing:", normalizedDoors); // Debug log
+        console.log("Setting doors state with:", normalizedDoors);
         setDoors(normalizedDoors);
 
         // Initialize global door settings from the first door (if available)
@@ -373,7 +376,27 @@ export default function EditOrderPage() {
             paska_orin: firstDoor.paska_orin || "",
           });
         }
+      } else {
+        console.log(
+          "Doors not initialized - orderData:",
+          orderData,
+          "doors array:",
+          orderData?.doors,
+        );
       }
+    } else {
+      console.log("Required data not loaded yet:", {
+        orderData: !!orderData,
+        currencies: !!currencies,
+        stores: !!stores,
+        projects: !!projects,
+        counterparties: !!counterparties,
+        organizations: !!organizations,
+        salesChannels: !!salesChannels,
+        sellers: !!sellers,
+        operators: !!operators,
+        zamershiks: !!zamershiks,
+      });
     }
   }, [
     orderData,
@@ -813,26 +836,28 @@ export default function EditOrderPage() {
             casingFormula={casingFormula}
           />
 
-          <StepThree
-            orderForm={orderForm}
-            doors={doors}
-            totals={totals}
-            isLoading={isUpdating}
-            isCalculating={isCalculating}
-            onSubmit={onSubmit}
-            onCalculate={handleCalculateOrder}
-            discountAmount={discountAmount}
-            setDiscountAmount={setDiscountAmount}
-            discountPercentage={discountPercentage}
-            setDiscountPercentage={setDiscountPercentage}
-            advancePayment={advancePayment}
-            setAdvancePayment={setAdvancePayment}
-            agreementAmountInput={agreementAmountInput}
-            setAgreementAmountInput={setAgreementAmountInput}
-            orderData={orderData}
-            onSendToMoySklad={handleSendToMoySklad}
-            isSendingToMoySklad={isSendingToMoySklad}
-          />
+          {currentUser?.role !== "MANUFACTURE" && (
+            <StepThree
+              orderForm={orderForm}
+              doors={doors}
+              totals={totals}
+              isLoading={isUpdating}
+              isCalculating={isCalculating}
+              onSubmit={onSubmit}
+              onCalculate={handleCalculateOrder}
+              discountAmount={discountAmount}
+              setDiscountAmount={setDiscountAmount}
+              discountPercentage={discountPercentage}
+              setDiscountPercentage={setDiscountPercentage}
+              advancePayment={advancePayment}
+              setAdvancePayment={setAdvancePayment}
+              agreementAmountInput={agreementAmountInput}
+              setAgreementAmountInput={setAgreementAmountInput}
+              orderData={orderData}
+              onSendToMoySklad={handleSendToMoySklad}
+              isSendingToMoySklad={isSendingToMoySklad}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -1202,6 +1227,12 @@ function StepTwo({
 }: any) {
   const { t } = useTranslation();
 
+  console.log("StepTwo render - doors prop:", doors);
+  console.log("StepTwo render - doors length:", doors?.length);
+
+  // Ref to track if tables have been initialized
+  // const tablesInitialized = useRef(false);
+
   // Tables state - each table has its own door model and doors array
   const [tables, setTables] = useState([
     {
@@ -1209,20 +1240,28 @@ function StepTwo({
       doorModel: null as any,
       doorSearch: "",
       doors: doors || [],
+      // Table-specific search states
+      extensionSearch: "",
+      casingSearch: "",
+      crownSearch: "",
+      cubeSearch: "",
+      legSearch: "",
+      glassSearch: "",
+      lockSearch: "",
+      topsaSearch: "",
+      beadingSearch: "",
+      // Table-specific selected products
+      selectedExtensionProduct: null as any,
+      selectedCasingProduct: null as any,
+      selectedCrownProduct: null as any,
+      selectedCubeProduct: null as any,
+      selectedLegProduct: null as any,
+      selectedGlassProduct: null as any,
+      selectedLockProduct: null as any,
+      selectedTopsaProduct: null as any,
+      selectedBeadingProduct: null as any,
     },
   ]);
-
-  // Search states for each section
-  const [extensionSearch, setExtensionSearch] = useState<string>("");
-  const [casingSearch, setCasingSearch] = useState<string>("");
-  const [crownSearch, setCrownSearch] = useState<string>("");
-
-  // Search states for accessories
-  const [cubeSearch, setCubeSearch] = useState<string>("");
-  const [legSearch, setLegSearch] = useState<string>("");
-  const [glassSearch, setGlassSearch] = useState<string>("");
-  const [lockSearch, setLockSearch] = useState<string>("");
-  const [topsaSearch, setTopsaSearch] = useState<string>("");
 
   const getProductName = (modelId: string | any) => {
     if (typeof modelId === "object" && modelId !== null) {
@@ -1284,179 +1323,217 @@ function StepTwo({
 
     return casing;
   };
-  const [beadingSearch, setBeadingSearch] = useState<string>("");
 
-  // Selected products and price types for each section (header level)
-  const [selectedExtensionProduct, setSelectedExtensionProduct] =
-    useState<any>(null);
-  const [selectedCasingProduct, setSelectedCasingProduct] = useState<any>(null);
-  const [selectedCrownProduct, setSelectedCrownProduct] = useState<any>(null);
+  // Initialize tables with existing doors - use useMemo to prevent infinite loops
+  const initializedTables = useMemo(() => {
+    console.log("StepTwo useMemo - doors:", doors);
+    console.log("StepTwo useMemo - productsList length:", productsList.length);
 
-  // Selected products for accessories
-  const [selectedCubeProduct, setSelectedCubeProduct] = useState<any>(null);
-  const [selectedLegProduct, setSelectedLegProduct] = useState<any>(null);
-  const [selectedGlassProduct, setSelectedGlassProduct] = useState<any>(null);
-  const [selectedLockProduct, setSelectedLockProduct] = useState<any>(null);
-  const [selectedTopsaProduct, setSelectedTopsaProduct] = useState<any>(null);
-  const [selectedBeadingProduct, setSelectedBeadingProduct] =
-    useState<any>(null);
-
-  // Sync doors with parent component
-  useEffect(() => {
-    // Flatten all doors from all tables
-    const allDoors = tables.flatMap((table) => table.doors);
-    setDoors(allDoors);
-  }, [tables]);
-
-  // Initialize tables with existing doors
-  useEffect(() => {
-    if (
-      doors &&
-      doors.length > 0 &&
-      tables[0].doors.length === 0 &&
-      productsList.length > 0
-    ) {
-      // Group doors by model
-      const doorGroups: { [key: string]: any[] } = {};
-
-      doors.forEach((door: any) => {
-        const key = door.model;
-        if (!doorGroups[key]) {
-          doorGroups[key] = [];
-        }
-        doorGroups[key].push(door);
-      });
-
-      // Create tables for each group
-      const newTables = Object.keys(doorGroups).map((key, index) => {
-        const groupDoors = doorGroups[key];
-        const firstDoor = groupDoors[0];
-
-        let doorModel = null;
-        let doorSearch = "";
-
-        if (firstDoor && firstDoor.model) {
-          // Find the product in productsList
-          const product = productsList.find(
-            (p: any) => p.id === firstDoor.model,
-          );
-          if (product) {
-            doorModel = product;
-            doorSearch = product.name || "";
-          }
-        }
-
-        return {
-          id: index + 1,
-          doorModel: doorModel,
-          doorSearch: doorSearch,
-          doors: groupDoors,
-        };
-      });
-
-      // If no groups found, create default table
-      if (newTables.length === 0) {
-        newTables.push({
+    // Only initialize if we have doors data and products
+    if (!doors || doors.length === 0 || productsList.length === 0) {
+      return [
+        {
           id: 1,
-          doorModel: null,
+          doorModel: null as any,
           doorSearch: "",
-          doors: doors,
-        });
+          doors: [],
+          extensionSearch: "",
+          casingSearch: "",
+          crownSearch: "",
+          cubeSearch: "",
+          legSearch: "",
+          glassSearch: "",
+          lockSearch: "",
+          topsaSearch: "",
+          beadingSearch: "",
+          selectedExtensionProduct: null as any,
+          selectedCasingProduct: null as any,
+          selectedCrownProduct: null as any,
+          selectedCubeProduct: null as any,
+          selectedLegProduct: null as any,
+          selectedGlassProduct: null as any,
+          selectedLockProduct: null as any,
+          selectedTopsaProduct: null as any,
+          selectedBeadingProduct: null as any,
+        },
+      ];
+    }
+
+    console.log("Initializing tables with doors:", doors);
+    // Group doors by model
+    const doorGroups: { [key: string]: any[] } = {};
+
+    doors.forEach((door: any) => {
+      const key = door.model;
+      if (!doorGroups[key]) {
+        doorGroups[key] = [];
+      }
+      doorGroups[key].push(door);
+    });
+
+    // Create tables for each group
+    const newTables = Object.keys(doorGroups).map((key, index) => {
+      const groupDoors = doorGroups[key];
+      const firstDoor = groupDoors[0];
+
+      let doorModel = null;
+      let doorSearch = "";
+
+      if (firstDoor && firstDoor.model) {
+        // Find the product in productsList
+        const product = productsList.find((p: any) => p.id === firstDoor.model);
+        if (product) {
+          doorModel = product;
+          doorSearch = product.name || "";
+        }
       }
 
-      setTables(newTables);
+      // Initialize table-specific selected products from first door
+      let selectedExtensionProduct: any = null;
+      let selectedCasingProduct: any = null;
+      let selectedCrownProduct: any = null;
+      let selectedCubeProduct: any = null;
+      let selectedLegProduct: any = null;
+      let selectedGlassProduct: any = null;
+      let selectedLockProduct: any = null;
+      let selectedTopsaProduct: any = null;
+      let selectedBeadingProduct: any = null;
+
+      if (firstDoor) {
+        // Pre-populate extension product
+        if (firstDoor.extensions && firstDoor.extensions.length > 0) {
+          const extensionModel = firstDoor.extensions[0].model;
+          if (extensionModel) {
+            selectedExtensionProduct = productsList.find(
+              (p: any) => p.id === extensionModel,
+            );
+          }
+        }
+
+        // Pre-populate casing product
+        if (firstDoor.casings && firstDoor.casings.length > 0) {
+          const casingModel = firstDoor.casings[0].model;
+          if (casingModel) {
+            selectedCasingProduct = productsList.find(
+              (p: any) => p.id === casingModel,
+            );
+          }
+        }
+
+        // Pre-populate crown product
+        if (firstDoor.crowns && firstDoor.crowns.length > 0) {
+          const crownModel = firstDoor.crowns[0].model;
+          if (crownModel) {
+            selectedCrownProduct = productsList.find(
+              (p: any) => p.id === crownModel,
+            );
+          }
+        }
+
+        // Pre-populate accessory products
+        if (firstDoor.accessories && firstDoor.accessories.length > 0) {
+          firstDoor.accessories.forEach((accessory: any) => {
+            if (!accessory.model) return;
+
+            const accessoryProduct = productsList.find(
+              (p: any) => p.id === accessory.model,
+            );
+            if (!accessoryProduct) return;
+
+            switch (accessory.accessory_type) {
+              case "cube":
+                selectedCubeProduct = accessoryProduct;
+                break;
+              case "leg":
+                selectedLegProduct = accessoryProduct;
+                break;
+              case "glass":
+                selectedGlassProduct = accessoryProduct;
+                break;
+              case "lock":
+                selectedLockProduct = accessoryProduct;
+                break;
+              case "topsa":
+                selectedTopsaProduct = accessoryProduct;
+                break;
+              case "beading":
+                selectedBeadingProduct = accessoryProduct;
+                break;
+            }
+          });
+        }
+      }
+      return {
+        id: index + 1,
+        doorModel: doorModel,
+        doorSearch: doorSearch,
+        doors: groupDoors,
+        // Table-specific search states
+        extensionSearch: selectedExtensionProduct?.name || "",
+        casingSearch: selectedCasingProduct?.name || "",
+        crownSearch: selectedCrownProduct?.name || "",
+        cubeSearch: selectedCubeProduct?.name || "",
+        legSearch: selectedLegProduct?.name || "",
+        glassSearch: selectedGlassProduct?.name || "",
+        lockSearch: selectedLockProduct?.name || "",
+        topsaSearch: selectedTopsaProduct?.name || "",
+        beadingSearch: selectedBeadingProduct?.name || "",
+        // Table-specific selected products
+        selectedExtensionProduct,
+        selectedCasingProduct,
+        selectedCrownProduct,
+        selectedCubeProduct,
+        selectedLegProduct,
+        selectedGlassProduct,
+        selectedLockProduct,
+        selectedTopsaProduct,
+        selectedBeadingProduct,
+      };
+    });
+
+    console.log("StepTwo - newTables created:", newTables);
+
+    // If no groups found, create default table
+    if (newTables.length === 0) {
+      newTables.push({
+        id: 1,
+        doorModel: null,
+        doorSearch: "",
+        doors: doors,
+        extensionSearch: "",
+        casingSearch: "",
+        crownSearch: "",
+        cubeSearch: "",
+        legSearch: "",
+        glassSearch: "",
+        lockSearch: "",
+        topsaSearch: "",
+        beadingSearch: "",
+        selectedExtensionProduct: null,
+        selectedCasingProduct: null,
+        selectedCrownProduct: null,
+        selectedCubeProduct: null,
+        selectedLegProduct: null,
+        selectedGlassProduct: null,
+        selectedLockProduct: null,
+        selectedTopsaProduct: null,
+        selectedBeadingProduct: null,
+      });
     }
+
+    return newTables;
   }, [doors, productsList]);
 
-  console.log("cube search", selectedCubeProduct);
-
-  // Effect to pre-populate selected products from existing door data
+  // Update tables when initializedTables changes
   useEffect(() => {
-    if (doors && doors.length > 0 && productsList.length > 0) {
-      const firstDoor = doors[0];
-
-      // Pre-populate extension product
-      if (firstDoor.extensions && firstDoor.extensions.length > 0) {
-        const extensionModel = firstDoor.extensions[0].model;
-        if (extensionModel) {
-          const extensionProduct = productsList.find(
-            (p: any) => p.id === extensionModel,
-          );
-          if (extensionProduct) {
-            setSelectedExtensionProduct(extensionProduct);
-            setExtensionSearch(extensionProduct.name || "");
-          }
-        }
+    setTables((prevTables) => {
+      // Only update if the structure actually changed
+      if (JSON.stringify(prevTables) === JSON.stringify(initializedTables)) {
+        return prevTables;
       }
-
-      // Pre-populate casing product
-      if (firstDoor.casings && firstDoor.casings.length > 0) {
-        const casingModel = firstDoor.casings[0].model;
-        if (casingModel) {
-          const casingProduct = productsList.find(
-            (p: any) => p.id === casingModel,
-          );
-          if (casingProduct) {
-            setSelectedCasingProduct(casingProduct);
-            setCasingSearch(casingProduct.name || "");
-          }
-        }
-      }
-
-      // Pre-populate crown product
-      if (firstDoor.crowns && firstDoor.crowns.length > 0) {
-        const crownModel = firstDoor.crowns[0].model;
-        if (crownModel) {
-          const crownProduct = productsList.find(
-            (p: any) => p.id === crownModel,
-          );
-          if (crownProduct) {
-            setSelectedCrownProduct(crownProduct);
-            setCrownSearch(crownProduct.name || "");
-          }
-        }
-      }
-
-      // Pre-populate accessory products
-      if (firstDoor.accessories && firstDoor.accessories.length > 0) {
-        firstDoor.accessories.forEach((accessory: any) => {
-          if (!accessory.model) return;
-
-          const accessoryProduct = productsList.find(
-            (p: any) => p.id === accessory.model,
-          );
-          if (!accessoryProduct) return;
-
-          switch (accessory.accessory_type) {
-            case "cube":
-              setSelectedCubeProduct(accessoryProduct);
-              setCubeSearch(accessoryProduct.name || "");
-              break;
-            case "leg":
-              setSelectedLegProduct(accessoryProduct);
-              setLegSearch(accessoryProduct.name || "");
-              break;
-            case "glass":
-              setSelectedGlassProduct(accessoryProduct);
-              setGlassSearch(accessoryProduct.name || "");
-              break;
-            case "lock":
-              setSelectedLockProduct(accessoryProduct);
-              setLockSearch(accessoryProduct.name || "");
-              break;
-            case "topsa":
-              setSelectedTopsaProduct(accessoryProduct);
-              setTopsaSearch(accessoryProduct.name || "");
-              break;
-            case "beading":
-              setSelectedBeadingProduct(accessoryProduct);
-              setBeadingSearch(accessoryProduct.name || "");
-              break;
-          }
-        });
-      }
-    }
-  }, [doors, productsList]);
+      return initializedTables;
+    });
+  }, [initializedTables]);
 
   // Add new table functionality
   const handleAddNewTable = () => {
@@ -1466,6 +1543,26 @@ function StepTwo({
       doorModel: null as any,
       doorSearch: "",
       doors: [],
+      // Table-specific search states
+      extensionSearch: "",
+      casingSearch: "",
+      crownSearch: "",
+      cubeSearch: "",
+      legSearch: "",
+      glassSearch: "",
+      lockSearch: "",
+      topsaSearch: "",
+      beadingSearch: "",
+      // Table-specific selected products
+      selectedExtensionProduct: null as any,
+      selectedCasingProduct: null as any,
+      selectedCrownProduct: null as any,
+      selectedCubeProduct: null as any,
+      selectedLegProduct: null as any,
+      selectedGlassProduct: null as any,
+      selectedLockProduct: null as any,
+      selectedTopsaProduct: null as any,
+      selectedBeadingProduct: null as any,
     };
     setTables([...tables, newTable]);
   };
@@ -1533,10 +1630,12 @@ function StepTwo({
     // Create 2 default extensions (dobors) - with selected product if available, otherwise empty entries
     const defaultExtensions = [
       {
-        model: selectedExtensionProduct ? selectedExtensionProduct.id : "",
+        model: targetTable.selectedExtensionProduct
+          ? targetTable.selectedExtensionProduct.id
+          : null,
         price_type: "",
-        price: selectedExtensionProduct
-          ? (selectedExtensionProduct.salePrices?.find(
+        price: targetTable.selectedExtensionProduct
+          ? (targetTable.selectedExtensionProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1545,10 +1644,12 @@ function StepTwo({
         width: 0,
       },
       {
-        model: selectedExtensionProduct ? selectedExtensionProduct.id : "",
+        model: targetTable.selectedExtensionProduct
+          ? targetTable.selectedExtensionProduct.id
+          : null,
         price_type: "",
-        price: selectedExtensionProduct
-          ? (selectedExtensionProduct.salePrices?.find(
+        price: targetTable.selectedExtensionProduct
+          ? (targetTable.selectedExtensionProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1561,29 +1662,35 @@ function StepTwo({
     // Create 2 default casings - with selected product if available, otherwise empty entries
     const defaultCasings = [
       {
-        model: selectedCasingProduct ? selectedCasingProduct.id : "",
+        model: targetTable.selectedCasingProduct
+          ? targetTable.selectedCasingProduct.id
+          : "",
         price_type: "",
-        price: selectedCasingProduct
-          ? (selectedCasingProduct.salePrices?.find(
+        price: targetTable.selectedCasingProduct
+          ? (targetTable.selectedCasingProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
         quantity: 1,
         casing_type: "боковой",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
       },
       {
-        model: selectedCasingProduct ? selectedCasingProduct.id : "",
+        model: targetTable.selectedCasingProduct
+          ? targetTable.selectedCasingProduct.id
+          : "",
         price_type: "",
-        price: selectedCasingProduct
-          ? (selectedCasingProduct.salePrices?.find(
+        price: targetTable.selectedCasingProduct
+          ? (targetTable.selectedCasingProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
         quantity: 1,
         casing_type: "прямой",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1593,10 +1700,12 @@ function StepTwo({
     // Create 1 default crown - with selected product if available, otherwise empty entry
     const defaultCrowns = [
       {
-        model: selectedCrownProduct ? selectedCrownProduct.id : "",
+        model: targetTable.selectedCrownProduct
+          ? targetTable.selectedCrownProduct.id
+          : "",
         price_type: "",
-        price: selectedCrownProduct
-          ? (selectedCrownProduct.salePrices?.find(
+        price: targetTable.selectedCrownProduct
+          ? (targetTable.selectedCrownProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1609,10 +1718,12 @@ function StepTwo({
     // Create 6 predefined accessories with selected products
     const defaultAccessories = [
       {
-        model: selectedCubeProduct ? selectedCubeProduct.id : "",
+        model: targetTable.selectedCubeProduct
+          ? targetTable.selectedCubeProduct.id
+          : "",
         price_type: "",
-        price: selectedCubeProduct
-          ? (selectedCubeProduct.salePrices?.find(
+        price: targetTable.selectedCubeProduct
+          ? (targetTable.selectedCubeProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1621,10 +1732,12 @@ function StepTwo({
         name: "Кубик",
       },
       {
-        model: selectedLegProduct ? selectedLegProduct.id : "",
+        model: targetTable.selectedLegProduct
+          ? targetTable.selectedLegProduct.id
+          : "",
         price_type: "",
-        price: selectedLegProduct
-          ? (selectedLegProduct.salePrices?.find(
+        price: targetTable.selectedLegProduct
+          ? (targetTable.selectedLegProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1633,10 +1746,12 @@ function StepTwo({
         name: "Ножка",
       },
       {
-        model: selectedGlassProduct ? selectedGlassProduct.id : "",
+        model: targetTable.selectedGlassProduct
+          ? targetTable.selectedGlassProduct.id
+          : "",
         price_type: "",
-        price: selectedGlassProduct
-          ? (selectedGlassProduct.salePrices?.find(
+        price: targetTable.selectedGlassProduct
+          ? (targetTable.selectedGlassProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1645,10 +1760,12 @@ function StepTwo({
         name: "Стекло",
       },
       {
-        model: selectedLockProduct ? selectedLockProduct.id : "",
+        model: targetTable.selectedLockProduct
+          ? targetTable.selectedLockProduct.id
+          : "",
         price_type: "",
-        price: selectedLockProduct
-          ? (selectedLockProduct.salePrices?.find(
+        price: targetTable.selectedLockProduct
+          ? (targetTable.selectedLockProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1657,10 +1774,12 @@ function StepTwo({
         name: "Замок",
       },
       {
-        model: selectedTopsaProduct ? selectedTopsaProduct.id : "",
+        model: targetTable.selectedTopsaProduct
+          ? targetTable.selectedTopsaProduct.id
+          : "",
         price_type: "",
-        price: selectedTopsaProduct
-          ? (selectedTopsaProduct.salePrices?.find(
+        price: targetTable.selectedTopsaProduct
+          ? (targetTable.selectedTopsaProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1669,10 +1788,12 @@ function StepTwo({
         name: "Топса",
       },
       {
-        model: selectedBeadingProduct ? selectedBeadingProduct.id : "",
+        model: targetTable.selectedBeadingProduct
+          ? targetTable.selectedBeadingProduct.id
+          : "",
         price_type: "",
-        price: selectedBeadingProduct
-          ? (selectedBeadingProduct.salePrices?.find(
+        price: targetTable.selectedBeadingProduct
+          ? (targetTable.selectedBeadingProduct.salePrices?.find(
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
@@ -1824,10 +1945,17 @@ function StepTwo({
     const allDoors = tables.flatMap((table) =>
       table.doors.map((door: any) => ({
         ...door,
-        model: table.doorModel?.id || door.model,
+        model: table.doorModel ? table.doorModel.id : door.model,
       })),
     );
-    setDoors(allDoors);
+
+    // Only update doors if the data actually changed
+    setDoors((prevDoors: any) => {
+      if (JSON.stringify(prevDoors) === JSON.stringify(allDoors)) {
+        return prevDoors;
+      }
+      return allDoors;
+    });
   }, [tables, setDoors]);
 
   // Remove door functionality
@@ -1866,22 +1994,46 @@ function StepTwo({
         beading_additional,
       ] = materialAttributes;
 
-      // Update all doors in all tables
-      const updatedTables = tables.map((table) => ({
-        ...table,
-        doors: table.doors.map((door: any) => ({
-          ...door,
-          material: material || "",
-          material_type: material_type || "",
-          massif: massif || "",
-          color: color || "",
-          patina_color: patina_color || "",
-          beading_main: beading_main || "",
-          beading_additional: beading_additional || "2",
-        })),
-      }));
+      // Only update if material attributes actually changed
+      setTables((prevTables) => {
+        const updatedTables = prevTables.map((table) => ({
+          ...table,
+          doors: table.doors.map((door: any) => {
+            // Check if any material attribute actually changed
+            const hasChanges =
+              door.material !== (material || "") ||
+              door.material_type !== (material_type || "") ||
+              door.massif !== (massif || "") ||
+              door.color !== (color || "") ||
+              door.patina_color !== (patina_color || "") ||
+              door.beading_main !== (beading_main || "") ||
+              door.beading_additional !== (beading_additional || "2");
 
-      setTables(updatedTables);
+            if (!hasChanges) return door;
+
+            return {
+              ...door,
+              material: material || "",
+              material_type: material_type || "",
+              massif: massif || "",
+              color: color || "",
+              patina_color: patina_color || "",
+              beading_main: beading_main || "",
+              beading_additional: beading_additional || "2",
+            };
+          }),
+        }));
+
+        // Only return new tables if there were actual changes
+        const hasAnyChanges = updatedTables.some((table, index) =>
+          table.doors.some(
+            (door: any, doorIndex: any) =>
+              door !== prevTables[index]?.doors[doorIndex],
+          ),
+        );
+
+        return hasAnyChanges ? updatedTables : prevTables;
+      });
     }
   }, materialAttributes);
 
@@ -1903,6 +2055,12 @@ function StepTwo({
       {/* Render all tables vertically */}
       {tables.map((table, _tableIndex) => {
         const tableCurrentDoors = table.doors || [];
+        console.log(
+          "Rendering table",
+          table.id,
+          "with doors:",
+          tableCurrentDoors,
+        );
         return (
           <Card
             key={table.id}
@@ -1936,6 +2094,22 @@ function StepTwo({
                               t.doors.length === 0 && product;
 
                             let newDoors = t.doors;
+
+                            // If table has existing doors, update their model to the new selected model
+                            if (t.doors.length > 0 && product) {
+                              newDoors = t.doors.map((door: any) => ({
+                                ...door,
+                                model: product.id,
+                                price_type: "",
+                                price: product
+                                  ? (product.salePrices?.find(
+                                      (p: any) =>
+                                        p.priceType.name === "Цена продажи",
+                                    )?.value || 0) / 100
+                                  : door.price,
+                              }));
+                            }
+
                             if (shouldAddRow) {
                               const orderData = orderForm.getValues();
                               const defaultDoorPrice = product
@@ -1948,12 +2122,12 @@ function StepTwo({
                               // Create 2 default extensions (dobors) - with selected product if available, otherwise empty entries
                               const defaultExtensions = [
                                 {
-                                  model: selectedExtensionProduct
-                                    ? selectedExtensionProduct.id
-                                    : "",
+                                  model: t.selectedExtensionProduct
+                                    ? t.selectedExtensionProduct.id
+                                    : null,
                                   price_type: "",
-                                  price: selectedExtensionProduct
-                                    ? (selectedExtensionProduct.salePrices?.find(
+                                  price: t.selectedExtensionProduct
+                                    ? (t.selectedExtensionProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -1963,12 +2137,12 @@ function StepTwo({
                                   width: 0,
                                 },
                                 {
-                                  model: selectedExtensionProduct
-                                    ? selectedExtensionProduct.id
-                                    : "",
+                                  model: t.selectedExtensionProduct
+                                    ? t.selectedExtensionProduct.id
+                                    : null,
                                   price_type: "",
-                                  price: selectedExtensionProduct
-                                    ? (selectedExtensionProduct.salePrices?.find(
+                                  price: t.selectedExtensionProduct
+                                    ? (t.selectedExtensionProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -1982,12 +2156,12 @@ function StepTwo({
                               // Create 2 default casings - with selected product if available, otherwise empty entries
                               const defaultCasings = [
                                 {
-                                  model: selectedCasingProduct
-                                    ? selectedCasingProduct.id
+                                  model: t.selectedCasingProduct
+                                    ? t.selectedCasingProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedCasingProduct
-                                    ? (selectedCasingProduct.salePrices?.find(
+                                  price: t.selectedCasingProduct
+                                    ? (t.selectedCasingProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -1999,12 +2173,12 @@ function StepTwo({
                                   width: casingSize,
                                 },
                                 {
-                                  model: selectedCasingProduct
-                                    ? selectedCasingProduct.id
+                                  model: t.selectedCasingProduct
+                                    ? t.selectedCasingProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedCasingProduct
-                                    ? (selectedCasingProduct.salePrices?.find(
+                                  price: t.selectedCasingProduct
+                                    ? (t.selectedCasingProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2020,12 +2194,12 @@ function StepTwo({
                               // Create 1 default crown - with selected product if available, otherwise empty entry
                               const defaultCrowns = [
                                 {
-                                  model: selectedCrownProduct
-                                    ? selectedCrownProduct.id
+                                  model: t.selectedCrownProduct
+                                    ? t.selectedCrownProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedCrownProduct
-                                    ? (selectedCrownProduct.salePrices?.find(
+                                  price: t.selectedCrownProduct
+                                    ? (t.selectedCrownProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2039,12 +2213,12 @@ function StepTwo({
                               // Create 6 predefined accessories with selected products
                               const defaultAccessories = [
                                 {
-                                  model: selectedCubeProduct
-                                    ? selectedCubeProduct.id
+                                  model: t.selectedCubeProduct
+                                    ? t.selectedCubeProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedCubeProduct
-                                    ? (selectedCubeProduct.salePrices?.find(
+                                  price: t.selectedCubeProduct
+                                    ? (t.selectedCubeProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2054,12 +2228,12 @@ function StepTwo({
                                   name: "Кубик",
                                 },
                                 {
-                                  model: selectedLegProduct
-                                    ? selectedLegProduct.id
+                                  model: t.selectedLegProduct
+                                    ? t.selectedLegProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedLegProduct
-                                    ? (selectedLegProduct.salePrices?.find(
+                                  price: t.selectedLegProduct
+                                    ? (t.selectedLegProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2069,12 +2243,12 @@ function StepTwo({
                                   name: "Ножка",
                                 },
                                 {
-                                  model: selectedGlassProduct
-                                    ? selectedGlassProduct.id
+                                  model: t.selectedGlassProduct
+                                    ? t.selectedGlassProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedGlassProduct
-                                    ? (selectedGlassProduct.salePrices?.find(
+                                  price: t.selectedGlassProduct
+                                    ? (t.selectedGlassProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2084,12 +2258,12 @@ function StepTwo({
                                   name: "Стекло",
                                 },
                                 {
-                                  model: selectedLockProduct
-                                    ? selectedLockProduct.id
+                                  model: t.selectedLockProduct
+                                    ? t.selectedLockProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedLockProduct
-                                    ? (selectedLockProduct.salePrices?.find(
+                                  price: t.selectedLockProduct
+                                    ? (t.selectedLockProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2099,12 +2273,12 @@ function StepTwo({
                                   name: "Замок",
                                 },
                                 {
-                                  model: selectedTopsaProduct
-                                    ? selectedTopsaProduct.id
+                                  model: t.selectedTopsaProduct
+                                    ? t.selectedTopsaProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedTopsaProduct
-                                    ? (selectedTopsaProduct.salePrices?.find(
+                                  price: t.selectedTopsaProduct
+                                    ? (t.selectedTopsaProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2114,12 +2288,12 @@ function StepTwo({
                                   name: "Топса",
                                 },
                                 {
-                                  model: selectedBeadingProduct
-                                    ? selectedBeadingProduct.id
+                                  model: t.selectedBeadingProduct
+                                    ? t.selectedBeadingProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedBeadingProduct
-                                    ? (selectedBeadingProduct.salePrices?.find(
+                                  price: t.selectedBeadingProduct
+                                    ? (t.selectedBeadingProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2268,13 +2442,60 @@ function StepTwo({
                             <span>{t("forms.extensions")}</span>
                           </div>
                           <HeaderSearch
-                            value={extensionSearch}
-                            onChange={setExtensionSearch}
+                            value={table.extensionSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, extensionSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_extensions")}
-                            selectedProduct={selectedExtensionProduct}
+                            selectedProduct={table.selectedExtensionProduct}
                             onProductSelect={(product) => {
-                              setSelectedExtensionProduct(product);
-                              setExtensionSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedExtensionProduct: product,
+                                    extensionSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+
+                              // Update existing doors' extensions with the new product
+                              if (product) {
+                                const currentFormData = orderForm.getValues();
+                                const updatedDoors = currentFormData.doors.map(
+                                  (door: any) => {
+                                    if (door.table_id === table.id) {
+                                      return {
+                                        ...door,
+                                        extensions: door.extensions.map(
+                                          (ext: any) => ({
+                                            ...ext,
+                                            model: product.id,
+                                            price_type: ext.price_type || "",
+                                            price:
+                                              ext.price ||
+                                              (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100,
+                                          }),
+                                        ),
+                                      };
+                                    }
+                                    return door;
+                                  },
+                                );
+                                orderForm.setValue("doors", updatedDoors);
+                              }
                             }}
                           />
                         </div>
@@ -2285,13 +2506,30 @@ function StepTwo({
                             <span>{t("forms.casings")}</span>
                           </div>
                           <HeaderSearch
-                            value={casingSearch}
-                            onChange={setCasingSearch}
+                            value={table.casingSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, casingSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_casings")}
-                            selectedProduct={selectedCasingProduct}
+                            selectedProduct={table.selectedCasingProduct}
                             onProductSelect={(product) => {
-                              setSelectedCasingProduct(product);
-                              setCasingSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedCasingProduct: product,
+                                    casingSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2302,13 +2540,30 @@ function StepTwo({
                             <span>{t("forms.crowns")}</span>
                           </div>
                           <HeaderSearch
-                            value={crownSearch}
-                            onChange={setCrownSearch}
+                            value={table.crownSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, crownSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_crowns")}
-                            selectedProduct={selectedCrownProduct}
+                            selectedProduct={table.selectedCrownProduct}
                             onProductSelect={(product) => {
-                              setSelectedCrownProduct(product);
-                              setCrownSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedCrownProduct: product,
+                                    crownSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2319,13 +2574,30 @@ function StepTwo({
                             <span>Кубик</span>
                           </div>
                           <HeaderSearch
-                            value={cubeSearch}
-                            onChange={setCubeSearch}
+                            value={table.cubeSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, cubeSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_cubes")}
-                            selectedProduct={selectedCubeProduct}
+                            selectedProduct={table.selectedCubeProduct}
                             onProductSelect={(product) => {
-                              setSelectedCubeProduct(product);
-                              setCubeSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedCubeProduct: product,
+                                    cubeSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2336,13 +2608,30 @@ function StepTwo({
                             <span>Ножка</span>
                           </div>
                           <HeaderSearch
-                            value={legSearch}
-                            onChange={setLegSearch}
+                            value={table.legSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, legSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_legs")}
-                            selectedProduct={selectedLegProduct}
+                            selectedProduct={table.selectedLegProduct}
                             onProductSelect={(product) => {
-                              setSelectedLegProduct(product);
-                              setLegSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedLegProduct: product,
+                                    legSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2353,13 +2642,30 @@ function StepTwo({
                             <span>Стекло</span>
                           </div>
                           <HeaderSearch
-                            value={glassSearch}
-                            onChange={setGlassSearch}
+                            value={table.glassSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, glassSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_glass")}
-                            selectedProduct={selectedGlassProduct}
+                            selectedProduct={table.selectedGlassProduct}
                             onProductSelect={(product) => {
-                              setSelectedGlassProduct(product);
-                              setGlassSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedGlassProduct: product,
+                                    glassSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2370,13 +2676,30 @@ function StepTwo({
                             <span>Замок</span>
                           </div>
                           <HeaderSearch
-                            value={lockSearch}
-                            onChange={setLockSearch}
+                            value={table.lockSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, lockSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_locks")}
-                            selectedProduct={selectedLockProduct}
+                            selectedProduct={table.selectedLockProduct}
                             onProductSelect={(product) => {
-                              setSelectedLockProduct(product);
-                              setLockSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedLockProduct: product,
+                                    lockSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2387,13 +2710,30 @@ function StepTwo({
                             <span>Топса</span>
                           </div>
                           <HeaderSearch
-                            value={topsaSearch}
-                            onChange={setTopsaSearch}
+                            value={table.topsaSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, topsaSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_topsas")}
-                            selectedProduct={selectedTopsaProduct}
+                            selectedProduct={table.selectedTopsaProduct}
                             onProductSelect={(product) => {
-                              setSelectedTopsaProduct(product);
-                              setTopsaSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedTopsaProduct: product,
+                                    topsaSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2404,13 +2744,30 @@ function StepTwo({
                             <span>Шпингалет</span>
                           </div>
                           <HeaderSearch
-                            value={beadingSearch}
-                            onChange={setBeadingSearch}
+                            value={table.beadingSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, beadingSearch: value };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
                             placeholder={t("forms.search_beading")}
-                            selectedProduct={selectedBeadingProduct}
+                            selectedProduct={table.selectedBeadingProduct}
                             onProductSelect={(product) => {
-                              setSelectedBeadingProduct(product);
-                              setBeadingSearch(product?.name || "");
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedBeadingProduct: product,
+                                    beadingSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
                             }}
                           />
                         </div>
@@ -2563,7 +2920,7 @@ function StepTwo({
                             }
                           >
                             <SelectTrigger className="h-8">
-                              <SelectValue placeholder="Select Paska Orin" />
+                              <SelectValue placeholder="Paska Orin" />
                             </SelectTrigger>
                             <SelectContent className="z-[9999]">
                               <SelectItem value="Сырты">Сырты</SelectItem>
@@ -2920,12 +3277,12 @@ function StepTwo({
                                 door.accessories,
                                 "cube",
                                 {
-                                  model: selectedCubeProduct
-                                    ? selectedCubeProduct.id
+                                  model: table.selectedCubeProduct
+                                    ? table.selectedCubeProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedCubeProduct
-                                    ? (selectedCubeProduct.salePrices?.find(
+                                  price: table.selectedCubeProduct
+                                    ? (table.selectedCubeProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -2964,12 +3321,12 @@ function StepTwo({
                                 door.accessories,
                                 "leg",
                                 {
-                                  model: selectedLegProduct
-                                    ? selectedLegProduct.id
+                                  model: table.selectedLegProduct
+                                    ? table.selectedLegProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedLegProduct
-                                    ? (selectedLegProduct.salePrices?.find(
+                                  price: table.selectedLegProduct
+                                    ? (table.selectedLegProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -3008,12 +3365,12 @@ function StepTwo({
                                 door.accessories,
                                 "glass",
                                 {
-                                  model: selectedGlassProduct
-                                    ? selectedGlassProduct.id
+                                  model: table.selectedGlassProduct
+                                    ? table.selectedGlassProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedGlassProduct
-                                    ? (selectedGlassProduct.salePrices?.find(
+                                  price: table.selectedGlassProduct
+                                    ? (table.selectedGlassProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -3052,12 +3409,12 @@ function StepTwo({
                                 door.accessories,
                                 "lock",
                                 {
-                                  model: selectedLockProduct
-                                    ? selectedLockProduct.id
+                                  model: table.selectedLockProduct
+                                    ? table.selectedLockProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedLockProduct
-                                    ? (selectedLockProduct.salePrices?.find(
+                                  price: table.selectedLockProduct
+                                    ? (table.selectedLockProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -3096,12 +3453,12 @@ function StepTwo({
                                 door.accessories,
                                 "topsa",
                                 {
-                                  model: selectedTopsaProduct
-                                    ? selectedTopsaProduct.id
+                                  model: table.selectedTopsaProduct
+                                    ? table.selectedTopsaProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedTopsaProduct
-                                    ? (selectedTopsaProduct.salePrices?.find(
+                                  price: table.selectedTopsaProduct
+                                    ? (table.selectedTopsaProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
@@ -3141,12 +3498,12 @@ function StepTwo({
                                 door.accessories,
                                 "beading",
                                 {
-                                  model: selectedBeadingProduct
-                                    ? selectedBeadingProduct.id
+                                  model: table.selectedBeadingProduct
+                                    ? table.selectedBeadingProduct.id
                                     : "",
                                   price_type: "",
-                                  price: selectedBeadingProduct
-                                    ? (selectedBeadingProduct.salePrices?.find(
+                                  price: table.selectedBeadingProduct
+                                    ? (table.selectedBeadingProduct.salePrices?.find(
                                         (p: any) =>
                                           p.priceType.name === "Цена продажи",
                                       )?.value || 0) / 100
