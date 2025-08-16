@@ -36,7 +36,9 @@
     "toggle_columns": "Báganaları almaştırıw",
     "done": "Tayın",
     "total": "jámi",
-    "current_formula": "Házirgi formula"
+    "current_formula": "Házirgi formula",
+    "saving": "Saqlap qoyılmaqta...",
+    "information": "Maǵlıwmat"
   },
   "roles": {
     "admin": "Administrator",
@@ -278,6 +280,13 @@
     "phone_number": "Telefon nomeri",
     "role": "Lawazımı",
     "api_login": "API login",
+    "api_password": "API parol",
+    "fixed_salary": "Túraqli maash",
+    "order_percentage": "Buyırtpa payızı",
+    "staff_member": "Xızmetker",
+    "sales_plan": "Satıw planı",
+    "clients_plan": "Klientler planı",
+    "sales_count_plan": "Satıw sanı planı",
     "client_name": "Klient atı",
     "client_phone": "Klient telefoni",
     "address": "Mánjil",
@@ -463,6 +472,7 @@
     "enter_api_password": "API paroldi kiritiń",
     "enter_fixed_salary": "Belgilengen máyishti kiritiń",
     "enter_order_percentage": "Buyırtpa procesentini kiritiń",
+    "select_staff_member": "Xızmetkerni tańlań",
     "select_month": "Aydı tańlań",
     "select_user": "Paydalanıwshını tańlań",
     "type_username": "Paydalanıwshı atın kiritiń",

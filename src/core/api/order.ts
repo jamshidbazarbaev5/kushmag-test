@@ -138,3 +138,14 @@ export const useSendToMoySklad = () => {
     },
   });
 };
+
+export const useChangeOrderStatus = () => {
+  return useMutation<any, Error, { orderId: number; status: number }>({
+    mutationFn: async ({ orderId, status }) => {
+      const response = await api.post(`orders/${orderId}/change-status/`, {
+        status,
+      });
+      return response.data;
+    },
+  });
+};

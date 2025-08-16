@@ -132,6 +132,81 @@ const formatDate = (dateString: string) => {
             </div>
           </CardTitle>
         </CardHeader>
+         {/* Summary Section */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    {t("daily_plans.total_sales")}
+                  </h3>
+                  <div className="mt-2">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {(planData as DailyPlanResponse)?.details
+                        ?.reduce((sum, detail) => sum + detail.sales, 0)
+                        .toLocaleString()}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {t("daily_plans.plan")}:{" "}
+                      {(planData as DailyPlanResponse)?.details
+                        ?.reduce((sum, detail) => sum + detail.sales_plan, 0)
+                        .toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    {t("daily_plans.total_clients")}
+                  </h3>
+                  <div className="mt-2">
+                    <div className="text-2xl font-bold text-green-600">
+                      {(planData as DailyPlanResponse)?.details?.reduce(
+                        (sum, detail) => sum + detail.clients,
+                        0,
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {t("daily_plans.plan")}:{" "}
+                      {(planData as DailyPlanResponse)?.details?.reduce(
+                        (sum, detail) => sum + detail.clients_plan,
+                        0,
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    {t("daily_plans.total_sales_count")}
+                  </h3>
+                  <div className="mt-2">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {(planData as DailyPlanResponse)?.details?.reduce(
+                        (sum, detail) => sum + detail.sales_count,
+                        0,
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {t("daily_plans.plan")}:{" "}
+                      {(planData as DailyPlanResponse)?.details?.reduce(
+                        (sum, detail) => sum + detail.sales_count_plan,
+                        0,
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
@@ -234,81 +309,7 @@ const formatDate = (dateString: string) => {
             </Table>
           </div>
 
-          {/* Summary Section */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    {t("daily_plans.total_sales")}
-                  </h3>
-                  <div className="mt-2">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {(planData as DailyPlanResponse)?.details
-                        ?.reduce((sum, detail) => sum + detail.sales, 0)
-                        .toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {t("daily_plans.plan")}:{" "}
-                      {(planData as DailyPlanResponse)?.details
-                        ?.reduce((sum, detail) => sum + detail.sales_plan, 0)
-                        .toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    {t("daily_plans.total_clients")}
-                  </h3>
-                  <div className="mt-2">
-                    <div className="text-2xl font-bold text-green-600">
-                      {(planData as DailyPlanResponse)?.details?.reduce(
-                        (sum, detail) => sum + detail.clients,
-                        0,
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {t("daily_plans.plan")}:{" "}
-                      {(planData as DailyPlanResponse)?.details?.reduce(
-                        (sum, detail) => sum + detail.clients_plan,
-                        0,
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    {t("daily_plans.total_sales_count")}
-                  </h3>
-                  <div className="mt-2">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {(planData as DailyPlanResponse)?.details?.reduce(
-                        (sum, detail) => sum + detail.sales_count,
-                        0,
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {t("daily_plans.plan")}:{" "}
-                      {(planData as DailyPlanResponse)?.details?.reduce(
-                        (sum, detail) => sum + detail.sales_count_plan,
-                        0,
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+         
         </CardContent>
       </Card>
     </div>

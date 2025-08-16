@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  WideDialog,
+  WideDialogContent,
+  WideDialogHeader,
+  WideDialogTitle,
+} from "@/components/ui/wide-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Save, X, Edit2, User as UserIcon, Calendar } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { User } from "@/core/api/user";
 import {
   useGetSellers,
@@ -61,19 +62,19 @@ interface EditUserModalProps {
   isLoading?: boolean;
 }
 
-const MONTH_NAMES = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+const MONTH_NAMES_KEYS = [
+  "months.january",
+  "months.february",
+  "months.march",
+  "months.april",
+  "months.may",
+  "months.june",
+  "months.july",
+  "months.august",
+  "months.september",
+  "months.october",
+  "months.november",
+  "months.december",
 ];
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -93,6 +94,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   onSave,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("profile");
   const [formData, setFormData] = useState<Partial<User>>({});
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
@@ -288,7 +290,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     }
 
     setEditingCell(null);
-    toast.success("Plan updated successfully");
+    toast.success(t("messages.success.updated", { item: t("navigation.yearly_plans") }));
   };
 
   const handleCancelEdit = () => {
@@ -309,14 +311,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   if (!user) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
+    <WideDialog open={isOpen} onOpenChange={onClose}>
+      <WideDialogContent width="extra-wide" className="max-h-[90vh] overflow-y-auto">
+        <WideDialogHeader>
+          <WideDialogTitle className="flex items-center space-x-2">
             <UserIcon className="w-5 h-5" />
-            <span>Edit User: {user.full_name}</span>
-          </DialogTitle>
-        </DialogHeader>
+            <span>{t("actions.edit")} {t("navigation.users")}: {user.full_name}</span>
+          </WideDialogTitle>
+        </WideDialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -325,78 +327,78 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               className="flex items-center space-x-2"
             >
               <UserIcon className="w-4 h-4" />
-              <span>Profile</span>
+              <span>{t("forms.user")}</span>
             </TabsTrigger>
             <TabsTrigger value="plans" className="flex items-center space-x-2">
               <Calendar className="w-4 h-4" />
-              <span>Yearly Plans</span>
+              <span>{t("navigation.yearly_plans")}</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>User Information</CardTitle>
+                <CardTitle>{t("forms.user")} {t("common.information")}</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username">{t("forms.username")}</Label>
                   <Input
                     id="username"
                     value={formData.username || ""}
                     onChange={(e) =>
                       handleInputChange("username", e.target.value)
                     }
-                    placeholder="Enter username"
+                    placeholder={t("placeholders.enter_username")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name">{t("forms.full_name")}</Label>
                   <Input
                     id="full_name"
                     value={formData.full_name || ""}
                     onChange={(e) =>
                       handleInputChange("full_name", e.target.value)
                     }
-                    placeholder="Enter full name"
+                    placeholder={t("placeholders.enter_full_name")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="phone_number">Phone Number</Label>
+                  <Label htmlFor="phone_number">{t("forms.phone_number")}</Label>
                   <Input
                     id="phone_number"
                     value={formData.phone_number || ""}
                     onChange={(e) =>
                       handleInputChange("phone_number", e.target.value)
                     }
-                    placeholder="Enter phone number"
+                    placeholder={t("placeholders.enter_phone_number")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role">{t("forms.role")}</Label>
                   <Select
                     value={formData.role || ""}
                     onValueChange={handleRoleChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
+                      <SelectValue placeholder={t("placeholders.select_role")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="PRODAVEC">Prodavec</SelectItem>
-                      <SelectItem value="ZAMERSHIK">Zamershik</SelectItem>
-                      <SelectItem value="OPERATOR">Operator</SelectItem>
-                      <SelectItem value="SOTRUDNIK">Sotrudnik</SelectItem>
+                      <SelectItem value="ADMIN">{t("roles.admin")}</SelectItem>
+                      <SelectItem value="PRODAVEC">{t("roles.prodavec")}</SelectItem>
+                      <SelectItem value="ZAMERSHIK">{t("roles.zamershik")}</SelectItem>
+                      <SelectItem value="OPERATOR">{t("roles.operator")}</SelectItem>
+                      <SelectItem value="SOTRUDNIK">{t("roles.sotrudnik")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {shouldShowStaffField() && (
                   <div>
-                    <Label htmlFor="staff_member">Staff Member</Label>
+                    <Label htmlFor="staff_member">{t("forms.staff_member")}</Label>
                     <Select
                       value={formData.staff_member || ""}
                       onValueChange={(value) =>
@@ -404,7 +406,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select staff member" />
+                        <SelectValue placeholder={t("placeholders.select_staff_member")} />
                       </SelectTrigger>
                       <SelectContent>
                         {getStaffOptions().map((option) => (
@@ -418,19 +420,19 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 )}
 
                 <div>
-                  <Label htmlFor="api_login">API Login</Label>
+                  <Label htmlFor="api_login">{t("forms.api_login")}</Label>
                   <Input
                     id="api_login"
                     value={formData.api_login || ""}
                     onChange={(e) =>
                       handleInputChange("api_login", e.target.value)
                     }
-                    placeholder="Enter API login"
+                    placeholder={t("placeholders.enter_api_login")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="api_password">API Password</Label>
+                  <Label htmlFor="api_password">{t("forms.api_password")}</Label>
                   <Input
                     id="api_password"
                     type="password"
@@ -438,12 +440,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     onChange={(e) =>
                       handleInputChange("api_password", e.target.value)
                     }
-                    placeholder="Enter API password"
+                    placeholder={t("placeholders.enter_api_password")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="fixed_salary">Fixed Salary</Label>
+                  <Label htmlFor="fixed_salary">{t("forms.fixed_salary")}</Label>
                   <Input
                     id="fixed_salary"
                     type="number"
@@ -454,12 +456,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         parseFloat(e.target.value) || 0,
                       )
                     }
-                    placeholder="Enter fixed salary"
+                    placeholder={t("placeholders.enter_fixed_salary")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="order_percentage">Order Percentage</Label>
+                  <Label htmlFor="order_percentage">{t("forms.order_percentage")}</Label>
                   <Input
                     id="order_percentage"
                     type="number"
@@ -470,7 +472,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         parseFloat(e.target.value) || 0,
                       )
                     }
-                    placeholder="Enter order percentage"
+                    placeholder={t("placeholders.enter_order_percentage")}
                   />
                 </div>
               </CardContent>
@@ -481,7 +483,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Yearly Sales Plans</CardTitle>
+                  <CardTitle>{t("navigation.yearly_plans")}</CardTitle>
                   <Select
                     value={selectedYear.toString()}
                     onValueChange={(value) => setSelectedYear(parseInt(value))}
@@ -503,21 +505,21 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 <div className="space-y-6">
                   {/* Sales Plan Table */}
                   <div>
-                    <h4 className="font-semibold mb-2">Sales Plan</h4>
+                    <h4 className="font-semibold mb-2">{t("forms.sales_plan")}</h4>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            {MONTH_NAMES.map((month) => (
+                            {MONTH_NAMES_KEYS.map((monthKey) => (
                               <TableHead
-                                key={month}
+                                key={monthKey}
                                 className="text-center min-w-20"
                               >
-                                {month}
+                                {t(monthKey).substring(0, 3)}
                               </TableHead>
                             ))}
                             <TableHead className="text-center min-w-24">
-                              Total
+                              {t("common.total")}
                             </TableHead>
                           </TableRow>
                         </TableHeader>
@@ -605,21 +607,21 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                   {/* Clients Plan Table */}
                   <div>
-                    <h4 className="font-semibold mb-2">Clients Plan</h4>
+                    <h4 className="font-semibold mb-2">{t("forms.clients_plan")}</h4>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            {MONTH_NAMES.map((month) => (
+                            {MONTH_NAMES_KEYS.map((monthKey) => (
                               <TableHead
-                                key={month}
+                                key={monthKey}
                                 className="text-center min-w-20"
                               >
-                                {month}
+                                {t(monthKey).substring(0, 3)}
                               </TableHead>
                             ))}
                             <TableHead className="text-center min-w-24">
-                              Total
+                              {t("common.total")}
                             </TableHead>
                           </TableRow>
                         </TableHeader>
@@ -707,21 +709,21 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                   {/* Sales Count Plan Table */}
                   <div>
-                    <h4 className="font-semibold mb-2">Sales Count Plan</h4>
+                    <h4 className="font-semibold mb-2">{t("forms.sales_count_plan")}</h4>
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            {MONTH_NAMES.map((month) => (
+                            {MONTH_NAMES_KEYS.map((monthKey) => (
                               <TableHead
-                                key={month}
+                                key={monthKey}
                                 className="text-center min-w-20"
                               >
-                                {month}
+                                {t(monthKey).substring(0, 3)}
                               </TableHead>
                             ))}
                             <TableHead className="text-center min-w-24">
-                              Total
+                              {t("common.total")}
                             </TableHead>
                           </TableRow>
                         </TableHeader>
@@ -814,14 +816,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
         <div className="flex justify-end space-x-2 pt-4 border-t">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Changes"}
+            {isLoading ? t("common.saving") : t("common.save")}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </WideDialogContent>
+    </WideDialog>
   );
 };
 
