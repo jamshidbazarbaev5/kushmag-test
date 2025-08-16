@@ -246,6 +246,7 @@
 
   "forms": {
     "quantity_of": "Кол-во",
+    "current": "Текущий",
     "date": "Дата",
     "manufacture": "Пройздводство",
     "quantity_of": "Кол-во",
@@ -615,7 +616,7 @@
     "select_agent": "Выберите контрагента",
     "enter_counterparty_name": "Введите имя контрагента",
     "select_organization": "Выберите организацию",
-    "select_sales_channel": "Выберите канал продаж",
+    "select_sales_channel": "Канал продаж",
     "search_extension_model": "Поиск модели добора",
     "search_casing_model": "Поиск модели наличника",
     "select_casing_type": "Выберите тип наличника",
@@ -639,11 +640,11 @@
     "deadline_date_before": "Срок исполнения по",
     "select_model": "Выберите модель",
     "select_material": "Выберите материал",
-    "select_material_type": "Выберите тип материала",
+    "select_material_type": "Тип материала",
     "select_massif": "Выберите массив",
     "select_color": "Выберите цвет",
     "select_patina_color": "Выберите цвет патины",
-    "select_beading_main": "Выберите основной штапик",
+    "select_beading_main": "Основной штапик",
     "select_beading_additional": "Выберите дополнительный штапик",
     "select_glass_type": "Выберите тип стекла",
     "select_threshold": "Выберите порог",
@@ -733,7 +734,11 @@
     "page": "Страница",
     "of": "из",
     "previous": "Предыдущая",
-    "next": "Следующая"
+    "next": "Следующая",
+    "showing": "Показано",
+    "to": "до",
+    "results": "результатов",
+    "rows_per_page": "Строк на странице"
   },
   "charts": {
     "salary_by_user": "Зарплата по сотрудникам",

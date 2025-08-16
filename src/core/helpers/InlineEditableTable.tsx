@@ -1,5 +1,5 @@
-import  { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -7,30 +7,47 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../components/ui/table';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
-import { Skeleton } from '../../components/ui/skeleton';
-import { 
+} from "../../components/ui/table";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import { Skeleton } from "../../components/ui/skeleton";
+import {
   PlusIcon,
   EditIcon,
   CheckIcon,
   XIcon,
   TrashIcon,
-  SearchIcon
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { DeleteConfirmationModal } from '../../components/modals/DeleteConfirmationModal';
+  SearchIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
+import { toast } from "sonner";
+import { DeleteConfirmationModal } from "../../components/modals/DeleteConfirmationModal";
 
 export interface TableField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: "text" | "number" | "select";
   placeholder?: string;
   options?: { value: string | number; label: string }[];
   required?: boolean;
   editable?: boolean;
+}
+
+interface PaginationInfo {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
 }
 
 interface InlineEditableTableProps<T extends { id?: number }> {
@@ -40,10 +57,13 @@ interface InlineEditableTableProps<T extends { id?: number }> {
   isLoading: boolean;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  onCreate: (data: Omit<T, 'id'>) => Promise<void>;
+  onCreate: (data: Omit<T, "id">) => Promise<void>;
   onUpdate: (id: number, data: Partial<T>) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
   searchPlaceholder?: string;
+  pagination?: PaginationInfo | null;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export function InlineEditableTable<T extends { id?: number }>({
@@ -56,7 +76,10 @@ export function InlineEditableTable<T extends { id?: number }>({
   onCreate,
   onUpdate,
   onDelete,
-  searchPlaceholder = 'Search...'
+  searchPlaceholder = "Search...",
+  pagination,
+  onPageChange,
+  onPageSizeChange,
 }: InlineEditableTableProps<T>) {
   const { t } = useTranslation();
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -64,7 +87,9 @@ export function InlineEditableTable<T extends { id?: number }>({
   const [isCreating, setIsCreating] = useState(false);
   const [newItemData, setNewItemData] = useState<Partial<T>>({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<number | undefined>(undefined);
+  const [itemToDelete, setItemToDelete] = useState<number | undefined>(
+    undefined,
+  );
 
   // Reset editing state when data changes
   useEffect(() => {
@@ -83,9 +108,9 @@ export function InlineEditableTable<T extends { id?: number }>({
         await onUpdate(editingId, editingData);
         setEditingId(null);
         setEditingData({});
-        toast.success(t('messages.success.updated'));
+        toast.success(t("messages.success.updated"));
       } catch (error) {
-        toast.error(t('messages.error.update'));
+        toast.error(t("messages.error.update"));
       }
     }
   };
@@ -97,12 +122,12 @@ export function InlineEditableTable<T extends { id?: number }>({
 
   const handleCreate = async () => {
     try {
-      await onCreate(newItemData as Omit<T, 'id'>);
+      await onCreate(newItemData as Omit<T, "id">);
       setIsCreating(false);
       setNewItemData({});
-      toast.success(t('messages.success.created'));
+      toast.success(t("messages.success.created"));
     } catch (error) {
-      toast.error(t('messages.error.create'));
+      toast.error(t("messages.error.create"));
     }
   };
 
@@ -117,25 +142,30 @@ export function InlineEditableTable<T extends { id?: number }>({
         await onDelete(itemToDelete);
         setIsDeleteModalOpen(false);
         setItemToDelete(undefined);
-        toast.success(t('messages.success.deleted'));
+        toast.success(t("messages.success.deleted"));
       } catch (error) {
-        toast.error(t('messages.error.delete'));
+        toast.error(t("messages.error.delete"));
       }
     }
   };
 
-  const renderCell = (field: TableField, value: any, isEditing: boolean, onChange: (value: any) => void) => {
+  const renderCell = (
+    field: TableField,
+    value: any,
+    isEditing: boolean,
+    onChange: (value: any) => void,
+  ) => {
     if (!isEditing || !field.editable) {
-      if (field.type === 'select' && field.options) {
-        const option = field.options.find(opt => opt.value === value);
+      if (field.type === "select" && field.options) {
+        const option = field.options.find((opt) => opt.value === value);
         return option ? option.label : value;
       }
-      return value || '-';
+      return value || "-";
     }
 
-    if (field.type === 'select' && field.options) {
+    if (field.type === "select" && field.options) {
       return (
-        <Select value={value?.toString() || ''} onValueChange={onChange}>
+        <Select value={value?.toString() || ""} onValueChange={onChange}>
           <SelectTrigger className="h-8">
             <SelectValue placeholder={field.placeholder} />
           </SelectTrigger>
@@ -153,10 +183,20 @@ export function InlineEditableTable<T extends { id?: number }>({
     return (
       <Input
         type={field.type}
-        value={value || ''}
-        onChange={(e) => onChange(field.type === 'number' ? Number(e.target.value) : e.target.value)}
+        value={value || ""}
+        onChange={(e) =>
+          onChange(
+            field.type === "number" ? Number(e.target.value) : e.target.value,
+          )
+        }
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
         placeholder={field.placeholder}
         className="h-8"
+        autoComplete="off"
       />
     );
   };
@@ -186,21 +226,29 @@ export function InlineEditableTable<T extends { id?: number }>({
           size="sm"
         >
           <PlusIcon className="h-4 w-4" />
-          {t('common.create')}
+          {t("common.create")}
         </Button>
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          type="text"
-          placeholder={searchPlaceholder}
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      <form onSubmit={(e) => e.preventDefault()}>
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder={searchPlaceholder}
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+              }
+            }}
+            className="pl-10"
+            autoComplete="off"
+          />
+        </div>
+      </form>
 
       {/* Table */}
       <div className="rounded-lg border">
@@ -225,7 +273,11 @@ export function InlineEditableTable<T extends { id?: number }>({
                       { ...field, editable: true },
                       newItemData[field.name as keyof T],
                       true,
-                      (value) => setNewItemData(prev => ({ ...prev, [field.name]: value }))
+                      (value) =>
+                        setNewItemData((prev) => ({
+                          ...prev,
+                          [field.name]: value,
+                        })),
                     )}
                   </TableCell>
                 ))}
@@ -255,16 +307,28 @@ export function InlineEditableTable<T extends { id?: number }>({
             {/* Data rows */}
             {data.map((item, index) => {
               const isEditing = editingId === item.id;
+              const rowNumber = pagination
+                ? ((pagination.currentPage - 1) * pagination.pageSize) + index + 1
+                : index + 1;
               return (
-                <TableRow key={item.id || index} className={isEditing ? 'bg-yellow-50' : ''}>
-                  <TableCell>{index + 1}</TableCell>
+                <TableRow
+                  key={item.id || index}
+                  className={isEditing ? "bg-yellow-50" : ""}
+                >
+                  <TableCell>{rowNumber}</TableCell>
                   {fields.map((field) => (
                     <TableCell key={field.name}>
                       {renderCell(
                         field,
-                        isEditing ? editingData[field.name as keyof T] : item[field.name as keyof T],
+                        isEditing
+                          ? editingData[field.name as keyof T]
+                          : item[field.name as keyof T],
                         isEditing,
-                        (value) => setEditingData(prev => ({ ...prev, [field.name]: value }))
+                        (value) =>
+                          setEditingData((prev) => ({
+                            ...prev,
+                            [field.name]: value,
+                          })),
                       )}
                     </TableCell>
                   ))}
@@ -322,8 +386,11 @@ export function InlineEditableTable<T extends { id?: number }>({
 
             {data.length === 0 && !isCreating && (
               <TableRow>
-                <TableCell colSpan={fields.length + 2} className="text-center py-8 text-gray-500">
-                  {t('common.no_data')}
+                <TableCell
+                  colSpan={fields.length + 2}
+                  className="text-center py-8 text-gray-500"
+                >
+                  {t("common.no_data")}
                 </TableCell>
               </TableRow>
             )}
@@ -331,13 +398,75 @@ export function InlineEditableTable<T extends { id?: number }>({
         </Table>
       </div>
 
+      {/* Pagination Controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm text-gray-700">
+              {t("pagination.showing")} {((pagination.currentPage - 1) * pagination.pageSize) + 1} {t("pagination.to")}{" "}
+              {Math.min(pagination.currentPage * pagination.pageSize, pagination.count)} {t("pagination.of")}{" "}
+              {pagination.count} {t("pagination.results")}
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm text-gray-700">{t("pagination.rows_per_page")}:</p>
+              <Select
+                value={pagination.pageSize.toString()}
+                onValueChange={(value) => onPageSizeChange?.(Number(value))}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[10, 20, 30, 50, 100].map((pageSize) => (
+                    <SelectItem key={pageSize} value={pageSize.toString()}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange?.(pagination.currentPage - 1)}
+                disabled={!pagination.previous}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeftIcon className="h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center space-x-1">
+                <p className="text-sm text-gray-700">
+                  {t("pagination.page")} {pagination.currentPage} {t("pagination.of")} {pagination.totalPages}
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPageChange?.(pagination.currentPage + 1)}
+                disabled={!pagination.next}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRightIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        title={t('common.confirm_delete')}
-        description={t('common.delete_warning')}
+        title={t("common.confirm_delete")}
+        description={t("common.delete_warning")}
       />
     </div>
   );

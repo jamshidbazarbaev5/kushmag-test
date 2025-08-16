@@ -41,6 +41,28 @@ export default function SettingsPage() {
   const [casingRangeSearch, setCasingRangeSearch] = useState('');
   const [priceSettingSearch, setPriceSettingSearch] = useState('');
 
+  // Pagination states for each section
+  const [materialPage, setMaterialPage] = useState(1);
+  const [materialPageSize, setMaterialPageSize] = useState(20);
+  const [materialTypePageSize, setMaterialTypePageSize] = useState(20);
+  const [materialTypePage, setMaterialTypePage] = useState(1);
+  const [massifPage, setMassifPage] = useState(1);
+  const [massifPageSize, setMassifPageSize] = useState(20);
+  const [colorPage, setColorPage] = useState(1);
+  const [colorPageSize, setColorPageSize] = useState(20);
+  const [patinaColorPage, setPatinaColorPage] = useState(1);
+  const [patinaColorPageSize, setPatinaColorPageSize] = useState(20);
+  const [beadingPage, setBeadingPage] = useState(1);
+  const [beadingPageSize, setBeadingPageSize] = useState(20);
+  const [glassTypePage, setGlassTypePage] = useState(1);
+  const [glassTypePageSize, setGlassTypePageSize] = useState(20);
+  const [thresholdPage, setThresholdPage] = useState(1);
+  const [thresholdPageSize, setThresholdPageSize] = useState(20);
+  const [casingRangePage, setCasingRangePage] = useState(1);
+  const [casingRangePageSize, setCasingRangePageSize] = useState(20);
+  const [priceSettingPage, setPriceSettingPage] = useState(1);
+  const [priceSettingPageSize, setPriceSettingPageSize] = useState(20);
+
   // Debounced search states (used for API calls)
   const [debouncedMaterialSearch, setDebouncedMaterialSearch] = useState('');
   const [debouncedMaterialTypeSearch, setDebouncedMaterialTypeSearch] = useState('');
@@ -104,32 +126,160 @@ export default function SettingsPage() {
     return () => clearTimeout(timeout);
   }, [priceSettingSearch]);
 
-  // API hooks for fetching data (using debounced search terms)
-  const { data: materialsResponse, isLoading: materialsLoading } = useGetMaterials({ params: { name: debouncedMaterialSearch } });
-  const { data: materialTypesResponse, isLoading: materialTypesLoading } = useGetMaterialTypes({ params: { name: debouncedMaterialTypeSearch } });
-  const { data: massifsResponse, isLoading: massifsLoading } = useGetMassifs({ params: { name: debouncedMassifSearch } });
-  const { data: colorsResponse, isLoading: colorsLoading } = useGetColors({ params: { name: debouncedColorSearch } });
-  const { data: patinaColorsResponse, isLoading: patinaColorsLoading } = useGetPatinaColors({ params: { name: debouncedPatinaColorSearch } });
-  const { data: beadingsResponse, isLoading: beadingsLoading } = useGetBeadings({ params: { name: debouncedBeadingSearch } });
-  const { data: glassTypesResponse, isLoading: glassTypesLoading } = useGetGlassTypes({ params: { name: debouncedGlassTypeSearch } });
-  const { data: thresholdsResponse, isLoading: thresholdsLoading } = useGetThresholds({ params: { name: debouncedThresholdSearch } });
+  // Reset pagination when search terms change
+  useEffect(() => {
+    setMaterialPage(1);
+  }, [debouncedMaterialSearch]);
+
+  useEffect(() => {
+    setMaterialTypePage(1);
+  }, [debouncedMaterialTypeSearch]);
+
+  useEffect(() => {
+    setMassifPage(1);
+  }, [debouncedMassifSearch]);
+
+  useEffect(() => {
+    setColorPage(1);
+  }, [debouncedColorSearch]);
+
+  useEffect(() => {
+    setPatinaColorPage(1);
+  }, [debouncedPatinaColorSearch]);
+
+  useEffect(() => {
+    setBeadingPage(1);
+  }, [debouncedBeadingSearch]);
+
+  useEffect(() => {
+    setGlassTypePage(1);
+  }, [debouncedGlassTypeSearch]);
+
+  useEffect(() => {
+    setThresholdPage(1);
+  }, [debouncedThresholdSearch]);
+
+  useEffect(() => {
+    setCasingRangePage(1);
+  }, [_debouncedCasingRangeSearch]);
+
+  useEffect(() => {
+    setPriceSettingPage(1);
+  }, [debouncedPriceSettingSearch]);
+
+  // API hooks for fetching data (using debounced search terms and pagination)
+  const { data: materialsResponse, isLoading: materialsLoading } = useGetMaterials({
+    params: {
+      search: debouncedMaterialSearch,
+      page: materialPage,
+      page_size: materialPageSize
+    }
+  });
+  const { data: materialTypesResponse, isLoading: materialTypesLoading } = useGetMaterialTypes({
+    params: {
+      search: debouncedMaterialTypeSearch,
+      page: materialTypePage,
+      page_size: materialTypePageSize
+    }
+  });
+  const { data: massifsResponse, isLoading: massifsLoading } = useGetMassifs({
+    params: {
+      search: debouncedMassifSearch,
+      page: massifPage,
+      page_size: massifPageSize
+    }
+  });
+  const { data: colorsResponse, isLoading: colorsLoading } = useGetColors({
+    params: {
+      search: debouncedColorSearch,
+      page: colorPage,
+      page_size: colorPageSize
+    }
+  });
+  const { data: patinaColorsResponse, isLoading: patinaColorsLoading } = useGetPatinaColors({
+    params: {
+      search: debouncedPatinaColorSearch,
+      page: patinaColorPage,
+      page_size: patinaColorPageSize
+    }
+  });
+  const { data: beadingsResponse, isLoading: beadingsLoading } = useGetBeadings({
+    params: {
+      search: debouncedBeadingSearch,
+      page: beadingPage,
+      page_size: beadingPageSize
+    }
+  });
+  const { data: glassTypesResponse, isLoading: glassTypesLoading } = useGetGlassTypes({
+    params: {
+      search: debouncedGlassTypeSearch,
+      page: glassTypePage,
+      page_size: glassTypePageSize
+    }
+  });
+  const { data: thresholdsResponse, isLoading: thresholdsLoading } = useGetThresholds({
+    params: {
+      search: debouncedThresholdSearch,
+      page: thresholdPage,
+      page_size: thresholdPageSize
+    }
+  });
   const { data: attributeSettingsResponse, isLoading: attributeSettingsLoading } = useGetAttributeSettings();
-  const { data: casingRangesResponse, isLoading: casingRangesLoading } = useGetCasingRanges();
-  const { data: priceSettingsResponse, isLoading: priceSettingsLoading } = useGetPriceSettings({ params: { product: debouncedPriceSettingSearch } });
+  const { data: casingRangesResponse, isLoading: casingRangesLoading } = useGetCasingRanges({
+    params: {
+      search: _debouncedCasingRangeSearch,
+      page: casingRangePage,
+      page_size: casingRangePageSize
+    }
+  });
+  const { data: priceSettingsResponse, isLoading: priceSettingsLoading } = useGetPriceSettings({
+    params: {
+      search: debouncedPriceSettingSearch,
+      page: priceSettingPage,
+      page_size: priceSettingPageSize
+    }
+  });
   const { data: priceTypesData } = useGetPriceTypes();
 
-  // Extract arrays from API responses
-  const materialsData = Array.isArray(materialsResponse) ? materialsResponse : [];
-  const materialTypesData = Array.isArray(materialTypesResponse) ? materialTypesResponse : [];
-  const massifsData = Array.isArray(massifsResponse) ? massifsResponse : [];
-  const colorsData = Array.isArray(colorsResponse) ? colorsResponse : [];
-  const patinaColorsData = Array.isArray(patinaColorsResponse) ? patinaColorsResponse : [];
-  const beadingsData = Array.isArray(beadingsResponse) ? beadingsResponse : [];
-  const glassTypesData = Array.isArray(glassTypesResponse) ? glassTypesResponse : [];
-  const thresholdsData = Array.isArray(thresholdsResponse) ? thresholdsResponse : [];
+  // Helper function to extract data and pagination info from API responses
+  const extractPaginatedData = (response: any, pageSize: number, currentPage: number) => {
+    if (!response) return { data: [], pagination: null };
+
+    // Check if response has pagination structure
+    if (response.results && typeof response.count === 'number') {
+      const totalPages = Math.ceil(response.count / pageSize);
+      return {
+        data: response.results,
+        pagination: {
+          count: response.count,
+          next: response.next,
+          previous: response.previous,
+          currentPage,
+          totalPages,
+          pageSize
+        }
+      };
+    }
+
+    // Fallback for non-paginated responses
+    return {
+      data: Array.isArray(response) ? response : [],
+      pagination: null
+    };
+  };
+
+  // Extract arrays and pagination info from API responses
+  const { data: materialsData, pagination: materialsPagination } = extractPaginatedData(materialsResponse, materialPageSize, materialPage);
+  const { data: materialTypesData, pagination: materialTypesPagination } = extractPaginatedData(materialTypesResponse, materialTypePageSize, materialTypePage);
+  const { data: massifsData, pagination: massifsPagination } = extractPaginatedData(massifsResponse, massifPageSize, massifPage);
+  const { data: colorsData, pagination: colorsPagination } = extractPaginatedData(colorsResponse, colorPageSize, colorPage);
+  const { data: patinaColorsData, pagination: patinaColorsPagination } = extractPaginatedData(patinaColorsResponse, patinaColorPageSize, patinaColorPage);
+  const { data: beadingsData, pagination: beadingsPagination } = extractPaginatedData(beadingsResponse, beadingPageSize, beadingPage);
+  const { data: glassTypesData, pagination: glassTypesPagination } = extractPaginatedData(glassTypesResponse, glassTypePageSize, glassTypePage);
+  const { data: thresholdsData, pagination: thresholdsPagination } = extractPaginatedData(thresholdsResponse, thresholdPageSize, thresholdPage);
   const attributeSettingsData = Array.isArray(attributeSettingsResponse) ? attributeSettingsResponse : [];
-  const casingRangesData = Array.isArray(casingRangesResponse) ? casingRangesResponse : [];
-  const priceSettingsData = Array.isArray(priceSettingsResponse) ? priceSettingsResponse : [];
+  const { data: casingRangesData, pagination: casingRangesPagination } = extractPaginatedData(casingRangesResponse, casingRangePageSize, casingRangePage);
+  const { data: priceSettingsData, pagination: priceSettingsPagination } = extractPaginatedData(priceSettingsResponse, priceSettingPageSize, priceSettingPage);
 
   // Mutation hooks
   const { mutateAsync: createMaterial } = useCreateMaterial();
@@ -429,6 +579,9 @@ export default function SettingsPage() {
             onUpdate={handleMaterialUpdate}
             onDelete={handleMaterialDelete}
             searchPlaceholder={t('placeholders.search_material')}
+            pagination={materialsPagination}
+            onPageChange={setMaterialPage}
+            onPageSizeChange={setMaterialPageSize}
           />
         )}
 
@@ -445,6 +598,9 @@ export default function SettingsPage() {
             onUpdate={handleMaterialTypeUpdate}
             onDelete={handleMaterialTypeDelete}
             searchPlaceholder={t('placeholders.search_material_type')}
+            pagination={materialTypesPagination}
+            onPageChange={setMaterialTypePage}
+            onPageSizeChange={setMaterialTypePageSize}
           />
         )}
 
@@ -461,6 +617,9 @@ export default function SettingsPage() {
             onUpdate={handleMassifUpdate}
             onDelete={handleMassifDelete}
             searchPlaceholder={t('placeholders.search_massif')}
+            pagination={massifsPagination}
+            onPageChange={setMassifPage}
+            onPageSizeChange={setMassifPageSize}
           />
         )}
 
@@ -477,6 +636,9 @@ export default function SettingsPage() {
             onUpdate={handleColorUpdate}
             onDelete={handleColorDelete}
             searchPlaceholder={t('placeholders.search_color')}
+            pagination={colorsPagination}
+            onPageChange={setColorPage}
+            onPageSizeChange={setColorPageSize}
           />
         )}
 
@@ -493,6 +655,9 @@ export default function SettingsPage() {
             onUpdate={handlePatinaColorUpdate}
             onDelete={handlePatinaColorDelete}
             searchPlaceholder={t('placeholders.search_patina_color')}
+            pagination={patinaColorsPagination}
+            onPageChange={setPatinaColorPage}
+            onPageSizeChange={setPatinaColorPageSize}
           />
         )}
 
@@ -509,6 +674,9 @@ export default function SettingsPage() {
             onUpdate={handleBeadingUpdate}
             onDelete={handleBeadingDelete}
             searchPlaceholder={t('placeholders.search_beading')}
+            pagination={beadingsPagination}
+            onPageChange={setBeadingPage}
+            onPageSizeChange={setBeadingPageSize}
           />
         )}
 
@@ -525,6 +693,9 @@ export default function SettingsPage() {
             onUpdate={handleGlassTypeUpdate}
             onDelete={handleGlassTypeDelete}
             searchPlaceholder={t('placeholders.search_glass_type')}
+            pagination={glassTypesPagination}
+            onPageChange={setGlassTypePage}
+            onPageSizeChange={setGlassTypePageSize}
           />
         )}
 
@@ -541,6 +712,9 @@ export default function SettingsPage() {
             onUpdate={handleThresholdUpdate}
             onDelete={handleThresholdDelete}
             searchPlaceholder={t('placeholders.search_threshold')}
+            pagination={thresholdsPagination}
+            onPageChange={setThresholdPage}
+            onPageSizeChange={setThresholdPageSize}
           />
         )}
 
@@ -616,6 +790,9 @@ export default function SettingsPage() {
             onUpdate={handleCasingRangeUpdate}
             onDelete={handleCasingRangeDelete}
             searchPlaceholder={t('placeholders.search_casing_range')}
+            pagination={casingRangesPagination}
+            onPageChange={setCasingRangePage}
+            onPageSizeChange={setCasingRangePageSize}
           />
         )}
 
@@ -632,6 +809,9 @@ export default function SettingsPage() {
             onUpdate={handlePriceSettingUpdate}
             onDelete={handlePriceSettingDelete}
             searchPlaceholder={t('placeholders.search_price_setting')}
+            pagination={priceSettingsPagination}
+            onPageChange={setPriceSettingPage}
+            onPageSizeChange={setPriceSettingPageSize}
           />
         )}
       </div>

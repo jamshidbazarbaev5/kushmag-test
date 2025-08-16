@@ -84,6 +84,8 @@ export interface Order {
 }
 
 export interface OrderTotals {
+  total_agreement_amount: number;
+  total_discount_percentage: number;
   total_discount_amount: number;
   total_total_amount: number;
   total_advance_payment: number;

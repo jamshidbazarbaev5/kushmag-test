@@ -41,7 +41,7 @@ import {
   Info,
 } from "lucide-react";
 import api from "../api/api";
-import { StatusChangeModal } from "@/components/modals/StatusChangeModal";
+
 import { useAuth } from "../context/AuthContext";
 
 // Utility function to make status-based API requests
@@ -83,6 +83,7 @@ export default function OrdersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeStatusTab, setActiveStatusTab] = useState("all");
@@ -96,10 +97,10 @@ export default function OrdersPage() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [statuses, setStatuses] = useState<any[]>([]);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
-  const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = useState(false);
-  const [orderToChangeStatus, setOrderToChangeStatus] = useState<Order | null>(
-    null,
-  );
+  const [showStatusChangeDropdown, setShowStatusChangeDropdown] = useState<
+    string | null
+  >(null);
+  const statusChangeDropdownRef = useRef<HTMLDivElement>(null);
 
   const [filters, setFilters] = useState({
     project: "",
@@ -200,17 +201,41 @@ export default function OrdersPage() {
 
     return (
       <span
-        className="px-3 py-1 rounded-full text-xs font-medium inline-block shadow-sm border"
+        className="px-2 py-1 rounded-full text-xs font-medium inline-block shadow-sm border"
         style={{
           backgroundColor: bgColor,
           color: textColor,
           borderColor: bgColor,
         }}
-        title={`Status: ${statusText} (ID: ${statusObject.id || "N/A"})`}
       >
         {statusText}
       </span>
     );
+  };
+
+  // Function to handle status change
+  const handleStatusChange = async (orderId: string, newStatusId: number) => {
+    try {
+      await api.post(`orders/${orderId}/change-status/`, {
+        status: newStatusId,
+      });
+
+      toast.success(
+        t("messages.status_changed_successfully") ||
+          "Status changed successfully",
+      );
+      setShowStatusChangeDropdown(null);
+      // Refresh the orders data
+      refetchOrders();
+    } catch (error: any) {
+      console.error("Error changing status:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        t("messages.error.change_status") ||
+        "Error changing status";
+      toast.error(errorMessage);
+    }
   };
 
   const handleColumnVisibilityChange = (column: string, checked: boolean) => {
@@ -240,16 +265,32 @@ export default function OrdersPage() {
       ) {
         setShowStatusDropdown(false);
       }
+      if (
+        statusChangeDropdownRef.current &&
+        !statusChangeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowStatusChangeDropdown(null);
+      }
     };
 
-    if (openActionMenu || showCounterpartDropdown || showStatusDropdown) {
+    if (
+      openActionMenu ||
+      showCounterpartDropdown ||
+      showStatusDropdown ||
+      showStatusChangeDropdown
+    ) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [openActionMenu, showCounterpartDropdown, showStatusDropdown]);
+  }, [
+    openActionMenu,
+    showCounterpartDropdown,
+    showStatusDropdown,
+    showStatusChangeDropdown,
+  ]);
 
   // Counterpart search functionality
   useEffect(() => {
@@ -315,6 +356,7 @@ export default function OrdersPage() {
     }
 
     params.page = currentPage;
+    params.page_size = pageSize;
     return params;
   };
 
@@ -337,7 +379,7 @@ export default function OrdersPage() {
   const ordersData = Array.isArray(orders) ? orders : orders?.results || [];
   const totalCount =
     !Array.isArray(orders) && orders?.count ? orders.count : ordersData.length;
-  const itemsPerPage = 20;
+  const itemsPerPage = pageSize;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
   const hasNextPage = !Array.isArray(orders) && orders?.next !== null;
   const hasPreviousPage = !Array.isArray(orders) && orders?.previous !== null;
@@ -495,6 +537,23 @@ export default function OrdersPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">{t("pages.orders")}</h1>
         <div className="flex gap-2">
+          <div className="flex gap-1 border rounded-md">
+            {[20, 50, 100].map((size) => (
+              <Button
+                key={size}
+                variant={pageSize === size ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                }}
+                className="px-3 py-1 h-8"
+              >
+                {size}
+              </Button>
+            ))}
+          </div>
+
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
@@ -1162,8 +1221,103 @@ export default function OrdersPage() {
                   )}
                   {visibleColumns.status && (
                     <td className="px-3 py-2">
-                      <div className="flex items-center justify-start">
-                        {renderStatusBadge(order.status)}
+                      <div
+                        className="relative"
+                        ref={
+                          showStatusChangeDropdown === order.id
+                            ? statusChangeDropdownRef
+                            : null
+                        }
+                      >
+                        <div
+                          className={`flex items-center justify-start ${
+                            currentUser?.role !== "MANUFACTURE"
+                              ? "cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200 group"
+                              : "cursor-default"
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (currentUser?.role !== "MANUFACTURE") {
+                              setShowStatusChangeDropdown(
+                                showStatusChangeDropdown === order.id
+                                  ? null
+                                  : order.id,
+                              );
+                            }
+                          }}
+                          title={
+                            currentUser?.role !== "MANUFACTURE"
+                              ? "Click to change status"
+                              : "Status (read-only)"
+                          }
+                        >
+                          {renderStatusBadge(order.status)}
+                          {currentUser?.role !== "MANUFACTURE" && (
+                            <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              ✏️
+                            </span>
+                          )}
+                        </div>
+
+                        {showStatusChangeDropdown === order.id &&
+                          currentUser?.role !== "MANUFACTURE" && (
+                            <div
+                              className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="p-3">
+                                <div className="text-sm font-medium text-gray-700 mb-2">
+                                  {/*Change Status*/}
+                                </div>
+                                <div className="space-y-2">
+                                  {statuses.length === 0 ? (
+                                    <div className="text-xs text-gray-500 text-center py-2">
+                                      Loading...
+                                    </div>
+                                  ) : (
+                                    statuses.map((status) => {
+                                      const isCurrent =
+                                        order.status?.id === status.id;
+                                      return (
+                                        <div
+                                          key={status.id}
+                                          className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+                                            isCurrent
+                                              ? "bg-gray-100 opacity-50 cursor-not-allowed"
+                                              : "hover:bg-gray-50"
+                                          }`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!isCurrent) {
+                                              handleStatusChange(
+                                                order.id,
+                                                status.id,
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          <span
+                                            className="px-2 py-1 rounded text-xs font-medium flex-1 text-center"
+                                            style={{
+                                              backgroundColor: status.bg_color,
+                                              color: status.text_color,
+                                            }}
+                                          >
+                                            {status.status}
+                                          </span>
+                                          {isCurrent && (
+                                            <span className="text-xs text-gray-500 font-medium">
+                                              {t("forms.current")}
+                                            </span>
+                                          )}
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </td>
                   )}
@@ -1422,19 +1576,7 @@ export default function OrdersPage() {
                                 <Download className="h-4 w-4 mr-2" />
                                 {t("common.export")}
                               </button>
-                              {currentUser?.role !== "MANUFACTURE" && (
-                                <button
-                                  className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  onClick={() => {
-                                    setOrderToChangeStatus(order);
-                                    setIsStatusChangeModalOpen(true);
-                                    setOpenActionMenu(null);
-                                  }}
-                                >
-                                  <Info className="h-4 w-4 mr-2" />
-                                  {t("common.change_status") || "Change Status"}
-                                </button>
-                              )}
+
                               {currentUser?.role !== "MANUFACTURE" && (
                                 <button
                                   className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -1474,7 +1616,9 @@ export default function OrdersPage() {
                 {visibleColumns.order_status && visibleColumns.number && (
                   <td className="px-3 py-2"></td>
                 )}
+                {visibleColumns.status && <td className="px-3 py-2"></td>}
                 {visibleColumns.moy_sklad_id && <td className="px-3 py-2"></td>}
+                {visibleColumns.order_code && <td className="px-3 py-2"></td>}
                 {visibleColumns.client_name && <td className="px-3 py-2"></td>}
                 {visibleColumns.client_phone && <td className="px-3 py-2"></td>}
                 {visibleColumns.created_at && <td className="px-3 py-2"></td>}
@@ -1484,6 +1628,13 @@ export default function OrdersPage() {
                 {visibleColumns.counterparty && <td className="px-3 py-2"></td>}
                 {visibleColumns.organization && <td className="px-3 py-2"></td>}
                 {visibleColumns.address && <td className="px-3 py-2"></td>}
+                {visibleColumns.total_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                    {Number(
+                      pageTotals.total_total_amount || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
                 {visibleColumns.advance_payment && (
                   <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
                     {Number(
@@ -1498,6 +1649,21 @@ export default function OrdersPage() {
                     ).toLocaleString()}
                   </td>
                 )}
+                {visibleColumns.discount_percentage && (
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                    {Number(pageTotals.total_discount_percentage || 0).toFixed(
+                      2,
+                    )}
+                    %
+                  </td>
+                )}
+                {visibleColumns.agreement_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                    {Number(
+                      pageTotals.total_agreement_amount || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
                 {visibleColumns.remaining_balance && (
                   <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
                     {Number(
@@ -1505,7 +1671,6 @@ export default function OrdersPage() {
                     ).toLocaleString()}
                   </td>
                 )}
-                {visibleColumns.total_amount && <td className="px-3 py-2"></td>}
                 {visibleColumns.project && <td className="px-3 py-2"></td>}
                 {visibleColumns.store && <td className="px-3 py-2"></td>}
                 {visibleColumns.sales_channel && (
@@ -1538,7 +1703,9 @@ export default function OrdersPage() {
                 {visibleColumns.order_status && visibleColumns.number && (
                   <td className="px-3 py-2"></td>
                 )}
+                {visibleColumns.status && <td className="px-3 py-2"></td>}
                 {visibleColumns.moy_sklad_id && <td className="px-3 py-2"></td>}
+                {visibleColumns.order_code && <td className="px-3 py-2"></td>}
                 {visibleColumns.client_name && <td className="px-3 py-2"></td>}
                 {visibleColumns.client_phone && <td className="px-3 py-2"></td>}
                 {visibleColumns.created_at && <td className="px-3 py-2"></td>}
@@ -1548,6 +1715,13 @@ export default function OrdersPage() {
                 {visibleColumns.counterparty && <td className="px-3 py-2"></td>}
                 {visibleColumns.organization && <td className="px-3 py-2"></td>}
                 {visibleColumns.address && <td className="px-3 py-2"></td>}
+                {visibleColumns.total_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_total_amount || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
                 {visibleColumns.advance_payment && (
                   <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
                     {Number(
@@ -1562,6 +1736,21 @@ export default function OrdersPage() {
                     ).toLocaleString()}
                   </td>
                 )}
+                {visibleColumns.discount_percentage && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_discount_percentage || 0,
+                    ).toFixed(2)}
+                    %
+                  </td>
+                )}
+                {visibleColumns.agreement_amount && (
+                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                    {Number(
+                      overallTotals.total_agreement_amount || 0,
+                    ).toLocaleString()}
+                  </td>
+                )}
                 {visibleColumns.remaining_balance && (
                   <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
                     {Number(
@@ -1569,7 +1758,6 @@ export default function OrdersPage() {
                     ).toLocaleString()}
                   </td>
                 )}
-                {visibleColumns.total_amount && <td className="px-3 py-2"></td>}
                 {visibleColumns.project && <td className="px-3 py-2"></td>}
                 {visibleColumns.store && <td className="px-3 py-2"></td>}
                 {visibleColumns.sales_channel && (
@@ -1689,18 +1877,6 @@ export default function OrdersPage() {
           />
         </DialogContent>
       </Dialog>
-
-      <StatusChangeModal
-        isOpen={isStatusChangeModalOpen}
-        onClose={() => setIsStatusChangeModalOpen(false)}
-        onSuccess={() => {
-          // Refresh the orders data
-          refetchOrders();
-          setOrderToChangeStatus(null);
-        }}
-        orderId={orderToChangeStatus?.id || ""}
-        currentStatus={orderToChangeStatus?.status}
-      />
     </div>
   );
 }

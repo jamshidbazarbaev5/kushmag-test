@@ -533,7 +533,11 @@
     "page": "Bet",
     "of": "den",
     "previous": "Aldıńǵı",
-    "next": "Keyingi"
+    "next": "Keyingi",
+    "showing": "Kórsetilgen",
+    "to": "dan",
+    "results": "nátijeler",
+    "rows_per_page": "Betde qatarlar"
   },
   "charts": {
     "salary_by_user": "Xızmetkerler boynsha maash",

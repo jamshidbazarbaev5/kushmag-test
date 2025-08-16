@@ -61,6 +61,7 @@ import api from "../api/api";
 import { useGetMeasure } from "../api/measure";
 import React from "react";
 import { useGetZamershiks } from "../api/staff";
+import { MultiSelect } from "../helpers/MultiSelect";
 // import { createProductSelectHandler } from "@/utils/priceUtils";
 
 // Helper function to get the full object for a selected ID
@@ -192,9 +193,9 @@ export default function CreateOrderPage() {
             ? String(measureDoor.glass_type)
             : "",
           threshold: measureDoor.threshold ? String(measureDoor.threshold) : "",
-          paska_orin: measureDoor.paska_orin
-            ? String(measureDoor.paska_orin)
-            : "",
+          paska_orin: Array.isArray(measureDoor.paska_orin)
+            ? measureDoor.paska_orin
+            : [],
           // Pre-populate accessories from measure data
           extensions: (() => {
             const measureExtensions =
@@ -418,40 +419,40 @@ export default function CreateOrderPage() {
     {
       name: "store",
       label: t("forms.store"),
-      type: "searchable-select",
-      options: fieldOptions.storeOptions,
+      type: "searchable-resource-select",
+      resourceType: "stores",
       placeholder: t("placeholders.select_store"),
       required: true,
     },
     {
       name: "project",
       label: t("forms.project"),
-      type: "searchable-select",
-      options: fieldOptions.projectOptions,
+      type: "searchable-resource-select",
+      resourceType: "projects",
       placeholder: t("placeholders.select_project"),
       required: true,
     },
     {
       name: "branch",
       label: t("forms.branch"),
-      type: "searchable-select",
-      options: fieldOptions.branchOptions,
+      type: "searchable-resource-select",
+      resourceType: "branches",
       placeholder: t("placeholders.select_branch"),
       required: true,
     },
     {
       name: "organization",
       label: t("forms.organization"),
-      type: "searchable-select",
-      options: fieldOptions.organizationOptions,
+      type: "searchable-resource-select",
+      resourceType: "organizations",
       placeholder: t("placeholders.select_organization"),
       required: true,
     },
     {
       name: "salesChannel",
       label: t("forms.sales_channel"),
-      type: "searchable-select",
-      options: fieldOptions.salesChannelOptions,
+      type: "searchable-resource-select",
+      resourceType: "sales-channels",
       placeholder: t("placeholders.select_sales_channel"),
       required: true,
     },
@@ -473,24 +474,24 @@ export default function CreateOrderPage() {
     {
       name: "seller",
       label: t("forms.seller"),
-      type: "searchable-select",
-      options: fieldOptions.sellerOptions,
+      type: "searchable-resource-select",
+      resourceType: "sellers",
       placeholder: t("placeholders.select_seller"),
       required: true,
     },
     {
       name: "zamershik",
       label: t("forms.zamershik"),
-      type: "searchable-select",
-      options: fieldOptions.zamershikOptions,
+      type: "searchable-resource-select",
+      resourceType: "zamershiks",
       placeholder: t("placeholders.select_zamershik"),
       required: true,
     },
     {
       name: "operator",
       label: t("forms.operator"),
-      type: "searchable-select",
-      options: fieldOptions.operatorOptions,
+      type: "searchable-resource-select",
+      resourceType: "operators",
       placeholder: t("placeholders.select_operator"),
       required: true,
     },
@@ -2403,9 +2404,13 @@ function StepTwo({
 
                         {/* Paska Orin - Always editable */}
                         <TableCell className="align-middle">
-                          <Select
-                            value={door.paska_orin || ""}
-                            onValueChange={(value) =>
+                          <MultiSelect
+                            value={
+                              Array.isArray(door.paska_orin)
+                                ? door.paska_orin
+                                : []
+                            }
+                            onChange={(value) =>
                               handleFieldChange(
                                 index,
                                 table.id,
@@ -2413,16 +2418,14 @@ function StepTwo({
                                 value,
                               )
                             }
-                          >
-                            <SelectTrigger className="h-8">
-                              <SelectValue placeholder=" Paska Orin" />
-                            </SelectTrigger>
-                            <SelectContent className="z-[9999]">
-                              <SelectItem value="Сырты">Сырты</SelectItem>
-                              <SelectItem value="Иши">Иши</SelectItem>
-                              <SelectItem value="Жок">Жок</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={[
+                              { value: "Сырты", label: "Сырты" },
+                              { value: "Иши", label: "Иши" },
+                              { value: "Жок", label: "Жок" },
+                            ]}
+                            placeholder="Paska Orin"
+                            className="h-8"
+                          />
                         </TableCell>
 
                         {/* Extensions - Always editable */}
