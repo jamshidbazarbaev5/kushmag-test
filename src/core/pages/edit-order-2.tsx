@@ -156,6 +156,7 @@ export default function EditOrderPage() {
     beading_additional: "2",
     glass_type: "",
     threshold: "",
+    paska_orin: "",
   });
 
   // Fetch attribute settings for casing and crown sizes
@@ -369,6 +370,7 @@ export default function EditOrderPage() {
             beading_additional: firstDoor.beading_additional || "2",
             glass_type: firstDoor.glass_type || "",
             threshold: firstDoor.threshold || "",
+            paska_orin: firstDoor.paska_orin || "",
           });
         }
       }
@@ -1696,6 +1698,7 @@ function StepTwo({
       beading_additional: orderData.beading_additional || "2",
       glass_type: "",
       threshold: "",
+      paska_orin: "",
       extensions: defaultExtensions,
       casings: defaultCasings,
       crowns: defaultCrowns,
@@ -2144,6 +2147,7 @@ function StepTwo({
                                   orderData.beading_additional || "2",
                                 glass_type: "",
                                 threshold: "",
+                                paska_orin: "",
                                 extensions: defaultExtensions,
                                 casings: defaultCasings,
                                 crowns: defaultCrowns,
@@ -2257,6 +2261,7 @@ function StepTwo({
                       <TableHead className="w-28">
                         {t("forms.threshold")}
                       </TableHead>
+                      <TableHead className="w-28">Paska Orin</TableHead>
                       <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -2544,6 +2549,31 @@ function StepTwo({
                           </Select>
                         </TableCell>
 
+                        {/* Paska Orin - Always editable */}
+                        <TableCell className="align-middle">
+                          <Select
+                            value={door.paska_orin || ""}
+                            onValueChange={(value) =>
+                              handleFieldChange(
+                                index,
+                                table.id,
+                                "paska_orin",
+                                value,
+                              )
+                            }
+                          >
+                            <SelectTrigger className="h-8">
+                              <SelectValue placeholder="Select Paska Orin" />
+                            </SelectTrigger>
+                            <SelectContent className="z-[9999]">
+                              <SelectItem value="Сырты">Сырты</SelectItem>
+                              <SelectItem value="Иши">Иши</SelectItem>
+                              <SelectItem value="Жок">Жок</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+
+                        {/* Extensions */}
                         {/* Extensions - Always editable */}
                         <TableCell className="align-top p-2">
                           <div className="space-y-1">
@@ -3221,48 +3251,99 @@ function HeaderSearch({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Search for products when user types
   useEffect(() => {
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     const searchProducts = async () => {
-      if (value.length < 1) {
+      if (value.length < 2) {
         setProducts([]);
+        setIsLoading(false);
         return;
       }
 
       // Don't search if the current value exactly matches the selected product name
       if (selectedProduct && value === selectedProduct.name) {
         setProducts([]);
+        setIsLoading(false);
         return;
       }
+
+      // Create new abort controller for this request
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
       setIsLoading(true);
       try {
         const res = await api.get(
           `products?search=${encodeURIComponent(value)}`,
+          { signal: abortController.signal },
         );
+
+        // Check if request was aborted
+        if (abortController.signal.aborted) {
+          return;
+        }
+
         const results = Array.isArray(res.data)
           ? res.data
           : res.data?.results || [];
         setProducts(results);
+        setIsOpen(results.length > 0);
       } catch (error) {
-        console.error("Error searching products:", error);
-        setProducts([]);
+        // Don't log errors for aborted requests
+        if (!abortController.signal.aborted) {
+          console.error("Error searching products:", error);
+          setProducts([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (!abortController.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    const debounceTimeout = setTimeout(searchProducts, 300);
-    return () => clearTimeout(debounceTimeout);
+    // Set loading immediately for better UX
+    if (value.length >= 2) {
+      setIsLoading(true);
+    }
+
+    searchTimeoutRef.current = setTimeout(searchProducts, 600);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [value, selectedProduct]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
+    const newValue = e.target.value;
+    onChange(newValue);
+
+    // Reset dropdown state immediately on input change
+    if (newValue.length < 2) {
+      setIsOpen(false);
+      setProducts([]);
+    }
   };
 
   const handleFocus = () => {
-    if (value.length >= 1 && products.length > 0) {
+    if (value.length >= 2 && products.length > 0) {
       setIsOpen(true);
     }
   };
@@ -3270,14 +3351,21 @@ function HeaderSearch({
   const handleBlur = () => {
     setTimeout(() => {
       setIsOpen(false);
-    }, 200);
+    }, 150);
   };
 
   const handleProductSelect = (product: any) => {
     onChange(product.name);
     setIsOpen(false);
+    setProducts([]);
     if (onProductSelect) {
       onProductSelect(product);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
     }
   };
 
@@ -3290,16 +3378,7 @@ function HeaderSearch({
           onChange={handleInputChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          onMouseEnter={() => {
-            // Auto-open dropdown on hover if there are results and no product is selected
-            if (
-              value.length >= 1 &&
-              products.length > 0 &&
-              !(selectedProduct && value === selectedProduct.name)
-            ) {
-              setIsOpen(true);
-            }
-          }}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="h-8 text-xs pr-8"
           autoComplete="off"
@@ -3310,16 +3389,33 @@ function HeaderSearch({
             <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
           </div>
         )}
-        {/* Show indicator when there are filtered results */}
-        {!isLoading && value.length >= 1 && products.length > 0 && !isOpen && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2"></div>
+        {/* Show dropdown arrow when there are results */}
+        {!isLoading && value.length >= 2 && products.length > 0 && (
+          <div
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <svg
+              className="w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
         )}
       </div>
 
-      {isOpen && (
+      {isOpen && value.length >= 2 && (
         <div className="absolute z-[99999] w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
           {isLoading ? (
-            <div className="p-2 text-center text-gray-500 flex items-center justify-center gap-2">
+            <div className="p-3 text-center text-gray-500 flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
               Searching...
             </div>
@@ -3327,19 +3423,15 @@ function HeaderSearch({
             products.map((product) => (
               <div
                 key={product.id}
-                className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+                className="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-50 last:border-b-0"
                 onMouseDown={() => handleProductSelect(product)}
               >
                 {product.name}
               </div>
             ))
-          ) : value.length >= 1 ? (
-            <div className="p-2 text-center text-gray-500">
-              No products found for "{value}"
-            </div>
           ) : (
-            <div className="p-2 text-center text-gray-500">
-              Type to search...
+            <div className="p-3 text-center text-gray-500 text-sm">
+              No products found for "{value}"
             </div>
           )}
         </div>
@@ -3547,7 +3639,7 @@ function StepThree({
                   ) : (
                     <>
                       <Calculator className="h-4 w-4 mr-2" />
-                        {t("forms.calculate")}
+                      {t("forms.calculate")}
                     </>
                   )}
                 </Button>
@@ -3711,10 +3803,8 @@ function StepThree({
                             setDiscountAmount(totalDiscountAmount);
                           }}
                         />
-                       
                       </div>
                     </div>
-                   
                   </div>
                 </div>
               </div>

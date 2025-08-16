@@ -41,6 +41,7 @@ import {
   Info,
 } from "lucide-react";
 import api from "../api/api";
+import { StatusChangeModal } from "@/components/modals/StatusChangeModal";
 
 export default function OrdersPage() {
   const { t } = useTranslation();
@@ -62,6 +63,10 @@ export default function OrdersPage() {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [statuses, setStatuses] = useState<any[]>([]);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
+  const [isStatusChangeModalOpen, setIsStatusChangeModalOpen] = useState(false);
+  const [orderToChangeStatus, setOrderToChangeStatus] = useState<Order | null>(
+    null,
+  );
 
   const [filters, setFilters] = useState({
     project: "",
@@ -119,6 +124,7 @@ export default function OrdersPage() {
       measure_date: false,
       status: true,
       actions: true,
+      order_code:true,
     };
   });
 
@@ -277,6 +283,7 @@ export default function OrdersPage() {
     data: orders,
     isLoading,
     isFetching,
+    refetch: refetchOrders,
   } = useGetOrders({ params: buildQueryParams() });
 
   // Debug logging
@@ -910,6 +917,11 @@ export default function OrdersPage() {
                   {t("forms.moy_sklad_id")}
                 </th>
               )}
+               {visibleColumns.order_code && (
+                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
+                  {t("forms.order_code")}
+                </th>
+              )}
               {visibleColumns.client_name && (
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   {t("forms.client_name")}
@@ -1084,6 +1096,13 @@ export default function OrdersPage() {
                     <td className="px-3 py-2 text-xs text-gray-600">
                       <div className="truncate" title={order.name}>
                         {order.name || "-"}
+                      </div>
+                    </td>
+                  )}
+                    {visibleColumns.order_code && (
+                    <td className="px-3 py-2 text-xs text-gray-600">
+                      <div className="truncate" title={order.order_cde}>
+                        {order.order_code || "-"}
                       </div>
                     </td>
                   )}
@@ -1327,6 +1346,17 @@ export default function OrdersPage() {
                               >
                                 <Download className="h-4 w-4 mr-2" />
                                 {t("common.export")}
+                              </button>
+                              <button
+                                className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => {
+                                  setOrderToChangeStatus(order);
+                                  setIsStatusChangeModalOpen(true);
+                                  setOpenActionMenu(null);
+                                }}
+                              >
+                                <Info className="h-4 w-4 mr-2" />
+                                {t("common.change_status") || "Change Status"}
                               </button>
                               <button
                                 className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -1580,6 +1610,18 @@ export default function OrdersPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <StatusChangeModal
+        isOpen={isStatusChangeModalOpen}
+        onClose={() => setIsStatusChangeModalOpen(false)}
+        onSuccess={() => {
+          // Refresh the orders data
+          refetchOrders();
+          setOrderToChangeStatus(null);
+        }}
+        orderId={orderToChangeStatus?.id || ""}
+        currentStatus={orderToChangeStatus?.status}
+      />
     </div>
   );
 }

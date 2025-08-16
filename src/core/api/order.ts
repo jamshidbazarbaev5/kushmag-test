@@ -63,6 +63,7 @@ export interface Order {
   project: ModelReference;
   agent: ModelReference;
   organization: ModelReference;
+  status:any;
   salesChannel: ModelReference;
   address: string;
   // order_code: string;

@@ -8,10 +8,12 @@
     "actions": "Действия"
   },
   "common": {
+    "change_status": "Cтатус",
+    "status_legend": "Фильтровать по статусу",
     "yes": "Да",
-    "confirm_delete":"Удалить?",
+    "confirm_delete": "Удалить?",
     "add": "Добавить",
-    "delete_warning":"Вы не можете восстановить удаленные данные",
+    "delete_warning": "Вы не можете восстановить удаленные данные",
     "export": "Экспорт",
     "close": "Закрыть",
     "legend": "Легенда",
@@ -235,15 +237,18 @@
   "buttons": {
     "edit": "Редактировать"
   },
-
+  "orders": {
+    "change_status": "изменить статус",
+    "select_new_status": "Выберите статуса"
+  },
 
   "forms": {
-    "quantity_of":"Кол-во",
+    "quantity_of": "Кол-во",
     "date": "Дата",
-    "manufacture":"Пройздводство",
-    "quantity_of":"Кол-во",
-    "additional":"Дополнительный",
-    "main":"Основная",
+    "manufacture": "Пройздводство",
+    "quantity_of": "Кол-во",
+    "additional": "Дополнительный",
+    "main": "Основная",
     "search_counterparty": "Поиск контрагента",
     "search_doors": "Поиск двери",
     "agreement": "Соглашение",
@@ -584,8 +589,8 @@
     "select_crown_model": "Выберите модель короны",
     "select_casing_model": "Поиск модели наличника",
     "select_branch": "Выберите филиал",
-    "search_attribute_settings":"Поиск настроек атрибутов",
-    "search_price_setting":"Поиск настроек цен",
+    "search_attribute_settings": "Поиск настроек атрибутов",
+    "search_price_setting": "Поиск настроек цен",
     "select_accessory_model": "Выберите модель аксессуара",
     "select_accessory_type": "Выберите тип аксессуара",
     "select_extension_model": "Выберите модель добора",
