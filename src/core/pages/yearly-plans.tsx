@@ -465,24 +465,24 @@ export default function YearlyPlansPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">{t("common.all")}</SelectItem>
-                        <SelectItem value="ADMIN">
-                          {t("roles.admin")}
-                        </SelectItem>
+                          {/* <SelectItem value="ADMIN">
+                            {t("roles.admin")}
+                          </SelectItem> */}
                         <SelectItem value="PRODAVEC">
                           {t("roles.prodavec")}
                         </SelectItem>
-                        <SelectItem value="MANUFACTURE">
+                        {/* <SelectItem value="MANUFACTURE">
                           {t("roles.manufacture")}
-                        </SelectItem>
+                        </SelectItem> */}
                         <SelectItem value="ZAMERSHIK">
                           {t("roles.zamershik")}
                         </SelectItem>
                         <SelectItem value="OPERATOR">
                           {t("roles.operator")}
                         </SelectItem>
-                        <SelectItem value="SOTRUDNIK">
+                        {/* <SelectItem value="SOTRUDNIK">
                           {t("roles.sotrudnik")}
-                        </SelectItem>
+                        </SelectItem> */}
                       </SelectContent>
                     </Select>
                   </div>

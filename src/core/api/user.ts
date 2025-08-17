@@ -1,4 +1,4 @@
-import { createResourceApiHooks } from '../helpers/createResourceApi';
+import { createResourceApiHooks } from "../helpers/createResourceApi";
 
 export interface User {
   id?: number;
@@ -6,7 +6,7 @@ export interface User {
   password?: string;
   full_name: string;
   phone_number: string;
-  role: 'ADMIN' | 'PRODAVEC' | 'ZAMERSHIK' | 'OPERATOR' | 'SOTRUDNIK';
+  role: "ADMIN" | "PRODAVEC" | "ZAMERSHIK" | "OPERATOR" | "SOTRUDNIK";
   api_login?: string;
   api_password?: string;
   fixed_salary?: number;
@@ -16,12 +16,12 @@ export interface User {
       href: string;
       type: string;
       mediaType: string;
-    }
+    };
   };
-  staff_member?: any
+  staff_member?: any;
 }
 
-const USER_URL = 'users/';
+const USER_URL = "users/";
 
 export const {
   useGetResources: useGetUsers,
@@ -29,4 +29,9 @@ export const {
   useCreateResource: useCreateUser,
   useUpdateResource: useUpdateUser,
   useDeleteResource: useDeleteUser,
-} = createResourceApiHooks<User>(USER_URL, 'users');
+} = createResourceApiHooks<User>(USER_URL, "users");
+
+// Searchable hook for users
+export const useSearchableUsers = (search: string = "") => {
+  return useGetUsers({ search });
+};

@@ -16,11 +16,18 @@ export function createResourceApiHooks<
   T extends BaseResource,
   R = T[] | PaginatedResponse<T>,
 >(baseUrl: string, queryKey: string) {
-  const useGetResources = (options?: { params?: Record<string, any> }) => {
+  const useGetResources = (options?: {
+    params?: Record<string, any>;
+    search?: string;
+  }) => {
     return useQuery({
-      queryKey: [queryKey, options?.params],
+      queryKey: [queryKey, options?.params, options?.search],
       queryFn: async () => {
-        const response = await api.get<R>(baseUrl, { params: options?.params });
+        const params = {
+          ...options?.params,
+          ...(options?.search ? { search: options.search } : {}),
+        };
+        const response = await api.get<R>(baseUrl, { params });
         return response.data;
       },
     });

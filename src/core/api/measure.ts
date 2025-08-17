@@ -1,6 +1,6 @@
-import { createResourceApiHooks } from '../helpers/createResourceApi';
-import { useMutation } from '@tanstack/react-query';
-import api from './api';
+import { createResourceApiHooks } from "../helpers/createResourceApi";
+import { useMutation } from "@tanstack/react-query";
+import api from "./api";
 
 interface Extension {
   width: number;
@@ -18,12 +18,12 @@ interface Door {
   width: number;
   height: number;
   quantity: number;
-  opening_side: 'onga' | 'shepke';
-  swing_direction: 'sirtka' | 'ishke';
-  construction_side: 'sirtka' | 'ishke';
-  promog: 'bar' | 'joq';
+  opening_side: "onga" | "shepke";
+  swing_direction: "sirtka" | "ishke";
+  construction_side: "sirtka" | "ishke";
+  promog: "bar" | "joq";
   threshold: number;
-  casing_zamer: 'p' | 'g';
+  casing_zamer: "p" | "g";
   extensions?: Extension[];
   crowns?: Crown[];
 }
@@ -33,14 +33,14 @@ export interface Measure {
   client_name: string;
   client_phone: string;
   address: string;
-  zamer_status: 'new' | 'completed' | 'cancelled';
+  zamer_status: "new" | "completed" | "cancelled";
   zamershik?: number;
   comment?: string;
   created_at?: string;
   updated_at?: string;
   doors: Door[];
 }
-const MEASURE_URL = 'measures/';
+const MEASURE_URL = "measures/";
 
 export const {
   useGetResources: useGetMeasures,
@@ -48,30 +48,30 @@ export const {
   useCreateResource: useCreateMeasure,
   useUpdateResource: useUpdateMeasure,
   useDeleteResource: useDeleteMeasure,
-} = createResourceApiHooks<Measure>(MEASURE_URL, 'measures');
+} = createResourceApiHooks<Measure>(MEASURE_URL, "measures");
 
 // Export single measure to Excel
 export const useExportMeasure = () => {
   return useMutation({
     mutationFn: async (measureId: number) => {
       const response = await api.get(`measures/${measureId}/export/`, {
-        responseType: 'blob',
+        responseType: "blob",
       });
-      
+
       // Create blob and download file
       const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      
+
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `measure_${measureId}_${new Date().toISOString().slice(0, 10)}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       return response.data;
     },
   });

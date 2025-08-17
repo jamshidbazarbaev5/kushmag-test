@@ -1465,10 +1465,10 @@ function StepTwo({
       {/* Add New Table Button */}
       <div className="flex justify-end">
         <Button
-          variant="outline"
+          // variant="outline"
           size="sm"
           onClick={handleAddNewTable}
-          className="h-8 flex items-center gap-1"
+          className="h-8 flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 "
         >
           <Plus className="h-3 w-3" />
           Добавить новую модель двери
@@ -2993,8 +2993,7 @@ function StepTwo({
                   onClick={() => {
                     handleAddNewRow(table.id);
                   }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-                  size="lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   disabled={!table.doorModel}
                 >
                   <Plus className="h-5 w-5" />
@@ -3673,8 +3672,8 @@ function StepThree({
                 <Button
                   onClick={onCalculate}
                   disabled={isCalculating || doors.length === 0}
-                  className="flex items-center h-12 w-80 gap-2 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                  size="sm"
+                  className="flex items-center h-12 w-80 gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  // size="lg"
                 >
                   <Calculator className="h-4 w-4" />
                   {isCalculating ? t("forms.calculating") : "Рассчитать"}

@@ -1,4 +1,4 @@
-import { createResourceApiHooks } from '../helpers/createResourceApi';
+import { createResourceApiHooks } from "../helpers/createResourceApi";
 
 interface Meta {
   href: string;
@@ -25,61 +25,86 @@ export interface Organization extends BaseReference {}
 export interface SalesChannel extends BaseReference {}
 export interface Seller extends BaseReference {}
 export interface Operator extends BaseReference {}
-export interface Branch extends BaseReference {
- 
-}
+export interface Branch extends BaseReference {}
 
-const CURRENCY_URL = 'currency/';
-const STORE_URL = 'store/';
-const PROJECT_URL = 'project/';
-const COUNTERPARTY_URL = 'counterparty/';
-const ORGANIZATION_URL = 'organization/';
-const SALESCHANNEL_URL = 'saleschannel/';
-const SELLER_URL = 'sellers/';
-const OPERATOR_URL = 'operators/';
-const BRANCH_URL = 'branches/';
+const CURRENCY_URL = "currency/";
+const STORE_URL = "store/";
+const PROJECT_URL = "project/";
+const COUNTERPARTY_URL = "counterparty/";
+const ORGANIZATION_URL = "organization/";
+const SALESCHANNEL_URL = "saleschannel/";
+const SELLER_URL = "sellers/";
+const OPERATOR_URL = "operators/";
+const BRANCH_URL = "branches/";
 
 export const {
   useGetResources: useGetCurrencies,
   useGetResource: useGetCurrency,
-} = createResourceApiHooks<Currency>(CURRENCY_URL, 'currency');
+} = createResourceApiHooks<Currency>(CURRENCY_URL, "currency");
 
-export const {
-  useGetResources: useGetStores,
-  useGetResource: useGetStore,
-} = createResourceApiHooks<Store>(STORE_URL, 'store');
+export const { useGetResources: useGetStores, useGetResource: useGetStore } =
+  createResourceApiHooks<Store>(STORE_URL, "store");
 
 export const {
   useGetResources: useGetProjects,
   useGetResource: useGetProject,
-} = createResourceApiHooks<Project>(PROJECT_URL, 'project');
+} = createResourceApiHooks<Project>(PROJECT_URL, "project");
 
 export const {
   useGetResources: useGetCounterparties,
   useGetResource: useGetCounterparty,
-} = createResourceApiHooks<Counterparty>(COUNTERPARTY_URL, 'counterparty');
+} = createResourceApiHooks<Counterparty>(COUNTERPARTY_URL, "counterparty");
 
 export const {
   useGetResources: useGetOrganizations,
   useGetResource: useGetOrganization,
-} = createResourceApiHooks<Organization>(ORGANIZATION_URL, 'organization');
+} = createResourceApiHooks<Organization>(ORGANIZATION_URL, "organization");
 
 export const {
   useGetResources: useGetSalesChannels,
   useGetResource: useGetSalesChannel,
-} = createResourceApiHooks<SalesChannel>(SALESCHANNEL_URL, 'saleschannel');
+} = createResourceApiHooks<SalesChannel>(SALESCHANNEL_URL, "saleschannel");
 
-export const {
-  useGetResources: useGetSellers,
-  useGetResource: useGetSeller,
-} = createResourceApiHooks<Seller>(SELLER_URL, 'sellers');
+export const { useGetResources: useGetSellers, useGetResource: useGetSeller } =
+  createResourceApiHooks<Seller>(SELLER_URL, "sellers");
 
 export const {
   useGetResources: useGetOperators,
   useGetResource: useGetOperator,
-} = createResourceApiHooks<Operator>(OPERATOR_URL, 'operators');
+} = createResourceApiHooks<Operator>(OPERATOR_URL, "operators");
 
-export const {
-  useGetResources: useGetBranches,
-  useGetResource: useGetBranch,
-} = createResourceApiHooks<Branch>(BRANCH_URL, 'branches');
+export const { useGetResources: useGetBranches, useGetResource: useGetBranch } =
+  createResourceApiHooks<Branch>(BRANCH_URL, "branches");
+
+// Searchable hooks for all resources
+export const useSearchableStores = (search: string = "") => {
+  return useGetStores({ search });
+};
+
+export const useSearchableProjects = (search: string = "") => {
+  return useGetProjects({ search });
+};
+
+export const useSearchableCounterparties = (search: string = "") => {
+  return useGetCounterparties({ search });
+};
+
+export const useSearchableOrganizations = (search: string = "") => {
+  return useGetOrganizations({ search });
+};
+
+export const useSearchableSalesChannels = (search: string = "") => {
+  return useGetSalesChannels({ search });
+};
+
+export const useSearchableSellers = (search: string = "") => {
+  return useGetSellers({ search });
+};
+
+export const useSearchableOperators = (search: string = "") => {
+  return useGetOperators({ search });
+};
+
+export const useSearchableBranches = (search: string = "") => {
+  return useGetBranches({ search });
+};

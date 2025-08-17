@@ -28,7 +28,8 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 // import { format } from 'date-fns';
 // import { create } from 'zustand';
 
@@ -52,21 +53,28 @@ export default function MeasuresPage() {
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN" || currentUser?.is_superuser;
 
+  // Debounced filter update
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
   // Build query params for API call
-  const buildQueryParams = () => {
+  const buildQueryParams = useCallback(() => {
     const params: Record<string, any> = {
       page,
       page_size: 30,
     };
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(debouncedFilters).forEach(([key, value]) => {
       if (value) {
         params[key] = value;
       }
     });
     return params;
-  };
+  }, [page, debouncedFilters]);
 
-  const { data: measuresData, isLoading } = useGetMeasures({
+  const {
+    data: measuresData,
+    isLoading,
+    refetch,
+  } = useGetMeasures({
     params: buildQueryParams(),
   });
   const { data: users } = useGetUsers();
@@ -94,6 +102,19 @@ export default function MeasuresPage() {
     setFilters((prev) => ({ ...prev, [key]: apiValue }));
     setPage(1); // Reset to first page when filtering
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [filters]);
+
+  // Refetch data when debounced filters or page change
+  useEffect(() => {
+    refetch();
+  }, [debouncedFilters, page, refetch]);
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -109,8 +130,8 @@ export default function MeasuresPage() {
     }
   };
 
-  const clearFilters = () => {
-    setFilters({
+  const clearFilters = useCallback(() => {
+    const emptyFilters = {
       client_name: "",
       client_phone: "",
       zamer_status: "",
@@ -119,9 +140,11 @@ export default function MeasuresPage() {
       created_at_after: "",
       created_at_before: "",
       zamershik: "",
-    });
+    };
+    setFilters(emptyFilters);
+    setDebouncedFilters(emptyFilters);
     setPage(1);
-  };
+  }, []);
   const columns: any = [
     {
       header: t("tables.created_at"),
@@ -174,7 +197,7 @@ export default function MeasuresPage() {
       deleteMeasure(id, {
         onSuccess: () => {
           toast.success(t("messages.measure_deleted_successfully"));
-          setPage(1); // Reset to the first page after deletion
+          refetch(); // Refetch data after deletion
         },
         onError: (error) => {
           console.error("Error deleting measure:", error);
@@ -193,31 +216,108 @@ export default function MeasuresPage() {
   // Custom dropdown component for actions
   const ActionsDropdown = ({ row }: { row: any }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [dropdownPosition, setDropdownPosition] = useState<"bottom" | "top">(
-      "bottom",
-    );
+    const [dropdownPosition, setDropdownPosition] = useState<{
+      top: number;
+      left: number;
+      position: "bottom" | "top";
+    }>({
+      top: 0,
+      left: 0,
+      position: "bottom",
+    });
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const calculatePosition = () => {
+      if (!buttonRef.current) return;
+
+      const rect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Calculate dropdown height based on number of items
+      let dropdownHeight = 16; // base padding (py-1 = 4px top + 4px bottom = 8px, plus some buffer)
+      dropdownHeight += 40; // Edit button
+      dropdownHeight += 40; // Export button
+      if (!row?.order_status && isAdmin) dropdownHeight += 40; // Create Order
+      if (isAdmin) dropdownHeight += 50; // Delete button + separator
+
+      const spaceBelow = viewportHeight - rect.bottom - 10; // 10px buffer
+      const spaceAbove = rect.top - 10; // 10px buffer
+
+      // Determine if dropdown should open up or down
+      const position =
+        spaceBelow < dropdownHeight && spaceAbove > dropdownHeight
+          ? "top"
+          : "bottom";
+
+      // Calculate optimal left position
+      const dropdownWidth = 192; // w-48 = 192px
+      let left = rect.left;
+
+      // Adjust if dropdown would go off-screen on the right
+      if (left + dropdownWidth > viewportWidth) {
+        left = rect.right - dropdownWidth;
+      }
+
+      // Ensure minimum left position
+      if (left < 10) {
+        left = 10;
+      }
+
+      // Calculate top position
+      let top;
+      if (position === "top") {
+        top = rect.top - dropdownHeight;
+      } else {
+        top = rect.bottom + 4;
+      }
+
+      // Ensure dropdown doesn't go above viewport
+      if (top < 10) {
+        top = 10;
+      }
+
+      // Ensure dropdown doesn't go below viewport
+      if (top + dropdownHeight > viewportHeight - 10) {
+        top = viewportHeight - dropdownHeight - 10;
+      }
+
+      setDropdownPosition({ top, left, position });
+    };
 
     const handleToggle = (event: React.MouseEvent) => {
+      event.stopPropagation(); // Prevent event bubbling to row click
       if (!isOpen) {
-        // Calculate if dropdown should open above or below
-        const rect = event.currentTarget.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const dropdownHeight = 100; // Approximate dropdown height
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
-
-        if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-          setDropdownPosition("top");
-        } else {
-          setDropdownPosition("bottom");
-        }
+        calculatePosition();
       }
       setIsOpen(!isOpen);
     };
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef.current &&
+          !buttonRef.current.contains(event.target as Node)
+        ) {
+          setIsOpen(false);
+        }
+      };
+
+      if (isOpen) {
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+          document.removeEventListener("mousedown", handleClickOutside);
+      }
+    }, [isOpen]);
+
     return (
       <div className="relative">
         <Button
+          ref={buttonRef}
           variant="ghost"
           size="sm"
           onClick={handleToggle}
@@ -226,22 +326,23 @@ export default function MeasuresPage() {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
 
-        {isOpen && (
-          <>
-            {/* Backdrop to close dropdown */}
+        {isOpen &&
+          createPortal(
             <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
-            />
-            {/* Dropdown menu */}
-            <div
-              className={`absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 ${
-                dropdownPosition === "top" ? "bottom-8" : "top-8"
-              }`}
+              ref={dropdownRef}
+              className="fixed z-[9999] w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1"
+              style={{
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                maxHeight: "300px",
+                overflowY: "auto",
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
               <button
                 className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   navigate(`/measures/${row?.id}/edit`);
                   setIsOpen(false);
                 }}
@@ -252,7 +353,8 @@ export default function MeasuresPage() {
 
               <button
                 className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   handleExportMeasure(row?.id);
                   setIsOpen(false);
                 }}
@@ -265,7 +367,8 @@ export default function MeasuresPage() {
               {!row?.order_status && isAdmin && (
                 <button
                   className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     navigate(`/orders/create-from-measure/${row?.id}`);
                     setIsOpen(false);
                   }}
@@ -281,7 +384,8 @@ export default function MeasuresPage() {
                   <div className="border-t border-gray-200 my-1" />
                   <button
                     className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       handleDelete(row?.id);
                       setIsOpen(false);
                     }}
@@ -291,9 +395,9 @@ export default function MeasuresPage() {
                   </button>
                 </>
               )}
-            </div>
-          </>
-        )}
+            </div>,
+            document.body,
+          )}
       </div>
     );
   };
@@ -481,7 +585,10 @@ export default function MeasuresPage() {
         pageSize={30}
         currentPage={page}
         // onDelete={handleDelete}
-        onPageChange={(newPage) => setPage(newPage)}
+        onPageChange={(newPage) => {
+          setPage(newPage);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
         onRowClick={(row) => navigate(`/measures/${row?.id}/edit`)}
         columns={columns}
         isLoading={isLoading}

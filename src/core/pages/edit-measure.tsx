@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useGlassTypeOptions, useThresholdOptions } from "../hooks";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -36,7 +37,7 @@ import {
   Save,
   Edit3,
   User,
-  Download,
+  ExternalLink,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -66,9 +67,6 @@ const zamerStatusOptions = [
   { value: "completed", label: "" },
   { value: "cancelled", label: "" },
 ];
-
-// Dynamic options from API
-type Option = { value: string | number; label: string };
 
 interface Extension {
   width: string;
@@ -129,34 +127,9 @@ export default function EditMeasure() {
   zamerStatusOptions[0].label = t("status.new");
   zamerStatusOptions[1].label = t("status.completed");
   zamerStatusOptions[2].label = t("status.cancelled");
-  const [glassTypeOptions, setGlassTypeOptions] = useState<Option[]>([]);
-  const [thresholdOptions, setThresholdOptions] = useState<Option[]>([]);
-  // Fetch glass types and thresholds for selects
-  useEffect(() => {
-    async function fetchOptions() {
-      try {
-        const [glassRes, thresholdRes] = await Promise.all([
-          api.get("glass-types/"),
-          api.get("thresholds/"),
-        ]);
-        setGlassTypeOptions(
-          (glassRes.data || []).map((g: any) => ({
-            value: g.id,
-            label: g.name,
-          })),
-        );
-        setThresholdOptions(
-          (thresholdRes.data || []).map((t: any) => ({
-            value: t.id,
-            label: t.name,
-          })),
-        );
-      } catch (e) {
-        // Optionally handle error
-      }
-    }
-    fetchOptions();
-  }, []);
+  // Use hooks for glass types and thresholds
+  const { glassTypeOptions } = useGlassTypeOptions();
+  const { thresholdOptions } = useThresholdOptions();
   const { id } = useParams<{ id: string }>();
   const [doors, setDoors] = useState<Door[]>([{ ...defaultDoor }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -352,7 +325,7 @@ export default function EditMeasure() {
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const handleViewPDF = async () => {
     if (!id) return;
 
     try {
@@ -360,25 +333,22 @@ export default function EditMeasure() {
         responseType: "blob",
       });
 
-      // Create download link from blob
+      // Create blob URL and open in new window
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `measure-${id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
 
-      toast.success(
-        t("messages.pdf_download_started") || "PDF download started",
-      );
+      // Open PDF in new window
+      window.open(url, "_blank");
+
+      // Clean up the blob URL after a short delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+
+      toast.success(t("messages.pdf_opened") || "PDF opened in new window");
     } catch (error) {
-      console.error("Error downloading PDF:", error);
-      toast.error(
-        t("messages.error_downloading_pdf") || "Error downloading PDF",
-      );
+      console.error("Error opening PDF:", error);
+      toast.error(t("messages.error_opening_pdf") || "Error opening PDF");
     }
   };
 
@@ -393,12 +363,12 @@ export default function EditMeasure() {
             </h1>
           </div>
           <Button
-            onClick={handleDownloadPDF}
+            onClick={handleViewPDF}
             disabled={!id}
             className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
           >
-            <Download className="h-4 w-4" />
-            {t("common.download_pdf") || "Download PDF"}
+            <ExternalLink className="h-4 w-4" />
+            {t("common.view_pdf") || "View PDF"}
           </Button>
         </div>
       </div>

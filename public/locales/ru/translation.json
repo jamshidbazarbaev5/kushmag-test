@@ -8,6 +8,8 @@
     "actions": "Действия"
   },
   "common": {
+    "view_pdf":"Скачать PDF",
+    "remove_table":"Удалить таблицу",
     "download_pdf": "Скачать PDF",
     "current":"Текущий",
     "change_status": "Cтатус",
@@ -246,6 +248,7 @@
   },
 
   "forms": {
+     "remove_table":"Удалить таблицу",
    "achievment":"Достижение",
     "top_performer":"Лучший исполнитель",
     "high_performers":"Высокий исполнители",

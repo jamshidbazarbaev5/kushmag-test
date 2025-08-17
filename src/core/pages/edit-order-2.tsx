@@ -69,7 +69,7 @@ import {
   Package,
   Calculator,
   Send,
-  Download,
+  ExternalLink,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave } from "../hooks/useAutoSave";
@@ -881,7 +881,7 @@ export default function EditOrderPage() {
     });
   };
 
-  const handleDownloadPDF = async () => {
+  const handleViewPDF = async () => {
     if (!orderData?.id) return;
 
     try {
@@ -889,25 +889,22 @@ export default function EditOrderPage() {
         responseType: "blob",
       });
 
-      // Create download link from blob
+      // Create blob URL and open in new window
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `order-${orderData.order_code || orderData.id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
 
-      toast.success(
-        t("messages.pdf_download_started") || "PDF download started",
-      );
+      // Open PDF in new window
+      window.open(url, "_blank");
+
+      // Clean up the blob URL after a short delay
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+
+      toast.success(t("messages.pdf_opened") || "PDF opened in new window");
     } catch (error) {
-      console.error("Error downloading PDF:", error);
-      toast.error(
-        t("messages.error_downloading_pdf") || "Error downloading PDF",
-      );
+      console.error("Error opening PDF:", error);
+      toast.error(t("messages.error_opening_pdf") || "Error opening PDF");
     }
   };
 
@@ -938,12 +935,12 @@ export default function EditOrderPage() {
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={handleDownloadPDF}
+                onClick={handleViewPDF}
                 disabled={!orderData?.id}
-                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                <Download className="h-4 w-4" />
-                {t("common.download_pdf") || "Download PDF"}
+                <ExternalLink className="h-4 w-4" />
+                {t("common.view_pdf") || "View PDF"}
               </Button>
               <Button
                 variant="outline"
@@ -1428,12 +1425,12 @@ function StepTwo({
   };
 
   // Remove table functionality
-  // const handleRemoveTable = (tableId: number) => {
-  //   if (tables.length <= 1) return; // Don't allow removing the last table
+  const handleRemoveTable = (tableId: number) => {
+    if (tables.length <= 1) return; // Don't allow removing the last table
 
-  //   const updatedTables = tables.filter((table) => table.id !== tableId);
-  //   setTables(updatedTables);
-  // };
+    const updatedTables = tables.filter((table) => table.id !== tableId);
+    setTables(updatedTables);
+  };
 
   // Helper function to update accessories by type instead of hardcoded index
   const updateAccessoryByType = (
@@ -1756,6 +1753,17 @@ function StepTwo({
             ...door,
             [field]: numericValue,
           };
+        } else if (
+          field === "extensions" ||
+          field === "crowns" ||
+          field === "casings" ||
+          field === "accessories"
+        ) {
+          // For nested arrays like extensions/crowns/casings/accessories, ensure we preserve the structure
+          updatedDoors[doorIndex] = {
+            ...door,
+            [field]: value,
+          };
         } else {
           updatedDoors[doorIndex] = {
             ...door,
@@ -1902,10 +1910,10 @@ function StepTwo({
       {/* Add New Table Button */}
       <div className="flex justify-end">
         <Button
-          variant="outline"
+          // variant="outline"
           size="sm"
           onClick={handleAddNewTable}
-          className="h-8 flex items-center gap-1"
+          className="h-8 flex items-center gap-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
         >
           <Plus className="h-3 w-3" />
           Добавить новую модель двери
@@ -2295,7 +2303,7 @@ function StepTwo({
                       <TableHead className="w-28">
                         {t("forms.threshold")}
                       </TableHead>
-                      <TableHead className="w-28">Paska Orin</TableHead>
+                      <TableHead className="w-28">Паска орыны</TableHead>
                       <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
@@ -2321,41 +2329,29 @@ function StepTwo({
                                     ...t,
                                     selectedExtensionProduct: product,
                                     extensionSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      extensions:
+                                        door.extensions?.map((ext: any) => ({
+                                          ...ext,
+                                          model: product
+                                            ? product.id
+                                            : ext.model,
+                                          price_type: ext.price_type || "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : ext.price,
+                                        })) || [],
+                                    })),
                                   };
                                 }
                                 return t;
                               });
                               setTables(updatedTables);
-
-                              // Update existing doors' extensions with the new product
-                              if (product) {
-                                const currentFormData = orderForm.getValues();
-                                const updatedDoors = currentFormData.doors.map(
-                                  (door: any) => {
-                                    if (door.table_id === table.id) {
-                                      return {
-                                        ...door,
-                                        extensions: door.extensions.map(
-                                          (ext: any) => ({
-                                            ...ext,
-                                            model: product.id,
-                                            price_type: ext.price_type || "",
-                                            price:
-                                              ext.price ||
-                                              (product.salePrices?.find(
-                                                (p: any) =>
-                                                  p.priceType.name ===
-                                                  "Цена продажи",
-                                              )?.value || 0) / 100,
-                                          }),
-                                        ),
-                                      };
-                                    }
-                                    return door;
-                                  },
-                                );
-                                orderForm.setValue("doors", updatedDoors);
-                              }
                             }}
                           />
                         </div>
@@ -2385,6 +2381,24 @@ function StepTwo({
                                     ...t,
                                     selectedCasingProduct: product,
                                     casingSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      casings:
+                                        door.casings?.map((casing: any) => ({
+                                          ...casing,
+                                          model: product
+                                            ? product.id
+                                            : casing.model,
+                                          price_type: casing.price_type || "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : casing.price,
+                                        })) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2419,6 +2433,24 @@ function StepTwo({
                                     ...t,
                                     selectedCrownProduct: product,
                                     crownSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      crowns:
+                                        door.crowns?.map((crown: any) => ({
+                                          ...crown,
+                                          model: product
+                                            ? product.id
+                                            : crown.model,
+                                          price_type: crown.price_type || "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : crown.price,
+                                        })) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2453,6 +2485,29 @@ function StepTwo({
                                     ...t,
                                     selectedCubeProduct: product,
                                     cubeSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (acc.accessory_type === "cube") {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2487,6 +2542,29 @@ function StepTwo({
                                     ...t,
                                     selectedLegProduct: product,
                                     legSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (acc.accessory_type === "leg") {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2521,6 +2599,29 @@ function StepTwo({
                                     ...t,
                                     selectedGlassProduct: product,
                                     glassSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (acc.accessory_type === "glass") {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2555,6 +2656,29 @@ function StepTwo({
                                     ...t,
                                     selectedLockProduct: product,
                                     lockSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (acc.accessory_type === "lock") {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2589,6 +2713,29 @@ function StepTwo({
                                     ...t,
                                     selectedTopsaProduct: product,
                                     topsaSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (acc.accessory_type === "topsa") {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -2623,6 +2770,31 @@ function StepTwo({
                                     ...t,
                                     selectedBeadingProduct: product,
                                     beadingSearch: product?.name || "",
+                                    doors: t.doors.map((door: any) => ({
+                                      ...door,
+                                      accessories:
+                                        door.accessories?.map((acc: any) => {
+                                          if (
+                                            acc.accessory_type === "beading"
+                                          ) {
+                                            return {
+                                              ...acc,
+                                              model: product
+                                                ? product.id
+                                                : acc.model,
+                                              price_type: acc.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : acc.price,
+                                            };
+                                          }
+                                          return acc;
+                                        }) || [],
+                                    })),
                                   };
                                 }
                                 return t;
@@ -3430,18 +3602,31 @@ function StepTwo({
                   </p>
                 </div>
               )} */}
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-end gap-2 mt-4">
                 <Button
                   onClick={() => {
                     handleAddNewRow(table.id);
                   }}
-                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                   disabled={!table.doorModel}
                 >
                   <Plus className="h-5 w-5" />
                   {t("forms.add_row")}
                 </Button>
+                {tables.length > 1 && (
+                  <Button
+                    onClick={() => {
+                      handleRemoveTable(table.id);
+                    }}
+                    variant="destructive"
+                    size="lg"
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    {t("forms.remove_table")}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -3666,7 +3851,7 @@ function StepThree({
   isCalculating,
   onSubmit,
   onCalculate,
-  onBack,
+  // onBack,
   discountAmount,
   setDiscountAmount,
   discountPercentage,
@@ -3847,8 +4032,7 @@ function StepThree({
                 <Button
                   onClick={onCalculate}
                   disabled={doors.length === 0 || isCalculating}
-                  className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-2 rounded-md"
-                  size="sm"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   {isCalculating ? (
                     <>
@@ -4107,8 +4291,7 @@ function StepThree({
                     isSendingToMoySklad ||
                     orderData?.order_status === "moy_sklad"
                   }
-                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 disabled:opacity-50"
-                  size="lg"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
                   {isSendingToMoySklad ? (
                     <>
@@ -4126,10 +4309,6 @@ function StepThree({
                       {t("common.send_to_moy_sklad")}
                     </>
                   )}
-                </Button>
-
-                <Button variant="outline" onClick={onBack} className="w-full">
-                  {t("common.back_to_doors")}
                 </Button>
               </div>
             </CardContent>

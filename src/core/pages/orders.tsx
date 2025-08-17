@@ -4,28 +4,23 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+import SearchableSelect from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
 import { useGetOrders, useUpdateOrder, useDeleteOrder } from "../api/order";
 import type { Order } from "../api/order";
 import {
-  useGetProjects,
-  useGetStores,
-  // useGetCounterparties,
-  useGetOrganizations,
-  useGetSalesChannels,
-  useGetSellers,
-  useGetOperators,
+  useSearchableProjects,
+  useSearchableStores,
+  useSearchableOrganizations,
+  useSearchableSalesChannels,
+  useSearchableSellers,
+  useSearchableOperators,
+  useSearchableCounterparties,
 } from "../api/references";
-import { useGetUsers } from "../api/user";
+import { useSearchableUsers } from "../api/user";
 import {
   Pencil,
   Trash,
@@ -36,7 +31,6 @@ import {
   Download,
   MoreHorizontal,
   Eye,
-  Search,
   Plus,
   Info,
 } from "lucide-react";
@@ -88,12 +82,6 @@ export default function OrdersPage() {
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeStatusTab, setActiveStatusTab] = useState("all");
   const [counterpartSearchQuery, setCounterpartSearchQuery] = useState("");
-  const [counterpartSearchResults, setCounterpartSearchResults] = useState<
-    any[]
-  >([]);
-  const [showCounterpartDropdown, setShowCounterpartDropdown] = useState(false);
-  const [isCounterpartLoading, setIsCounterpartLoading] = useState(false);
-  const counterpartDropdownRef = useRef<HTMLDivElement>(null);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [statuses, setStatuses] = useState<any[]>([]);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
@@ -101,6 +89,16 @@ export default function OrdersPage() {
     string | null
   >(null);
   const statusChangeDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Search states for all selects
+  const [projectSearchQuery, setProjectSearchQuery] = useState("");
+  const [storeSearchQuery, setStoreSearchQuery] = useState("");
+  const [organizationSearchQuery, setOrganizationSearchQuery] = useState("");
+  const [salesChannelSearchQuery, setSalesChannelSearchQuery] = useState("");
+  const [sellerSearchQuery, setSellerSearchQuery] = useState("");
+  const [operatorSearchQuery, setOperatorSearchQuery] = useState("");
+  const [zamershikSearchQuery, setZamershikSearchQuery] = useState("");
+  const [adminSearchQuery, setAdminSearchQuery] = useState("");
 
   const [filters, setFilters] = useState({
     project: "",
@@ -253,12 +251,7 @@ export default function OrdersPage() {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setOpenActionMenu(null);
       }
-      if (
-        counterpartDropdownRef.current &&
-        !counterpartDropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowCounterpartDropdown(false);
-      }
+
       if (
         statusDropdownRef.current &&
         !statusDropdownRef.current.contains(event.target as Node)
@@ -273,67 +266,39 @@ export default function OrdersPage() {
       }
     };
 
-    if (
-      openActionMenu ||
-      showCounterpartDropdown ||
-      showStatusDropdown ||
-      showStatusChangeDropdown
-    ) {
+    if (openActionMenu || showStatusDropdown || showStatusChangeDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [
-    openActionMenu,
-    showCounterpartDropdown,
-    showStatusDropdown,
-    showStatusChangeDropdown,
-  ]);
-
-  // Counterpart search functionality
-  useEffect(() => {
-    const searchCounterparts = async () => {
-      if (counterpartSearchQuery.length < 2) {
-        setCounterpartSearchResults([]);
-        return;
-      }
-
-      setIsCounterpartLoading(true);
-      try {
-        const res = await api.get(
-          `counterparty/?search=${encodeURIComponent(counterpartSearchQuery)}`,
-        );
-        const results = Array.isArray(res.data)
-          ? res.data
-          : res.data?.results || [];
-        setCounterpartSearchResults(results);
-      } catch (error) {
-        console.error("Error searching counterparties:", error);
-        setCounterpartSearchResults([]);
-      } finally {
-        setIsCounterpartLoading(false);
-      }
-    };
-
-    const debounceTimeout = setTimeout(searchCounterparts, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [counterpartSearchQuery]);
+  }, [openActionMenu, showStatusDropdown, showStatusChangeDropdown]);
 
   const formatToTruncate = (text: string, length: number = 10): string => {
     return text?.length > length ? `${text.substring(0, length)}...` : text;
   };
 
-  // Fetch filter options
-  const { data: projects } = useGetProjects();
-  const { data: stores } = useGetStores();
+  // Fetch filter options with search capabilities
+  const { data: projects, isLoading: projectsLoading } =
+    useSearchableProjects(projectSearchQuery);
+  const { data: stores, isLoading: storesLoading } =
+    useSearchableStores(storeSearchQuery);
   // const { data: agents } = useGetCounterparties();
-  const { data: organizations } = useGetOrganizations();
-  const { data: salesChannels } = useGetSalesChannels();
-  const { data: sellers } = useGetSellers();
-  const { data: operators } = useGetOperators();
-  const { data: users } = useGetUsers();
+  const { data: organizations, isLoading: organizationsLoading } =
+    useSearchableOrganizations(organizationSearchQuery);
+  const { data: salesChannels, isLoading: salesChannelsLoading } =
+    useSearchableSalesChannels(salesChannelSearchQuery);
+  const { data: sellers, isLoading: sellersLoading } =
+    useSearchableSellers(sellerSearchQuery);
+  const { data: operators, isLoading: operatorsLoading } =
+    useSearchableOperators(operatorSearchQuery);
+  const { data: zamershikUsers, isLoading: zamershikUsersLoading } =
+    useSearchableUsers(zamershikSearchQuery);
+  const { data: adminUsers, isLoading: adminUsersLoading } =
+    useSearchableUsers(adminSearchQuery);
+  const { data: counterparties, isLoading: counterpartiesLoading } =
+    useSearchableCounterparties(counterpartSearchQuery);
 
   // Build query params for API call
   const buildQueryParams = () => {
@@ -406,10 +371,8 @@ export default function OrdersPage() {
     setCurrentPage(1);
   };
 
-  const handleCounterpartSelect = (counterpart: any) => {
-    setFilters((prev) => ({ ...prev, agent: counterpart.id }));
-    setCounterpartSearchQuery(counterpart.name);
-    setShowCounterpartDropdown(false);
+  const handleCounterpartSelect = (value: string | number) => {
+    setFilters((prev) => ({ ...prev, agent: String(value) }));
     setCurrentPage(1);
   };
 
@@ -432,22 +395,30 @@ export default function OrdersPage() {
     });
     setActiveStatusTab("all");
     setCounterpartSearchQuery("");
+    setProjectSearchQuery("");
+    setStoreSearchQuery("");
+    setOrganizationSearchQuery("");
+    setSalesChannelSearchQuery("");
+    setSellerSearchQuery("");
+    setOperatorSearchQuery("");
+    setZamershikSearchQuery("");
+    setAdminSearchQuery("");
     setCurrentPage(1);
   };
 
   // Get filtered users based on role
-  const zamershikUsers =
-    !Array.isArray(users) && users?.results
-      ? users.results.filter((user: any) => user.role === "ZAMERSHIK")
-      : Array.isArray(users)
-        ? users.filter((user: any) => user.role === "ZAMERSHIK")
+  const filteredZamershikUsers =
+    !Array.isArray(zamershikUsers) && zamershikUsers?.results
+      ? zamershikUsers.results.filter((user: any) => user.role === "ZAMERSHIK")
+      : Array.isArray(zamershikUsers)
+        ? zamershikUsers.filter((user: any) => user.role === "ZAMERSHIK")
         : [];
 
-  const adminUsers =
-    !Array.isArray(users) && users?.results
-      ? users.results.filter((user: any) => user.role === "ADMIN")
-      : Array.isArray(users)
-        ? users.filter((user: any) => user.role === "ADMIN")
+  const filteredAdminUsers =
+    !Array.isArray(adminUsers) && adminUsers?.results
+      ? adminUsers.results.filter((user: any) => user.role === "ADMIN")
+      : Array.isArray(adminUsers)
+        ? adminUsers.filter((user: any) => user.role === "ADMIN")
         : [];
 
   const formatDate = (dateString: string) => {
@@ -678,59 +649,30 @@ export default function OrdersPage() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
               {/* Counterpart Search Filter */}
-              <div className="space-y-1 relative" ref={counterpartDropdownRef}>
+              <div className="space-y-1">
                 <label className="text-sm font-medium">
                   {t("forms.counterparty")}
                 </label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    value={counterpartSearchQuery}
-                    onChange={(e) => {
-                      setCounterpartSearchQuery(e.target.value);
-                      setShowCounterpartDropdown(true);
-                    }}
-                    onFocus={() => setShowCounterpartDropdown(true)}
-                    placeholder={t("forms.search_counterparty")}
-                    className="h-9 min-w-[200px]"
-                  />
-                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-
-                  {showCounterpartDropdown && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                      {isCounterpartLoading ? (
-                        <div className="p-3 text-center text-gray-500">
-                          {t("common.loading")}...
-                        </div>
-                      ) : counterpartSearchResults.length > 0 ? (
-                        counterpartSearchResults.map((counterpart) => (
-                          <div
-                            key={counterpart.id}
-                            className="p-3 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100 last:border-b-0"
-                            onClick={() => handleCounterpartSelect(counterpart)}
-                          >
-                            <div className="font-medium">
-                              {counterpart.name}
-                            </div>
-                            {counterpart.phone && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                {counterpart.phone}
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      ) : counterpartSearchQuery.length >= 2 ? (
-                        <div className="p-3 text-center text-gray-500 text-sm">
-                          {t("common.no_results_found")}
-                        </div>
-                      ) : (
-                        <div className="p-3 text-center text-gray-500 text-sm">
-                          {t("common.type_to_search")}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <SearchableSelect
+                  options={(Array.isArray(counterparties)
+                    ? counterparties
+                    : counterparties?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
+                  value={filters.agent || "all"}
+                  onValueChange={handleCounterpartSelect}
+                  placeholder={t("forms.search_counterparty")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={counterpartiesLoading}
+                  searchQuery={counterpartSearchQuery}
+                  onSearchQueryChange={setCounterpartSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Project Filter */}
@@ -738,27 +680,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.project")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(projects)
+                    ? projects
+                    : projects?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.project || "all"}
                   onValueChange={(value) =>
-                    handleFilterChange("project", value)
+                    handleFilterChange("project", String(value))
                   }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_project")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(projects)
-                      ? projects
-                      : projects?.results || []
-                    ).map((project: any) => (
-                      <SelectItem key={project.id} value={project.id}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={t("forms.select_project")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={projectsLoading}
+                  searchQuery={projectSearchQuery}
+                  onSearchQueryChange={setProjectSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Store Filter */}
@@ -766,25 +709,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.store")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(stores)
+                    ? stores
+                    : stores?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.store || "all"}
-                  onValueChange={(value) => handleFilterChange("store", value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_store")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(stores)
-                      ? stores
-                      : stores?.results || []
-                    ).map((store: any) => (
-                      <SelectItem key={store.id} value={store.id}>
-                        {store.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) =>
+                    handleFilterChange("store", String(value))
+                  }
+                  placeholder={t("forms.select_store")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={storesLoading}
+                  searchQuery={storeSearchQuery}
+                  onSearchQueryChange={setStoreSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Organization Filter */}
@@ -792,27 +738,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.organization")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(organizations)
+                    ? organizations
+                    : organizations?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.organization || "all"}
                   onValueChange={(value) =>
-                    handleFilterChange("organization", value)
+                    handleFilterChange("organization", String(value))
                   }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_organization")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(organizations)
-                      ? organizations
-                      : organizations?.results || []
-                    ).map((org: any) => (
-                      <SelectItem key={org.id} value={org.id}>
-                        {org.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={t("forms.select_organization")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={organizationsLoading}
+                  searchQuery={organizationSearchQuery}
+                  onSearchQueryChange={setOrganizationSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Sales Channel Filter */}
@@ -820,29 +767,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.sales_channel")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(salesChannels)
+                    ? salesChannels
+                    : salesChannels?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.salesChannel || "all"}
                   onValueChange={(value) =>
-                    handleFilterChange("salesChannel", value)
+                    handleFilterChange("salesChannel", String(value))
                   }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue
-                      placeholder={t("forms.select_sales_channel")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(salesChannels)
-                      ? salesChannels
-                      : salesChannels?.results || []
-                    ).map((channel: any) => (
-                      <SelectItem key={channel.id} value={channel.id}>
-                        {channel.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={t("forms.select_sales_channel")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={salesChannelsLoading}
+                  searchQuery={salesChannelSearchQuery}
+                  onSearchQueryChange={setSalesChannelSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Seller Filter */}
@@ -850,25 +796,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.seller")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(sellers)
+                    ? sellers
+                    : sellers?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.seller || "all"}
-                  onValueChange={(value) => handleFilterChange("seller", value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_seller")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(sellers)
-                      ? sellers
-                      : sellers?.results || []
-                    ).map((seller: any) => (
-                      <SelectItem key={seller.id} value={seller.id}>
-                        {seller.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) =>
+                    handleFilterChange("seller", String(value))
+                  }
+                  placeholder={t("forms.select_seller")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={sellersLoading}
+                  searchQuery={sellerSearchQuery}
+                  onSearchQueryChange={setSellerSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Operator Filter */}
@@ -876,27 +825,28 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.operator")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={(Array.isArray(operators)
+                    ? operators
+                    : operators?.results || []
+                  ).map((item: any) => ({
+                    id: item.id,
+                    name: item.name,
+                  }))}
                   value={filters.operator || "all"}
                   onValueChange={(value) =>
-                    handleFilterChange("operator", value)
+                    handleFilterChange("operator", String(value))
                   }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_operator")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {(Array.isArray(operators)
-                      ? operators
-                      : operators?.results || []
-                    ).map((operator: any) => (
-                      <SelectItem key={operator.id} value={operator.id}>
-                        {operator.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={t("forms.select_operator")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={operatorsLoading}
+                  searchQuery={operatorSearchQuery}
+                  onSearchQueryChange={setOperatorSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                />
               </div>
 
               {/* Zamershik Filter */}
@@ -904,24 +854,26 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.zamershik")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={filteredZamershikUsers.map((user: any) => ({
+                    id: user.id,
+                    name: user.full_name,
+                  }))}
                   value={filters.zamershik || "all"}
                   onValueChange={(value) =>
-                    handleFilterChange("zamershik", value)
+                    handleFilterChange("zamershik", String(value))
                   }
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_zamershik")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {zamershikUsers.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder={t("forms.select_zamershik")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={zamershikUsersLoading}
+                  searchQuery={zamershikSearchQuery}
+                  onSearchQueryChange={setZamershikSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                  displayKey="name"
+                />
               </div>
 
               {/* Admin Filter */}
@@ -929,22 +881,26 @@ export default function OrdersPage() {
                 <label className="text-sm font-medium">
                   {t("forms.admin")}
                 </label>
-                <Select
+                <SearchableSelect
+                  options={filteredAdminUsers.map((user: any) => ({
+                    id: user.id,
+                    name: user.full_name,
+                  }))}
                   value={filters.admin || "all"}
-                  onValueChange={(value) => handleFilterChange("admin", value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[200px]">
-                    <SelectValue placeholder={t("forms.select_admin")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t("common.all")}</SelectItem>
-                    {adminUsers.map((user: any) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.full_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) =>
+                    handleFilterChange("admin", String(value))
+                  }
+                  placeholder={t("forms.select_admin")}
+                  searchPlaceholder={t("common.search")}
+                  allOptionLabel={t("common.all")}
+                  showAllOption={true}
+                  isLoading={adminUsersLoading}
+                  searchQuery={adminSearchQuery}
+                  onSearchQueryChange={setAdminSearchQuery}
+                  className="min-w-[200px]"
+                  emptyMessage={t("common.no_results_found")}
+                  displayKey="name"
+                />
               </div>
 
               {/* Order Date After */}
