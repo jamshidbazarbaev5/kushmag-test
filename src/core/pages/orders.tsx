@@ -80,7 +80,9 @@ export default function OrdersPage() {
   const [pageSize, setPageSize] = useState(50);
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [activeStatusTab, setActiveStatusTab] = useState("all");
+  const [activeStatusTab, setActiveStatusTab] = useState(
+    currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
+  );
   const [counterpartSearchQuery, setCounterpartSearchQuery] = useState("");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [statuses, setStatuses] = useState<any[]>([]);
@@ -123,12 +125,25 @@ export default function OrdersPage() {
     const savedColumns = localStorage.getItem("ordersColumnVisibility");
     if (savedColumns) {
       try {
-        return JSON.parse(savedColumns);
+        const parsed = JSON.parse(savedColumns);
+        // Override price columns for MANUFACTURE role
+        if (currentUser?.role === "MANUFACTURE") {
+          return {
+            ...parsed,
+            advance_payment: false,
+            discount_amount: false,
+            remaining_balance: false,
+            total_amount: false,
+            agreement_amount: false,
+            discount_percentage: false,
+          };
+        }
+        return parsed;
       } catch {
         // If parsing fails, fall back to default
       }
     }
-    return {
+    const defaultColumns = {
       number: true,
       order_status: true,
       moy_sklad_id: true,
@@ -158,6 +173,21 @@ export default function OrdersPage() {
       actions: true,
       order_code: true,
     };
+
+    // Hide price columns for MANUFACTURE role
+    if (currentUser?.role === "MANUFACTURE") {
+      return {
+        ...defaultColumns,
+        advance_payment: false,
+        discount_amount: false,
+        remaining_balance: false,
+        total_amount: false,
+        agreement_amount: false,
+        discount_percentage: false,
+      };
+    }
+
+    return defaultColumns;
   });
 
   const statusTabs = [
@@ -237,6 +267,21 @@ export default function OrdersPage() {
   };
 
   const handleColumnVisibilityChange = (column: string, checked: boolean) => {
+    // Prevent MANUFACTURE role from showing price columns
+    if (
+      currentUser?.role === "MANUFACTURE" &&
+      [
+        "advance_payment",
+        "discount_amount",
+        "remaining_balance",
+        "total_amount",
+        "agreement_amount",
+        "discount_percentage",
+      ].includes(column)
+    ) {
+      return;
+    }
+
     const newColumns = {
       ...visibleColumns,
       [column]: checked,
@@ -309,14 +354,19 @@ export default function OrdersPage() {
       }
     });
 
-    // Add status filter based on active tab
-    if (activeStatusTab !== "all") {
-      // Check if activeStatusTab is a numeric status ID
-      if (!isNaN(Number(activeStatusTab))) {
-        params.status = Number(activeStatusTab);
-      } else {
-        // Fallback to old behavior for string-based status
-        params.order_status = activeStatusTab;
+    // For MANUFACTURE role, always filter to moy_sklad status only
+    if (currentUser?.role === "MANUFACTURE") {
+      params.order_status = "moy_sklad";
+    } else {
+      // Add status filter based on active tab for other roles
+      if (activeStatusTab !== "all") {
+        // Check if activeStatusTab is a numeric status ID
+        if (!isNaN(Number(activeStatusTab))) {
+          params.status = Number(activeStatusTab);
+        } else {
+          // Fallback to old behavior for string-based status
+          params.order_status = activeStatusTab;
+        }
       }
     }
 
@@ -367,6 +417,10 @@ export default function OrdersPage() {
   };
 
   const handleStatusTabChange = (status: string) => {
+    // MANUFACTURE role can only view moy_sklad status
+    if (currentUser?.role === "MANUFACTURE" && status !== "moy_sklad") {
+      return;
+    }
     setActiveStatusTab(status);
     setCurrentPage(1);
   };
@@ -393,7 +447,9 @@ export default function OrdersPage() {
       zamershik: "",
       admin: "",
     });
-    setActiveStatusTab("all");
+    setActiveStatusTab(
+      currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
+    );
     setCounterpartSearchQuery("");
     setProjectSearchQuery("");
     setStoreSearchQuery("");
@@ -601,45 +657,58 @@ export default function OrdersPage() {
             )}
           </div>
 
-          <Button onClick={() => navigate("/orders/create")}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t("common.create")}
-          </Button>
+          {currentUser?.role !== "MANUFACTURE" && (
+            <Button onClick={() => navigate("/orders/create")}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t("common.create")}
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Status Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-        {statusTabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => handleStatusTabChange(tab.key)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeStatusTab === tab.key
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-
-        {/* Show active status filter if numeric ID is selected */}
-        {!isNaN(Number(activeStatusTab)) && activeStatusTab !== "all" && (
-          <div className="flex items-center ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
-            <span>
-              {statuses.find((s) => s.id.toString() === activeStatusTab)
-                ?.status || `Status ${activeStatusTab}`}
-            </span>
+      {/* Status Tabs - Hidden for MANUFACTURE role */}
+      {currentUser?.role !== "MANUFACTURE" && (
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+          {statusTabs.map((tab) => (
             <button
-              onClick={() => setActiveStatusTab("all")}
-              className="ml-2 text-blue-600 hover:text-blue-800"
+              key={tab.key}
+              onClick={() => handleStatusTabChange(tab.key)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeStatusTab === tab.key
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
-              ×
+              {tab.label}
             </button>
-          </div>
-        )}
-      </div>
+          ))}
+
+          {/* Show active status filter if numeric ID is selected */}
+          {!isNaN(Number(activeStatusTab)) && activeStatusTab !== "all" && (
+            <div className="flex items-center ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+              <span>
+                {statuses.find((s) => s.id.toString() === activeStatusTab)
+                  ?.status || `Status ${activeStatusTab}`}
+              </span>
+              <button
+                onClick={() => setActiveStatusTab("all")}
+                className="ml-2 text-blue-600 hover:text-blue-800"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Status indicator for MANUFACTURE role */}
+      {currentUser?.role === "MANUFACTURE" && (
+        <div className="flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-sm font-medium text-blue-800">
+            {t("order_status.moy_sklad")} {t("common.orders") || "Orders"}
+          </span>
+        </div>
+      )}
 
       {showFilters && (
         <Card>
@@ -1790,28 +1859,53 @@ export default function OrdersPage() {
               {t("common.toggle_columns")}
             </h4>
             <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
-              {Object.entries(visibleColumns).map(([key, value]) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id={key}
-                    checked={Boolean(value)}
-                    onChange={(e) =>
-                      handleColumnVisibilityChange(key, e.target.checked)
-                    }
-                    className="rounded border border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  />
-                  <label
-                    htmlFor={key}
-                    className="text-sm font-medium leading-none cursor-pointer"
-                  >
-                    {t(`forms.${key}`) ||
-                      key
-                        .replace(/_/g, " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  </label>
-                </div>
-              ))}
+              {Object.entries(visibleColumns).map(([key, value]) => {
+                const isPriceColumn = [
+                  "advance_payment",
+                  "discount_amount",
+                  "remaining_balance",
+                  "total_amount",
+                  "agreement_amount",
+                  "discount_percentage",
+                ].includes(key);
+                const isDisabled =
+                  currentUser?.role === "MANUFACTURE" && isPriceColumn;
+
+                return (
+                  <div key={key} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={key}
+                      checked={Boolean(value)}
+                      disabled={isDisabled}
+                      onChange={(e) =>
+                        handleColumnVisibilityChange(key, e.target.checked)
+                      }
+                      className={`rounded border border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 ${
+                        isDisabled ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    />
+                    <label
+                      htmlFor={key}
+                      className={`text-sm font-medium leading-none ${
+                        isDisabled
+                          ? "cursor-not-allowed opacity-50 text-gray-400"
+                          : "cursor-pointer"
+                      }`}
+                    >
+                      {t(`forms.${key}`) ||
+                        key
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      {isDisabled && (
+                        <span className="ml-1 text-xs text-gray-400">
+                          (Hidden for MANUFACTURE)
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
             <div className="flex justify-end">
               <Button onClick={() => setShowColumnsDialog(false)}>

@@ -8,6 +8,8 @@
     "actions": "Действия"
   },
   "common": {
+    "language":"Язык",
+    "orders":"Заказы",
     "view_pdf":"Скачать PDF",
     "remove_table":"Удалить таблицу",
     "download_pdf": "Скачать PDF",

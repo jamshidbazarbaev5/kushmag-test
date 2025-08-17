@@ -13,8 +13,6 @@ import {
   //   BanknoteIcon,
   LogOut,
   User,
-  Calendar,
-  Settings,
   DollarSign,
 } from "lucide-react";
 import { useGetMeasures } from "../api/measure";
@@ -302,34 +300,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </a>
             )}
 
-            {/* Measures - available for all roles */}
-            <a
-              href="/measures"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/measures");
-              }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                location.pathname === "/measures"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
-                  : "text-sidebar-foreground hover:bg-gray-50"
-              }`}
-            >
-              <Package
-                size={16}
-                className={
-                  location.pathname === "/measures"
-                    ? "text-emerald-500"
-                    : "text-gray-500"
-                }
-              />
-              <span className="font-medium">{t("navigation.measures")}</span>
-              {newMeasuresCount > 0 && (
-                <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
-                  {newMeasuresCount}
-                </div>
-              )}
-            </a>
             {(currentUser?.role === "ZAMERSHIK" ||
               currentUser?.role === "PRODAVEC" ||
               currentUser?.role === "OPERATOR" ||
@@ -360,30 +330,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     {t("navigation.sales_overview")}
                   </span>
                 </a>
-                <a
-                  href="/yearly-plans"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/yearly-plans");
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    location.pathname === "/yearly-plans"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
-                      : "text-sidebar-foreground hover:bg-gray-50"
-                  }`}
-                >
-                  <Package
-                    size={16}
-                    className={
-                      location.pathname === "/yearly-plans"
-                        ? "text-emerald-500"
-                        : "text-gray-500"
-                    }
-                  />
-                  <span className="font-medium">
-                    {t("navigation.yearly_plans")}
-                  </span>
-                </a>
               </>
             )}
 
@@ -412,30 +358,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   />
                   <span className="font-medium">
                     {t("navigation.monthly_salaries")}
-                  </span>
-                </a>
-                <a
-                  href="/yearly-plans"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/yearly-plans");
-                  }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    location.pathname === "/yearly-plans"
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
-                      : "text-sidebar-foreground hover:bg-gray-50"
-                  }`}
-                >
-                  <Package
-                    size={16}
-                    className={
-                      location.pathname === "/yearly-plans"
-                        ? "text-emerald-500"
-                        : "text-gray-500"
-                    }
-                  />
-                  <span className="font-medium">
-                    {t("navigation.yearly_plans")}
                   </span>
                 </a>
               </>
@@ -515,21 +437,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </a> */}
               </>
             )}
-
-            {/* Settings button for unified settings page */}
-            <button
-              onClick={() => {
-                navigate("/settings");
-              }}
-              className={`px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-2 ${
-                location.pathname === "/settings"
-                  ? "bg-gray-100 text-gray-900"
-                  : "text-gray-600"
-              }`}
-            >
-              <span className="font-medium">{t("navigation.settings")}</span>
-              <Settings size={20} />
-            </button>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -678,8 +585,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {/* Mobile Navigation Items */}
                 <nav className="flex-1 overflow-y-auto">
                   <div className="space-y-2">
-                    {/* Orders - only for ADMIN */}
-                    {currentUser?.role === "ADMIN" && (
+                    {/* Orders - for ADMIN and MANUFACTURE */}
+                    {(currentUser?.role === "ADMIN" ||
+                      currentUser?.role === "MANUFACTURE") && (
                       <a
                         href="/orders"
                         onClick={(e) => {
@@ -1042,64 +950,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </>
                       ) : null}
 
-                      {/* Yearly Plans - available for all roles */}
-                      <a
-                        href="/yearly-plans"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setMobileMenuOpen(false);
-                          navigate("/yearly-plans");
-                        }}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                          location.pathname === "/yearly-plans"
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground hover:bg-gray-50"
-                        }`}
-                      >
-                        <Calendar
-                          size={18}
-                          className={
-                            location.pathname === "/yearly-plans"
-                              ? "text-emerald-500"
-                              : "text-gray-500"
-                          }
-                        />
-                        <span className="font-medium">
-                          {t("navigation.yearly_plans")}
-                        </span>
-                      </a>
-
-                      {/* Measures - available for all roles */}
-                      <a
-                        href="/measures"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setMobileMenuOpen(false);
-                          navigate("/measures");
-                        }}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                          location.pathname === "/measures"
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-sidebar-foreground hover:bg-gray-50"
-                        }`}
-                      >
-                        <Package
-                          size={18}
-                          className={
+                      {/* Measures - available for all roles except MANUFACTURE */}
+                      {currentUser?.role !== "MANUFACTURE" && (
+                        <a
+                          href="/measures"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setMobileMenuOpen(false);
+                            navigate("/measures");
+                          }}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                             location.pathname === "/measures"
-                              ? "text-emerald-500"
-                              : "text-gray-500"
-                          }
-                        />
-                        <span className="font-medium">
-                          {t("navigation.measures")}
-                        </span>
-                        {newMeasuresCount > 0 && (
-                          <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
-                            {newMeasuresCount}
-                          </div>
-                        )}
-                      </a>
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground hover:bg-gray-50"
+                          }`}
+                        >
+                          <Package
+                            size={18}
+                            className={
+                              location.pathname === "/measures"
+                                ? "text-emerald-500"
+                                : "text-gray-500"
+                            }
+                          />
+                          <span className="font-medium">
+                            {t("navigation.measures")}
+                          </span>
+                          {newMeasuresCount > 0 && (
+                            <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-auto">
+                              {newMeasuresCount}
+                            </div>
+                          )}
+                        </a>
+                      )}
 
                       {/* Salary Overview - for specific roles */}
                       {(currentUser?.role === "ZAMERSHIK" ||
