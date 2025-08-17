@@ -8,12 +8,12 @@
     "actions": "Действия"
   },
   "common": {
-    "language":"Язык",
-    "orders":"Заказы",
-    "view_pdf":"Распечатать",
-    "remove_table":"Удалить таблицу",
+    "language": "Язык",
+    "orders": "Заказы",
+    "view_pdf": "Распечатать",
+    "remove_table": "Удалить таблицу",
     "download_pdf": "Скачать PDF",
-    "current":"Текущий",
+    "current": "Текущий",
     "change_status": "Cтатус",
     "status_legend": "Фильтровать по статусу",
     "yes": "Да",
@@ -82,7 +82,7 @@
     "zamershik": "Замерщик",
     "operator": "Оператор",
     "sotrudnik": "Сотрудник",
-    "manufacture":"Пройздводство"
+    "manufacture": "Пройздводство"
   },
   "daily_plans": {
     "daily_breakdown": "Ежедневный разбив",
@@ -250,14 +250,15 @@
   },
 
   "forms": {
-     "remove_table":"Удалить таблицу",
-   "achievment":"Достижение",
-    "top_performer":"Лучший исполнитель",
-    "high_performers":"Высокий исполнители",
+    "remove": "Удалить таблицу",
+    "remove_table": "Удалить таблицу",
+    "achievment": "Достижение",
+    "top_performer": "Лучший исполнитель",
+    "high_performers": "Высокий исполнители",
     "planned_sales": "Планируемые продажи",
-    "actual_sales":"Фактические продажи",
-    "performance":"Выполнение",
-    "total_users":"Всего пользователей",
+    "actual_sales": "Фактические продажи",
+    "performance": "Выполнение",
+    "total_users": "Всего пользователей",
     "quantity_of": "Кол-во",
     "current": "Текущий",
     "date": "Дата",

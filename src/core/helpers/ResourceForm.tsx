@@ -168,12 +168,12 @@ export function ResourceForm<T extends Record<string, any>>({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div
-            className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 ${gridClassName}`}
+            className={`grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 overflow-visible ${gridClassName}`}
           >
             {fields.map(
               (field) =>
                 !field.hidden && (
-                  <div key={field.name} className="space-y-4">
+                  <div key={field.name} className="space-y-4 overflow-visible">
                     {field.type === "dynamic-list" ? (
                       <DynamicListField field={field} form={form} />
                     ) : (
@@ -181,7 +181,7 @@ export function ResourceForm<T extends Record<string, any>>({
                         control={form.control}
                         name={field.name}
                         render={({ field: formField }) => (
-                          <FormItem>
+                          <FormItem className="overflow-visible">
                             <FormLabel>{field.label}</FormLabel>
                             <FormControl>
                               {field.type === "textarea" ? (

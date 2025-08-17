@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import {
-  PerformanceRating,
+  // PerformanceRating,
   PerformanceGauge,
 } from "@/components/PerformanceIndicators";
 
@@ -118,7 +118,7 @@ export default function YearlyPlansPage() {
   const getPerformanceBadgeVariant = (percentage: number) => {
     if (percentage >= 100) return "default";
     if (percentage >= 75) return "secondary";
-    return "destructive";
+    return "secondary";
   };
 
   // Calculate enhanced summary statistics
@@ -535,10 +535,10 @@ export default function YearlyPlansPage() {
               <CardContent className="pt-4">
                 <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-700">
+                    {/* <div className="w-2 h-2 bg-blue-500 rounded-full"></div> */}
+                    {/* <span className="text-sm font-medium text-gray-700">
                       Legend:
-                    </span>
+                    </span> */}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-6 text-sm">
@@ -557,7 +557,7 @@ export default function YearlyPlansPage() {
 
                     <div className="flex items-center gap-4 ml-4">
                       <div className="text-xs text-gray-600 font-medium">
-                        Performance:
+                        {t('forms.performance')}
                       </div>
                       <div className="flex items-center gap-2 px-2 py-1 bg-green-100 rounded-full">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
