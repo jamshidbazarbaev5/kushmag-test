@@ -1106,40 +1106,40 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             </div>
                           )}
                         </a>
-
-                        {/* Salary Overview - for specific roles */}
-                        {(currentUser?.role === "ZAMERSHIK" ||
-                          currentUser?.role === "PRODAVEC" ||
-                          currentUser?.role === "OPERATOR" ||
-                          currentUser?.role === "SOTRUDNIK" ||
-                          currentUser?.role === "MANUFACTURE") && (
-                          <a
-                            href="/salary-overview"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setMobileMenuOpen(false);
-                              navigate("/salary-overview");
-                            }}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                              location.pathname === "/salary-overview"
-                                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                                : "text-sidebar-foreground hover:bg-gray-50"
-                            }`}
-                          >
-                            <Package
-                              size={18}
-                              className={
-                                location.pathname === "/salary-overview"
-                                  ? "text-emerald-500"
-                                  : "text-gray-500"
-                              }
-                            />
-                            <span className="font-medium">
-                              {t("navigation.sales_overview")}
-                            </span>
-                          </a>
-                        )}
                       </div>
+                    )}
+
+                    {/* Salary Overview - for specific roles */}
+                    {(currentUser?.role === "ZAMERSHIK" ||
+                      currentUser?.role === "PRODAVEC" ||
+                      currentUser?.role === "OPERATOR" ||
+                      currentUser?.role === "SOTRUDNIK" ||
+                      currentUser?.role === "MANUFACTURE") && (
+                      <a
+                        href="/salary-overview"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setMobileMenuOpen(false);
+                          navigate("/salary-overview");
+                        }}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                          location.pathname === "/salary-overview"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-gray-50"
+                        }`}
+                      >
+                        <Package
+                          size={18}
+                          className={
+                            location.pathname === "/salary-overview"
+                              ? "text-emerald-500"
+                              : "text-gray-500"
+                          }
+                        />
+                        <span className="font-medium">
+                          {t("navigation.sales_overview")}
+                        </span>
+                      </a>
                     )}
 
                     {/* Language Switcher - hidden for MANUFACTURE */}

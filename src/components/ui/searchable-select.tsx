@@ -92,7 +92,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const filteredOptions = onSearch
     ? options
     : options.filter((option) =>
-        option[displayKey]
+        (option[displayKey] as string)
           ?.toLowerCase()
           .includes(currentSearchQuery.toLowerCase()),
       );
@@ -119,11 +119,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     setCurrentSearchQuery(query);
   };
 
-  const getDisplayValue = () => {
+  const getDisplayValue = (): string => {
     if (value === "all" || value === "") {
       return showAllOption ? allOptionLabel : placeholder;
     }
-    return selectedOption?.[displayKey] || placeholder;
+    return (selectedOption?.[displayKey] as string) || placeholder;
   };
 
   return (
@@ -205,15 +205,17 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                 {filteredOptions.length > 0 ? (
                   filteredOptions.map((option) => (
                     <div
-                      key={option[valueKey]}
+                      key={option[valueKey] as React.Key}
                       className={cn(
                         "px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground",
                         option[valueKey]?.toString() === value?.toString() &&
                           "bg-accent text-accent-foreground",
                       )}
-                      onClick={() => handleSelect(option[valueKey])}
+                      onClick={() =>
+                        handleSelect(option[valueKey] as string | number)
+                      }
                     >
-                      {option[displayKey]}
+                      {option[displayKey] as string}
                     </div>
                   ))
                 ) : (

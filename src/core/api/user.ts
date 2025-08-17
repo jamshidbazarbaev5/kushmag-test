@@ -6,7 +6,13 @@ export interface User {
   password?: string;
   full_name: string;
   phone_number: string;
-  role: "ADMIN" | "PRODAVEC" | "ZAMERSHIK" | "OPERATOR" | "SOTRUDNIK";
+  role:
+    | "ADMIN"
+    | "PRODAVEC"
+    | "ZAMERSHIK"
+    | "OPERATOR"
+    | "SOTRUDNIK"
+    | "MANUFACTURE";
   api_login?: string;
   api_password?: string;
   fixed_salary?: number;
