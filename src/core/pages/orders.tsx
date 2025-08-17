@@ -111,8 +111,8 @@ export default function OrdersPage() {
     seller: "",
     operator: "",
     order_status: "",
-    order_date_after: "",
-    order_date_before: "",
+    created_at_after: "",
+    created_at_before: "",
     deadline_date_after: "",
     deadline_date_before: "",
     zamershik: "",
@@ -440,8 +440,8 @@ export default function OrdersPage() {
       seller: "",
       operator: "",
       order_status: "",
-      order_date_after: "",
-      order_date_before: "",
+      created_at_after: "",
+      created_at_before: "",
       deadline_date_after: "",
       deadline_date_before: "",
       zamershik: "",
@@ -980,9 +980,9 @@ export default function OrdersPage() {
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
-                  value={filters.order_date_after}
+                  value={filters.created_at_after}
                   onChange={(e) =>
-                    handleFilterChange("order_date_after", e.target.value)
+                    handleFilterChange("created_at_after", e.target.value)
                   }
                 />
               </div>
@@ -995,9 +995,9 @@ export default function OrdersPage() {
                 <Input
                   type="date"
                   className="h-9 min-w-[140px]"
-                  value={filters.order_date_before}
+                  value={filters.created_at_before}
                   onChange={(e) =>
-                    handleFilterChange("order_date_before", e.target.value)
+                    handleFilterChange("created_at_date_before", e.target.value)
                   }
                 />
               </div>
