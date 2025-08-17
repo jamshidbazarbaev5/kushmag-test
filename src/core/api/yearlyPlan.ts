@@ -18,6 +18,7 @@ export interface YearlyPlan {
   user: {
     id: number;
     full_name: string;
+    role?: string;
   };
   year: number;
   details: YearlyPlanDetail[];

@@ -26,7 +26,7 @@ import {
   WideDialogTitle,
   WideDialogFooter,
 } from "@/components/ui/wide-dialog";
-import { Save, X, Edit, Plus, Calendar, Eye } from "lucide-react";
+import { Save, X, Edit, Plus, Calendar, Eye, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/core/context/AuthContext";
@@ -49,6 +49,7 @@ interface SalesPlanData {
   user: {
     id: number;
     full_name: string;
+    role?: string;
   };
   year: number;
   details: SalesPlanDetail[];
@@ -60,7 +61,7 @@ interface EditableConsolidatedSalesPlanTableProps {
   viewMode?: "planned" | "actual" | "comparison";
   onUpdatePlan?: (planId: number, updatedDetails: SalesPlanDetail[]) => void;
   onCreatePlan?: (plan: Omit<SalesPlanData, "id">) => void;
-  users?: Array<{ id: number; full_name: string }>;
+  users?: Array<{ id: number; full_name: string; role?: string }>;
 }
 
 interface PlanFormData {
@@ -140,8 +141,6 @@ const EditableConsolidatedSalesPlanTable: React.FC<
       sales_count_percentage: 0,
     }));
   };
-
-
 
   // Helper function to get percentage color for comparison view
   const getComparisonPercentageColor = (percentage: number) => {
@@ -409,7 +408,12 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                             className="hover:bg-gray-50"
                           >
                             <TableCell className="font-medium">
-                              {plan.user.full_name}
+                              <div className="flex items-center gap-2">
+                                {plan.user.full_name}
+                                {plan.user.role === "ADMIN" && (
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                )}
+                              </div>
                             </TableCell>
                             {Array.from({ length: 12 }, (_, index) => {
                               const month = index + 1;

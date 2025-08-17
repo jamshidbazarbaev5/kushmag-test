@@ -28,7 +28,16 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { Plus, Trash2, DoorOpen, Crown, Save, Edit3, User } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  DoorOpen,
+  Crown,
+  Save,
+  Edit3,
+  User,
+  Download,
+} from "lucide-react";
 import api from "../api/api";
 
 // Static options for selects (translated)
@@ -343,12 +352,54 @@ export default function EditMeasure() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!id) return;
+
+    try {
+      const response = await api.get(`measures/${id}/pdf/`, {
+        responseType: "blob",
+      });
+
+      // Create download link from blob
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `measure-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(
+        t("messages.pdf_download_started") || "PDF download started",
+      );
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast.error(
+        t("messages.error_downloading_pdf") || "Error downloading PDF",
+      );
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <Edit3 className="h-8 w-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">{t('titles.edit_measure')}</h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Edit3 className="h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t("titles.edit_measure")}
+            </h1>
+          </div>
+          <Button
+            onClick={handleDownloadPDF}
+            disabled={!id}
+            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+          >
+            <Download className="h-4 w-4" />
+            {t("common.download_pdf") || "Download PDF"}
+          </Button>
         </div>
       </div>
 

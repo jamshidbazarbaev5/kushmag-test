@@ -43,6 +43,7 @@ import YearlyPlanDemo from "./components/YearlyPlanDemo";
 import YearlyPlanApiExample from "./components/YearlyPlanApiExample";
 import PriceSettingsPage from "./core/pages/price-settings";
 import CreatePriceSettingPage from "./core/pages/create-price-setting";
+// import EnhancedYearlyPlansPage from "./core/pages/yearly-plans-enhanced";
 
 const queryClient = new QueryClient();
 function App() {
@@ -133,6 +134,8 @@ function App() {
             <Route path="/daily-plans" element={<DailyPlansPage />} />
             <Route path="/yearly-plan-demo" element={<YearlyPlanDemo />} />
             <Route path="/yearly-plan-api" element={<YearlyPlanApiExample />} />
+
+              {/* <Route path="/test" element={<EnhancedYearlyPlansPage />} /> */}
           </Route>
         </Routes>
         <Toaster position="top-right" richColors />

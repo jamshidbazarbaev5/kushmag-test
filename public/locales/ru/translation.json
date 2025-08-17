@@ -8,6 +8,7 @@
     "actions": "Действия"
   },
   "common": {
+    "download_pdf": "Скачать PDF",
     "current":"Текущий",
     "change_status": "Cтатус",
     "status_legend": "Фильтровать по статусу",
@@ -245,6 +246,13 @@
   },
 
   "forms": {
+   "achievment":"Достижение",
+    "top_performer":"Лучший исполнитель",
+    "high_performers":"Высокий исполнители",
+    "planned_sales": "Планируемые продажи",
+    "actual_sales":"Фактические продажи",
+    "performance":"Выполнение",
+    "total_users":"Всего пользователей",
     "quantity_of": "Кол-во",
     "current": "Текущий",
     "date": "Дата",

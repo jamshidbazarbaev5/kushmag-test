@@ -66,7 +66,7 @@ export interface Order {
   status:any;
   salesChannel: ModelReference;
   address: string;
-  // order_code: string;
+  order_code?: string;
   // order_date: string;
   deadline_date: string;
   seller: ModelReference;

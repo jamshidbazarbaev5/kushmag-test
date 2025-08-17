@@ -20,6 +20,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -27,8 +30,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, Target } from "lucide-react";
+import {
+  CalendarIcon,
+  Target,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  DollarSign,
+  BarChart3,
+  Filter,
+  Activity,
+  // Sparkles,
+} from "lucide-react";
 import { format } from "date-fns";
+import {
+  PerformanceRating,
+  PerformanceGauge,
+} from "@/components/PerformanceIndicators";
 
 export default function YearlyPlansPage() {
   const { t } = useTranslation();
@@ -38,6 +56,7 @@ export default function YearlyPlansPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
   const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
+  const [userSearchTerm] = useState<string>("");
 
   const { data: users } = useGetUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
@@ -68,26 +87,316 @@ export default function YearlyPlansPage() {
   const filteredPlans = plansList.filter((plan) => {
     if (selectedUser && plan.user.id.toString() !== selectedUser) return false;
     if (selectedYear && plan.year.toString() !== selectedYear) return false;
+    if (
+      userSearchTerm &&
+      !plan.user.full_name.toLowerCase().includes(userSearchTerm.toLowerCase())
+    )
+      return false;
     return true;
   });
 
   // Since role filtering is now handled by the API, we don't need client-side filtering for role
-  const filteredDailyPlans = dailyPlansList;
+  // But we still apply user search filtering on the client side
+  const filteredDailyPlans = dailyPlansList.filter((plan) => {
+    if (
+      userSearchTerm &&
+      !plan.user.full_name.toLowerCase().includes(userSearchTerm.toLowerCase())
+    )
+      return false;
+    return true;
+  });
 
   const formatPercentage = (percentage: number) => {
     return `${percentage.toFixed(1)}%`;
   };
 
-  const getPercentageColor = (percentage: number) => {
-    if (percentage >= 100) return "text-green-600 bg-green-50";
-    if (percentage >= 75) return "text-yellow-600 bg-yellow-50";
-    return "text-red-600 bg-red-50";
+  const getPerformanceBadgeVariant = (percentage: number) => {
+    if (percentage >= 100) return "default";
+    if (percentage >= 75) return "secondary";
+    return "destructive";
   };
 
+  // Calculate enhanced summary statistics
+  const calculateEnhancedStats = () => {
+    const totalUsers = filteredPlans.length;
+    const totalPlannedSales = filteredPlans.reduce(
+      (sum, plan) =>
+        sum +
+        plan.details.reduce(
+          (planSum, detail) =>
+            planSum + parseFloat(String(detail.sales_plan) || "0"),
+          0,
+        ),
+      0,
+    );
+
+    const totalActualSales = filteredPlans.reduce(
+      (sum, plan) =>
+        sum +
+        plan.details.reduce(
+          (planSum, detail) => planSum + (detail.sales || 0),
+          0,
+        ),
+      0,
+    );
+
+    const overallPerformance =
+      totalPlannedSales > 0 ? (totalActualSales / totalPlannedSales) * 100 : 0;
+
+    const highPerformers = filteredPlans.filter((plan) => {
+      const planTotal = plan.details.reduce(
+        (sum, detail) => sum + (detail.sales || 0),
+        0,
+      );
+      const plannedTotal = plan.details.reduce(
+        (sum, detail) => sum + parseFloat(String(detail.sales_plan) || "0"),
+        0,
+      );
+      return plannedTotal > 0 && (planTotal / plannedTotal) * 100 >= 100;
+    }).length;
+
+    const averagePerformance =
+      filteredPlans.length > 0
+        ? filteredPlans.reduce((sum, plan) => {
+            const planTotal = plan.details.reduce(
+              (acc, detail) => acc + (detail.sales || 0),
+              0,
+            );
+            const plannedTotal = plan.details.reduce(
+              (acc, detail) =>
+                acc + parseFloat(String(detail.sales_plan) || "0"),
+              0,
+            );
+            const performance =
+              plannedTotal > 0 ? (planTotal / plannedTotal) * 100 : 0;
+            return sum + performance;
+          }, 0) / filteredPlans.length
+        : 0;
+
+    // Calculate trend for the last 3 months
+    const currentMonth = new Date().getMonth() + 1;
+    const trendMonths = Math.min(currentMonth, 3);
+    const recentPerformance = filteredPlans.map((plan) => {
+      const recentDetails = plan.details
+        .filter(
+          (d) =>
+            d.month <= currentMonth && d.month > currentMonth - trendMonths,
+        )
+        .reduce(
+          (acc, detail) => ({
+            planned: acc.planned + parseFloat(String(detail.sales_plan) || "0"),
+            actual: acc.actual + (detail.sales || 0),
+          }),
+          { planned: 0, actual: 0 },
+        );
+
+      return recentDetails.planned > 0
+        ? (recentDetails.actual / recentDetails.planned) * 100
+        : 0;
+    });
+
+    const recentAverage =
+      recentPerformance.length > 0
+        ? recentPerformance.reduce((sum, perf) => sum + perf, 0) /
+          recentPerformance.length
+        : 0;
+
+    return {
+      totalUsers,
+      totalPlannedSales,
+      totalActualSales,
+      overallPerformance,
+      highPerformers,
+      averagePerformance,
+      recentAverage,
+      performanceTrend: recentAverage - averagePerformance,
+      topPerformer: filteredPlans.reduce(
+        (top, plan) => {
+          const planTotal = plan.details.reduce(
+            (sum, detail) => sum + (detail.sales || 0),
+            0,
+          );
+          const plannedTotal = plan.details.reduce(
+            (sum, detail) => sum + parseFloat(String(detail.sales_plan) || "0"),
+            0,
+          );
+          const performance =
+            plannedTotal > 0 ? (planTotal / plannedTotal) * 100 : 0;
+
+          if (!top || performance > top.performance) {
+            return { user: plan.user.full_name, performance };
+          }
+          return top;
+        },
+        null as { user: string; performance: number } | null,
+      ),
+    };
+  };
+
+  const enhancedStats = calculateEnhancedStats();
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t("navigation.yearly_plans")}</h1>
+    <div className="space-y-6">
+      {/* Enhanced Header */}
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {t("navigation.yearly_plans")}
+            </h1>
+           
+          </div>
+          <div className="flex items-center gap-3">
+            
+            <Badge variant="outline" className="text-sm px-3 py-1">
+              2025 {t("yearly_plans.year")}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Enhanced Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Всего пользователей
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {enhancedStats.totalUsers}
+                  </p>
+                  {/* <p className="text-xs text-blue-600 mt-1">Active users</p> */}
+                </div>
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Планируемые продажи
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {enhancedStats.totalPlannedSales.toLocaleString()}
+                  </p>
+                  {/* <p className="text-xs text-green-600 mt-1">Target amount</p> */}
+                </div>
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Target className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Фактические продажи
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {enhancedStats.totalActualSales.toLocaleString()}
+                  </p>
+                  {/* <p className="text-xs text-purple-600 mt-1">
+                    Achieved amount
+                  </p> */}
+                </div>
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    Выполнение
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {enhancedStats.overallPerformance.toFixed(1)}%
+                    </p>
+                    {enhancedStats.performanceTrend >= 0 ? (
+                      <TrendingUp className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-red-600" />
+                    )}
+                  </div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    {enhancedStats.performanceTrend >= 0 ? "+" : ""}
+                    {enhancedStats.performanceTrend.toFixed(1)}% trend
+                  </p>
+                </div>
+                <PerformanceGauge
+                  percentage={enhancedStats.overallPerformance}
+                  size={50}
+                  strokeWidth={4}
+                  showValue={false}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-indigo-500 hover:shadow-lg transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">
+                    {t('forms.high_performers')}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {enhancedStats.highPerformers}
+                  </p>
+                  <p className="text-xs text-indigo-600 mt-1">
+                    ≥100% {t('forms.achievment')}
+                  </p>
+                </div>
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-indigo-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Performer Highlight */}
+        {enhancedStats.topPerformer && (
+          <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-400 rounded-full">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-yellow-800">
+                    🏆 {t('forms.top_performer')}
+                  </p>
+                  <p className="text-lg font-bold text-yellow-900">
+                    {enhancedStats.topPerformer.user} -{" "}
+                    {enhancedStats.topPerformer.performance.toFixed(1)}%
+                  </p>
+                </div>
+                <div className="ml-auto">
+                  <PerformanceRating
+                    percentage={enhancedStats.topPerformer.performance}
+                    maxStars={5}
+                    size="md"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Tabs
@@ -95,22 +404,52 @@ export default function YearlyPlansPage() {
         onValueChange={(value) => setActiveTab(value as "yearly" | "daily")}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="yearly">
+        <TabsList className="grid w-full grid-cols-2 h-12">
+          <TabsTrigger
+            value="yearly"
+            className="flex items-center gap-2 text-base"
+          >
+            <BarChart3 className="w-4 h-4" />
             {t("navigation.yearly_plans")}
           </TabsTrigger>
-          <TabsTrigger value="daily">{t("navigation.daily_plans")}</TabsTrigger>
+          <TabsTrigger
+            value="daily"
+            className="flex items-center gap-2 text-base"
+          >
+            <CalendarIcon className="w-4 h-4" />
+            {t("navigation.daily_plans")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="yearly" className="space-y-6">
-          {/* Filters and View Toggle */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Enhanced Filters and Controls */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Filter className="w-5 h-5" />
+                {/* Filters & Controls */}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Search and Quick Filters */}
+              {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder={t("placeholders.search_user")}
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div> */}
+
+              {/* Role Filter and View Mode */}
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
                   {/* Role Filter */}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-gray-600">
                       {t("forms.role")}:
                     </span>
                     <Select
@@ -147,71 +486,87 @@ export default function YearlyPlansPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  {/* View Mode Toggle */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {t("yearly_plans.view_mode")}:
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={viewMode === "planned" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setViewMode("planned")}
-                        className="flex items-center gap-2"
-                      >
-                        <Target className="w-4 h-4" />
-                        {t("yearly_plans.planned_values")}
-                      </Button>
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-600">
+                    {t("yearly_plans.view_mode")}:
+                  </span>
+                  <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+                    <Button
+                      variant={viewMode === "planned" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("planned")}
+                      className="flex items-center gap-2 h-8"
+                    >
+                      <Target className="w-4 h-4" />
+                      {t("yearly_plans.planned_values")}
+                    </Button>
 
-                      <Button
-                        variant={
-                          viewMode === "comparison" ? "default" : "outline"
-                        }
-                        size="sm"
-                        onClick={() => setViewMode("comparison")}
-                        className="flex items-center gap-2"
-                      >
-                        <CalendarIcon className="w-4 h-4" />
-                        {t("yearly_plans.comparison_view")}
-                      </Button>
-                    </div>
+                    <Button
+                      variant={viewMode === "comparison" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("comparison")}
+                      className="flex items-center gap-2 h-8"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      {t("yearly_plans.comparison_view")}
+                    </Button>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Legend for comparison view */}
+          {/* Enhanced Legend for comparison view */}
           {viewMode === "comparison" && (
-            <Card>
+            <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
               <CardContent className="pt-4">
-                <div className="flex items-center gap-6 text-sm">
-                  {/* <span className="font-medium">{t("common.legend")}:</span> */}
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                    <span className="text-blue-600">
-                      {t("yearly_plans.planned_values")}
+                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Legend:
                     </span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 bg-orange-100 rounded"></div>
-                    <span className="text-orange-600">
-                      {t("yearly_plans.actual_values")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-100 rounded"></div>
-                      <span className="text-green-600">≥100%</span>
+
+                  <div className="flex flex-wrap items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-blue-700 font-medium">
+                        {t("yearly_plans.planned_values")}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-yellow-100 rounded"></div>
-                      <span className="text-yellow-600">75-99%</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full shadow-sm">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                      <span className="text-orange-700 font-medium">
+                        {t("yearly_plans.actual_values")}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-100 rounded"></div>
-                      <span className="text-red-600">&lt;75%</span>
+
+                    <div className="flex items-center gap-4 ml-4">
+                      <div className="text-xs text-gray-600 font-medium">
+                        Performance:
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1 bg-green-100 rounded-full">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span className="text-green-700 text-xs font-medium">
+                          ≥100%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1 bg-yellow-100 rounded-full">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span className="text-yellow-700 text-xs font-medium">
+                          75-99%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1 bg-red-100 rounded-full">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span className="text-red-700 text-xs font-medium">
+                          &lt;75%
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -219,10 +574,31 @@ export default function YearlyPlansPage() {
             </Card>
           )}
 
-          {/* Consolidated Sales Plans */}
+          {/* Enhanced Consolidated Sales Plans */}
           <div className="space-y-6">
             {isLoading ? (
-              <div>{t("common.loading")}</div>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-6 rounded" />
+                    <Skeleton className="h-6 w-48" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-32" />
+                        {Array.from({ length: 12 }).map((_, j) => (
+                          <Skeleton key={j} className="h-10 w-16" />
+                        ))}
+                        <Skeleton className="h-10 w-20" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
               <EditableConsolidatedSalesPlanTable
                 data={filteredPlans}
@@ -270,6 +646,7 @@ export default function YearlyPlansPage() {
                   .map((user) => ({
                     id: user.id!,
                     full_name: user.full_name,
+                    role: user.role,
                   }))}
               />
             )}
@@ -277,34 +654,59 @@ export default function YearlyPlansPage() {
         </TabsContent>
 
         <TabsContent value="daily" className="space-y-6">
-          {/* Date Selector and Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          {/* Enhanced Date Selector and Filters */}
+          <Card className="shadow-sm border-l-4 border-l-blue-500">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
                 <CalendarIcon className="w-5 h-5" />
                 {t("daily_plans.select_date")}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 flex-wrap">
+            <CardContent className="pt-6">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                 <div className="flex items-center gap-4">
-                  <input
-                    type="date"
-                    value={format(selectedDate, "yyyy-MM-dd")}
-                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedDate(new Date())}
-                  >
-                    {t("daily_plans.today")}
-                  </Button>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-600">
+                      Select Date:
+                    </label>
+                    <input
+                      type="date"
+                      value={format(selectedDate, "yyyy-MM-dd")}
+                      onChange={(e) =>
+                        setSelectedDate(new Date(e.target.value))
+                      }
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-medium text-gray-600 opacity-0">
+                      Quick:
+                    </label>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedDate(new Date())}
+                      className="flex items-center gap-2"
+                    >
+                      <CalendarIcon className="w-4 h-4" />
+                      {t("daily_plans.today")}
+                    </Button>
+                  </div>
                 </div>
+
+                {/* User Search for Daily Plans
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder={t("placeholders.search_user")}
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="flex-1"
+                  />
+                </div> */}
 
                 {/* Role Filter for Daily Plans */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-600">
                     {t("forms.role")}:
                   </span>
                   <Select
@@ -340,127 +742,220 @@ export default function YearlyPlansPage() {
                   </Select>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
-                {t("daily_plans.selected_date")}:{" "}
-                {format(selectedDate, "dd/MM/yyyy")}
-              </p>
+
+              {/* <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium">
+                  📅 {t("daily_plans.selected_date")}: {format(selectedDate, "EEEE, MMMM dd, yyyy")}
+                </p>
+              </div> */}
             </CardContent>
           </Card>
 
-          {/* Daily Plans Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>
+          {/* Enhanced Daily Plans Table */}
+          <Card className="shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <BarChart3 className="w-5 h-5" />
                 {t("daily_plans.daily_breakdown")} -{" "}
                 {format(selectedDate, "dd/MM/yyyy")}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {isDailyLoading ? (
-                <div className="text-center py-8">
-                  <div className="text-lg">{t("common.loading")}</div>
+                <div className="p-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
+                      <div className="text-lg text-gray-600">
+                        {t("common.loading")}
+                      </div>
+                    </div>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <Skeleton className="h-12 w-32" />
+                        {Array.from({ length: 9 }).map((_, j) => (
+                          <Skeleton key={j} className="h-12 w-20" />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : filteredDailyPlans.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">{t("daily_plans.no_data")}</p>
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <CalendarIcon className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 text-lg mb-2">
+                    {t("daily_plans.no_data")}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    No plans found for the selected date and filters
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-48">
-                          {t("daily_plans.user")}
+                      <TableRow className="bg-gray-50 border-b-2 border-gray-200">
+                        <TableHead className="w-48 font-semibold text-gray-700">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            {t("daily_plans.user")}
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_plan")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-blue-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <Target className="w-4 h-4 text-blue-600" />
+                            <span>{t("daily_plans.sales_plan")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_actual")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-green-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <DollarSign className="w-4 h-4 text-green-600" />
+                            <span>{t("daily_plans.sales_actual")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_percentage")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-purple-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <BarChart3 className="w-4 h-4 text-purple-600" />
+                            <span>{t("daily_plans.sales_percentage")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.clients_plan")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-blue-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <Target className="w-4 h-4 text-blue-600" />
+                            <span>{t("daily_plans.clients_plan")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.clients_actual")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-green-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <Users className="w-4 h-4 text-green-600" />
+                            <span>{t("daily_plans.clients_actual")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.clients_percentage")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-purple-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <BarChart3 className="w-4 h-4 text-purple-600" />
+                            <span>{t("daily_plans.clients_percentage")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_count_plan")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-blue-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <Target className="w-4 h-4 text-blue-600" />
+                            <span>{t("daily_plans.sales_count_plan")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_count_actual")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-green-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <Activity className="w-4 h-4 text-green-600" />
+                            <span>{t("daily_plans.sales_count_actual")}</span>
+                          </div>
                         </TableHead>
-                        <TableHead className="text-center">
-                          {t("daily_plans.sales_count_percentage")}
+                        <TableHead className="text-center font-semibold text-gray-700 bg-purple-50">
+                          <div className="flex flex-col items-center gap-1">
+                            <BarChart3 className="w-4 h-4 text-purple-600" />
+                            <span>
+                              {t("daily_plans.sales_count_percentage")}
+                            </span>
+                          </div>
                         </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredDailyPlans.map((plan) => {
+                      {filteredDailyPlans.map((plan, index) => {
                         const detail = plan.details[0]; // Since we're getting data for a single day
+                        const isEvenRow = index % 2 === 0;
                         return (
-                          <TableRow key={plan.user.id}>
-                            <TableCell className="font-medium">
-                              {plan.user.full_name}
+                          <TableRow
+                            key={plan.user.id}
+                            className={`hover:bg-blue-50 transition-colors ${
+                              isEvenRow ? "bg-white" : "bg-gray-25"
+                            }`}
+                          >
+                            <TableCell className="font-medium text-gray-900 border-r border-gray-100">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                  {plan.user.full_name.charAt(0)}
+                                </div>
+                                {plan.user.full_name}
+                              </div>
                             </TableCell>
 
                             {/* Sales */}
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-blue-25 font-medium text-blue-900">
                               {detail.sales_plan.toLocaleString()}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-green-25 font-medium text-green-900">
                               {detail.sales.toLocaleString()}
                             </TableCell>
-                            <TableCell className="text-center">
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${getPercentageColor(
-                                  detail.sales_percentage,
-                                )}`}
-                              >
-                                {formatPercentage(detail.sales_percentage)}
-                              </span>
+                            <TableCell className="text-center bg-purple-25">
+                              <div className="flex flex-col items-center gap-1">
+                                <Badge
+                                  variant={getPerformanceBadgeVariant(
+                                    detail.sales_percentage,
+                                  )}
+                                  className="text-xs font-bold"
+                                >
+                                  {formatPercentage(detail.sales_percentage)}
+                                </Badge>
+                                {detail.sales_percentage >= 100 ? (
+                                  <TrendingUp className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <TrendingDown className="w-3 h-3 text-red-600" />
+                                )}
+                              </div>
                             </TableCell>
 
                             {/* Clients */}
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-blue-25 font-medium text-blue-900">
                               {detail.clients_plan}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-green-25 font-medium text-green-900">
                               {detail.clients}
                             </TableCell>
-                            <TableCell className="text-center">
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${getPercentageColor(
-                                  detail.clients_percentage,
-                                )}`}
-                              >
-                                {formatPercentage(detail.clients_percentage)}
-                              </span>
+                            <TableCell className="text-center bg-purple-25">
+                              <div className="flex flex-col items-center gap-1">
+                                <Badge
+                                  variant={getPerformanceBadgeVariant(
+                                    detail.clients_percentage,
+                                  )}
+                                  className="text-xs font-bold"
+                                >
+                                  {formatPercentage(detail.clients_percentage)}
+                                </Badge>
+                                {detail.clients_percentage >= 100 ? (
+                                  <TrendingUp className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <TrendingDown className="w-3 h-3 text-red-600" />
+                                )}
+                              </div>
                             </TableCell>
 
                             {/* Sales Count */}
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-blue-25 font-medium text-blue-900">
                               {detail.sales_count_plan}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell className="text-center bg-green-25 font-medium text-green-900">
                               {detail.sales_count}
                             </TableCell>
-                            <TableCell className="text-center">
-                              <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${getPercentageColor(
-                                  detail.sales_count_percentage,
-                                )}`}
-                              >
-                                {formatPercentage(
-                                  detail.sales_count_percentage,
+                            <TableCell className="text-center bg-purple-25">
+                              <div className="flex flex-col items-center gap-1">
+                                <Badge
+                                  variant={getPerformanceBadgeVariant(
+                                    detail.sales_count_percentage,
+                                  )}
+                                  className="text-xs font-bold"
+                                >
+                                  {formatPercentage(
+                                    detail.sales_count_percentage,
+                                  )}
+                                </Badge>
+                                {detail.sales_count_percentage >= 100 ? (
+                                  <TrendingUp className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <TrendingDown className="w-3 h-3 text-red-600" />
                                 )}
-                              </span>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );

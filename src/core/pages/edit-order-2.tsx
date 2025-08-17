@@ -69,6 +69,7 @@ import {
   Package,
   Calculator,
   Send,
+  Download,
 } from "lucide-react";
 import api from "../api/api";
 import { useAutoSave } from "../hooks/useAutoSave";
@@ -281,6 +282,14 @@ export default function EditOrderPage() {
         description: orderData.description || "",
         branch: orderData?.branch?.id || orderData.branch,
         zamershik: orderData?.zamershik?.id || orderData.zamershik,
+        // Material fields - initialized from first door if available
+        material: orderData.doors?.[0]?.material || "",
+        material_type: orderData.doors?.[0]?.material_type || "",
+        massif: orderData.doors?.[0]?.massif || "",
+        color: orderData.doors?.[0]?.color || "",
+        patina_color: orderData.doors?.[0]?.patina_color || "",
+        beading_main: orderData.doors?.[0]?.beading_main || "",
+        beading_additional: orderData.doors?.[0]?.beading_additional || "",
       };
 
       // Initialize discount and advance payment state from order data
@@ -456,6 +465,42 @@ export default function EditOrderPage() {
     totals.total_sum,
   ]);
 
+  // Synchronize form material fields with globalDoorSettings
+  const materialFormFields = orderForm.watch([
+    "material",
+    "material_type",
+    "massif",
+    "color",
+    "patina_color",
+    "beading_main",
+    "beading_additional",
+  ]);
+
+  useEffect(() => {
+    if (materialFormFields && materialFormFields.length > 0) {
+      const [
+        material,
+        material_type,
+        massif,
+        color,
+        patina_color,
+        beading_main,
+        beading_additional,
+      ] = materialFormFields;
+
+      setGlobalDoorSettings((prev: any) => ({
+        ...prev,
+        material: material || "",
+        material_type: material_type || "",
+        massif: massif || "",
+        color: color || "",
+        patina_color: patina_color || "",
+        beading_main: beading_main || "",
+        beading_additional: beading_additional || "",
+      }));
+    }
+  }, materialFormFields);
+
   // --- Format Options for Selects ---
   const fieldOptions = {
     rateOptions: formatReferenceOptions(currencies),
@@ -593,6 +638,63 @@ export default function EditOrderPage() {
       label: t("forms.description"),
       type: "text",
       placeholder: t("placeholders.enter_description"),
+    },
+  ];
+
+  // Material attributes fields - set once for all doors
+  const materialFields = [
+    {
+      name: "material",
+      label: t("forms.material"),
+      type: "searchable-resource-select",
+      resourceType: "materials",
+      placeholder: t("placeholders.select_material"),
+      required: true,
+    },
+    {
+      name: "material_type",
+      label: t("forms.material_type"),
+      type: "searchable-resource-select",
+      resourceType: "material-types",
+      placeholder: t("placeholders.select_material_type"),
+      required: true,
+    },
+    {
+      name: "massif",
+      label: t("forms.massif"),
+      type: "searchable-resource-select",
+      resourceType: "massifs",
+      placeholder: t("placeholders.select_massif"),
+      required: true,
+    },
+    {
+      name: "color",
+      label: t("forms.color"),
+      type: "searchable-resource-select",
+      resourceType: "colors",
+      placeholder: t("placeholders.select_color"),
+      required: true,
+    },
+    {
+      name: "patina_color",
+      label: t("forms.patina_color"),
+      type: "searchable-resource-select",
+      resourceType: "patina-colors",
+      placeholder: t("placeholders.select_patina_color"),
+    },
+    {
+      name: "beading_main",
+      label: t("forms.beading_main"),
+      type: "searchable-resource-select",
+      resourceType: "beadings",
+      placeholder: t("placeholders.select_beading_main"),
+    },
+    {
+      name: "beading_additional",
+      label: t("forms.beading_additional"),
+      type: "searchable-resource-select",
+      resourceType: "beadings",
+      placeholder: t("placeholders.select_beading_additional"),
     },
   ];
 
@@ -779,6 +881,36 @@ export default function EditOrderPage() {
     });
   };
 
+  const handleDownloadPDF = async () => {
+    if (!orderData?.id) return;
+
+    try {
+      const response = await api.get(`orders/${orderData.id}/pdf/`, {
+        responseType: "blob",
+      });
+
+      // Create download link from blob
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `order-${orderData.order_code || orderData.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(
+        t("messages.pdf_download_started") || "PDF download started",
+      );
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast.error(
+        t("messages.error_downloading_pdf") || "Error downloading PDF",
+      );
+    }
+  };
+
   if (isLoadingOrder) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -804,13 +936,23 @@ export default function EditOrderPage() {
                 {t("forms.edit_order_description")}
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/orders")}
-              className="flex items-center gap-2"
-            >
-              ← {t("common.back_to_orders")}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleDownloadPDF}
+                disabled={!orderData?.id}
+                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+              >
+                <Download className="h-4 w-4" />
+                {t("common.download_pdf") || "Download PDF"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/orders")}
+                className="flex items-center gap-2"
+              >
+                ← {t("common.back_to_orders")}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -818,13 +960,8 @@ export default function EditOrderPage() {
           <StepOne
             orderForm={orderForm}
             orderFields={orderFields}
+            materialFields={materialFields}
             isLoading={isUpdating}
-            globalDoorSettings={globalDoorSettings}
-            setGlobalDoorSettings={setGlobalDoorSettings}
-            fieldOptions={fieldOptions}
-            doors={doors}
-            setDoors={setDoors}
-            // onNext={() => setCurrentStep(2)}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -868,16 +1005,7 @@ export default function EditOrderPage() {
 }
 
 // Step Components
-function StepOne({
-  orderForm,
-  orderFields,
-  isLoading,
-  globalDoorSettings,
-  setGlobalDoorSettings,
-  fieldOptions,
-  // doors,
-  // setDoors,
-}: any) {
+function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
   const { t } = useTranslation();
 
   return (
@@ -893,9 +1021,6 @@ function StepOne({
                 </div>
                 {t("forms.order_information")}
               </CardTitle>
-              {/* <p className="text-gray-600 mt-2">
-                {t("forms.basic_order_info_description")}
-              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Custom Counterparty Select Field */}
@@ -928,288 +1053,20 @@ function StepOne({
             <CardHeader className="pb-6">
               <CardTitle className="flex items-center gap-3 text-2xl">
                 <div className="p-2 bg-green-100 rounded-lg">
-                  <DoorOpen className="h-6 w-6 text-green-600" />
+                  <Package className="h-6 w-6 text-green-600" />
                 </div>
-                {t("forms.global_door_settings")}
+                {t("forms.material_attributes")}
               </CardTitle>
-              {/* <p className="text-gray-600 mt-2">
-                {t("forms.global_door_settings_description")}
-              </p> */}
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-3 gap-6">
-                {/* Material */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.material")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.material}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        material: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_material")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.materialOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Material Type */}
-                <div className="space-y-2 w-full">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.material_type")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.material_type}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        material_type: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_material_type")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.materialTypeOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Massif */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.massif")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.massif}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        massif: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_massif")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.massifOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Color */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.color")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.color}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        color: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_color")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.colorOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Patina Color */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.patina_color")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.patina_color}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        patina_color: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_patina_color")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.patinaColorOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Beading Main */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.beading_main")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.beading_main}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        beading_main: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("placeholders.select_beading_main")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.beadingMainOptions?.map((option: any) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Beading Additional */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none">
-                    {t("forms.beading_additional")}
-                  </label>
-                  <Select
-                    value={globalDoorSettings.beading_additional}
-                    onValueChange={(value) =>
-                      setGlobalDoorSettings((prev: any) => ({
-                        ...prev,
-                        beading_additional: value,
-                      }))
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t(
-                          "placeholders.select_beading_additional",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldOptions.beadingAdditionalOptions?.map(
-                        (option: any) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ),
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Glass Type */}
-                {/* <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.glass_type")}
-              </label>
-              <Select
-                value={globalDoorSettings.glass_type}
-                onValueChange={(value) => setGlobalDoorSettings((prev:any) => ({ ...prev, glass_type: value }))}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t("placeholders.select_glass_type")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.glassTypeOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
-
-                {/* Threshold */}
-                {/* <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">
-                {t("forms.threshold")}
-              </label>
-              <Select
-                value={globalDoorSettings.threshold}
-                onValueChange={(value) => setGlobalDoorSettings((prev:any) => ({ ...prev, threshold: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("placeholders.select_threshold")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {fieldOptions.thresholdOptions?.map((option: any) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
-              </div>
-
-              {/* Informative message about automatic material application */}
-              {/* {doors.length > 0 && (
-                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Calculator className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-green-900">
-                        {t("forms.automatic_material_application")}
-                      </h4>
-                      <p className="text-xs text-green-700 mt-1">
-                        When you click "Calculate & Apply Materials", the
-                        material settings above will be automatically applied to
-                        all doors before calculation.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )} */}
+              <ResourceForm
+                fields={materialFields}
+                onSubmit={() => {}}
+                isSubmitting={isLoading}
+                hideSubmitButton={true}
+                form={orderForm}
+                gridClassName="md:grid-cols-3 gap-6"
+              />
             </CardContent>
           </Card>
         </div>
