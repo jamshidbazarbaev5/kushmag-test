@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../context/AuthContext";
 
 import { useGetUsers } from "../api/user";
 import EditableConsolidatedSalesPlanTable from "@/components/EditableConsolidatedSalesPlanTable";
@@ -50,9 +51,13 @@ import {
 
 export default function YearlyPlansPage() {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const [selectedUser] = useState<string>("");
   const [selectedYear] = useState<string>("");
   const [selectedRole, setSelectedRole] = useState<string>("");
+
+  // Check if current user is admin
+  const isAdmin = currentUser?.role === "ADMIN";
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
   const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
@@ -62,7 +67,7 @@ export default function YearlyPlansPage() {
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
     params: {
       year: 2025,
-      ...(selectedRole && { role: selectedRole }),
+      ...(isAdmin && selectedRole && { role: selectedRole }),
     },
   });
   const { data: dailyPlans, isLoading: isDailyLoading } = useGetDailyPlans({
@@ -70,7 +75,7 @@ export default function YearlyPlansPage() {
       year: selectedDate.getFullYear(),
       month: selectedDate.getMonth() + 1,
       day: selectedDate.getDate(),
-      ...(selectedRole && { role: selectedRole }),
+      ...(isAdmin && selectedRole && { role: selectedRole }),
     },
   });
   const { mutate: createYearlyPlan } = useCreateYearlyPlan();
@@ -244,10 +249,8 @@ export default function YearlyPlansPage() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {t("navigation.yearly_plans")}
             </h1>
-           
           </div>
           <div className="flex items-center gap-3">
-            
             <Badge variant="outline" className="text-sm px-3 py-1">
               2025 {t("yearly_plans.year")}
             </Badge>
@@ -256,24 +259,27 @@ export default function YearlyPlansPage() {
 
         {/* Enhanced Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Всего пользователей
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {enhancedStats.totalUsers}
-                  </p>
-                  {/* <p className="text-xs text-blue-600 mt-1">Active users</p> */}
+          {/* Total Users - Only show for admin users */}
+          {isAdmin && (
+            <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      Всего пользователей
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {enhancedStats.totalUsers}
+                    </p>
+                    {/* <p className="text-xs text-blue-600 mt-1">Active users</p> */}
+                  </div>
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
                 </div>
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow">
             <CardContent className="p-4">
@@ -347,46 +353,51 @@ export default function YearlyPlansPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-indigo-500 hover:shadow-lg transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    {t('forms.high_performers')}
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {enhancedStats.highPerformers}
-                  </p>
-                  <p className="text-xs text-indigo-600 mt-1">
-                    ≥100% {t('forms.achievment')}
-                  </p>
+          {/* High Performers - Only show for admin users */}
+          {isAdmin && (
+            <Card className="border-l-4 border-l-indigo-500 hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      {t("forms.high_performers")}
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {enhancedStats.highPerformers}
+                    </p>
+                    <p className="text-xs text-indigo-600 mt-1">
+                      ≥100% {t("forms.achievment")}
+                    </p>
+                  </div>
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <BarChart3 className="w-6 h-6 text-indigo-600" />
+                  </div>
                 </div>
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-indigo-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Top Performer Highlight */}
-        {enhancedStats.topPerformer && (
+        {/* Top Performer Highlight - Only show for admin users */}
+        {isAdmin && enhancedStats.topPerformer && (
           <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-400 rounded-full">
-                  <Target className="w-5 h-5 text-white" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <Target className="w-5 h-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800">
+                      🏆 {t("forms.top_performer")}
+                    </p>
+                    <p className="text-lg font-bold text-yellow-900">
+                      {enhancedStats.topPerformer.user} -{" "}
+                      {enhancedStats.topPerformer.performance.toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-yellow-800">
-                    🏆 {t('forms.top_performer')}
-                  </p>
-                  <p className="text-lg font-bold text-yellow-900">
-                    {enhancedStats.topPerformer.user} -{" "}
-                    {enhancedStats.topPerformer.performance.toFixed(1)}%
-                  </p>
-                </div>
-                <div className="ml-auto">
+                <div className="text-right">
                   <PerformanceRating
                     percentage={enhancedStats.topPerformer.performance}
                     maxStars={5}
@@ -444,48 +455,50 @@ export default function YearlyPlansPage() {
                 </div>
               </div> */}
 
-              {/* Role Filter and View Mode */}
+              {/* Role Filter and View Mode - Only show role filter for admin */}
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
-                  {/* Role Filter */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-600">
-                      {t("forms.role")}:
-                    </span>
-                    <Select
-                      value={selectedRole || "all"}
-                      onValueChange={(value) =>
-                        setSelectedRole(value === "all" ? "" : value)
-                      }
-                    >
-                      <SelectTrigger className="h-9 min-w-[150px]">
-                        <SelectValue
-                          placeholder={t("placeholders.select_role")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                  {/* Role Filter - Only show for admin users */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-600">
+                        {t("forms.role")}:
+                      </span>
+                      <Select
+                        value={selectedRole || "all"}
+                        onValueChange={(value) =>
+                          setSelectedRole(value === "all" ? "" : value)
+                        }
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue
+                            placeholder={t("placeholders.select_role")}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t("common.all")}</SelectItem>
                           {/* <SelectItem value="ADMIN">
-                            {t("roles.admin")}
+                              {t("roles.admin")}
+                            </SelectItem> */}
+                          <SelectItem value="PRODAVEC">
+                            {t("roles.prodavec")}
+                          </SelectItem>
+                          {/* <SelectItem value="MANUFACTURE">
+                            {t("roles.manufacture")}
                           </SelectItem> */}
-                        <SelectItem value="PRODAVEC">
-                          {t("roles.prodavec")}
-                        </SelectItem>
-                        {/* <SelectItem value="MANUFACTURE">
-                          {t("roles.manufacture")}
-                        </SelectItem> */}
-                        <SelectItem value="ZAMERSHIK">
-                          {t("roles.zamershik")}
-                        </SelectItem>
-                        <SelectItem value="OPERATOR">
-                          {t("roles.operator")}
-                        </SelectItem>
-                        {/* <SelectItem value="SOTRUDNIK">
-                          {t("roles.sotrudnik")}
-                        </SelectItem> */}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                          <SelectItem value="ZAMERSHIK">
+                            {t("roles.zamershik")}
+                          </SelectItem>
+                          <SelectItem value="OPERATOR">
+                            {t("roles.operator")}
+                          </SelectItem>
+                          {/* <SelectItem value="SOTRUDNIK">
+                            {t("roles.sotrudnik")}
+                          </SelectItem> */}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 {/* View Mode Toggle */}
@@ -642,7 +655,10 @@ export default function YearlyPlansPage() {
                 }}
                 users={usersList
                   .filter((user) => user.id !== undefined)
-                  .filter((user) => !selectedRole || user.role === selectedRole)
+                  .filter(
+                    (user) =>
+                      !isAdmin || !selectedRole || user.role === selectedRole,
+                  )
                   .map((user) => ({
                     id: user.id!,
                     full_name: user.full_name,
@@ -704,43 +720,47 @@ export default function YearlyPlansPage() {
                   />
                 </div> */}
 
-                {/* Role Filter for Daily Plans */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-600">
-                    {t("forms.role")}:
-                  </span>
-                  <Select
-                    value={selectedRole || "all"}
-                    onValueChange={(value) =>
-                      setSelectedRole(value === "all" ? "" : value)
-                    }
-                  >
-                    <SelectTrigger className="h-9 min-w-[150px]">
-                      <SelectValue
-                        placeholder={t("placeholders.select_role")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("common.all")}</SelectItem>
-                      <SelectItem value="ADMIN">{t("roles.admin")}</SelectItem>
-                      <SelectItem value="PRODAVEC">
-                        {t("roles.prodavec")}
-                      </SelectItem>
-                      <SelectItem value="ZAMERSHIK">
-                        {t("roles.zamershik")}
-                      </SelectItem>
-                      <SelectItem value="OPERATOR">
-                        {t("roles.operator")}
-                      </SelectItem>
-                      <SelectItem value="MANUFACTURE">
-                        {t("roles.manufacture")}
-                      </SelectItem>
-                      <SelectItem value="SOTRUDNIK">
-                        {t("roles.sotrudnik")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Role Filter for Daily Plans - Only show for admin users */}
+                {isAdmin && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      {t("forms.role")}:
+                    </span>
+                    <Select
+                      value={selectedRole || "all"}
+                      onValueChange={(value) =>
+                        setSelectedRole(value === "all" ? "" : value)
+                      }
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue
+                          placeholder={t("placeholders.select_role")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("common.all")}</SelectItem>
+                        <SelectItem value="ADMIN">
+                          {t("roles.admin")}
+                        </SelectItem>
+                        <SelectItem value="PRODAVEC">
+                          {t("roles.prodavec")}
+                        </SelectItem>
+                        <SelectItem value="ZAMERSHIK">
+                          {t("roles.zamershik")}
+                        </SelectItem>
+                        <SelectItem value="OPERATOR">
+                          {t("roles.operator")}
+                        </SelectItem>
+                        <SelectItem value="SOTRUDNIK">
+                          {t("roles.sotrudnik")}
+                        </SelectItem>
+                        <SelectItem value="MANUFACTURE">
+                          {t("roles.manufacture")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               {/* <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">

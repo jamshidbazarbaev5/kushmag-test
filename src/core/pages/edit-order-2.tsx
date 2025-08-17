@@ -959,7 +959,9 @@ export default function EditOrderPage() {
             orderFields={orderFields}
             materialFields={materialFields}
             isLoading={isUpdating}
+            order={orderData}
           />
+
 
           {/* Step 2: Doors Configuration */}
           <StepTwo
@@ -1002,7 +1004,7 @@ export default function EditOrderPage() {
 }
 
 // Step Components
-function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
+function StepOne({ orderForm, orderFields, materialFields, isLoading,order }: any) {
   const { t } = useTranslation();
 
   return (
@@ -1016,7 +1018,7 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Package className="h-6 w-6 text-blue-600" />
                 </div>
-                {t("forms.order_information")}
+                {t("forms.order_information")} {order.order_code}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
