@@ -962,7 +962,6 @@ export default function EditOrderPage() {
             order={orderData}
           />
 
-
           {/* Step 2: Doors Configuration */}
           <StepTwo
             doors={doors}
@@ -1004,7 +1003,13 @@ export default function EditOrderPage() {
 }
 
 // Step Components
-function StepOne({ orderForm, orderFields, materialFields, isLoading,order }: any) {
+function StepOne({
+  orderForm,
+  orderFields,
+  materialFields,
+  isLoading,
+  order,
+}: any) {
   const { t } = useTranslation();
 
   return (
@@ -1247,7 +1252,7 @@ function StepTwo({
         }
       }
 
-      // Initialize table-specific selected products from first door
+      // Initialize table-specific selected products from all doors in the group
       let selectedExtensionProduct: any = null;
       let selectedCasingProduct: any = null;
       let selectedCrownProduct: any = null;
@@ -1258,10 +1263,15 @@ function StepTwo({
       let selectedTopsaProduct: any = null;
       let selectedBeadingProduct: any = null;
 
-      if (firstDoor) {
-        // Pre-populate extension product
-        if (firstDoor.extensions && firstDoor.extensions.length > 0) {
-          const extensionModel = firstDoor.extensions[0].model;
+      // Check all doors in the group to find the first available product for each type
+      groupDoors.forEach((door: any) => {
+        // Pre-populate extension product from first available
+        if (
+          !selectedExtensionProduct &&
+          door.extensions &&
+          door.extensions.length > 0
+        ) {
+          const extensionModel = door.extensions[0].model;
           if (extensionModel) {
             selectedExtensionProduct = productsList.find(
               (p: any) => p.id === extensionModel,
@@ -1269,9 +1279,9 @@ function StepTwo({
           }
         }
 
-        // Pre-populate casing product
-        if (firstDoor.casings && firstDoor.casings.length > 0) {
-          const casingModel = firstDoor.casings[0].model;
+        // Pre-populate casing product from first available
+        if (!selectedCasingProduct && door.casings && door.casings.length > 0) {
+          const casingModel = door.casings[0].model;
           if (casingModel) {
             selectedCasingProduct = productsList.find(
               (p: any) => p.id === casingModel,
@@ -1279,9 +1289,9 @@ function StepTwo({
           }
         }
 
-        // Pre-populate crown product
-        if (firstDoor.crowns && firstDoor.crowns.length > 0) {
-          const crownModel = firstDoor.crowns[0].model;
+        // Pre-populate crown product from first available
+        if (!selectedCrownProduct && door.crowns && door.crowns.length > 0) {
+          const crownModel = door.crowns[0].model;
           if (crownModel) {
             selectedCrownProduct = productsList.find(
               (p: any) => p.id === crownModel,
@@ -1289,9 +1299,9 @@ function StepTwo({
           }
         }
 
-        // Pre-populate accessory products
-        if (firstDoor.accessories && firstDoor.accessories.length > 0) {
-          firstDoor.accessories.forEach((accessory: any) => {
+        // Pre-populate accessory products from any door that has them
+        if (door.accessories && door.accessories.length > 0) {
+          door.accessories.forEach((accessory: any) => {
             if (!accessory.model) return;
 
             const accessoryProduct = productsList.find(
@@ -1301,27 +1311,32 @@ function StepTwo({
 
             switch (accessory.accessory_type) {
               case "cube":
-                selectedCubeProduct = accessoryProduct;
+                if (!selectedCubeProduct)
+                  selectedCubeProduct = accessoryProduct;
                 break;
               case "leg":
-                selectedLegProduct = accessoryProduct;
+                if (!selectedLegProduct) selectedLegProduct = accessoryProduct;
                 break;
               case "glass":
-                selectedGlassProduct = accessoryProduct;
+                if (!selectedGlassProduct)
+                  selectedGlassProduct = accessoryProduct;
                 break;
               case "lock":
-                selectedLockProduct = accessoryProduct;
+                if (!selectedLockProduct)
+                  selectedLockProduct = accessoryProduct;
                 break;
               case "topsa":
-                selectedTopsaProduct = accessoryProduct;
+                if (!selectedTopsaProduct)
+                  selectedTopsaProduct = accessoryProduct;
                 break;
               case "beading":
-                selectedBeadingProduct = accessoryProduct;
+                if (!selectedBeadingProduct)
+                  selectedBeadingProduct = accessoryProduct;
                 break;
             }
           });
         }
-      }
+      });
       return {
         id: index + 1,
         doorModel: doorModel,
@@ -2487,29 +2502,52 @@ function StepTwo({
                                     ...t,
                                     selectedCubeProduct: product,
                                     cubeSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (acc.accessory_type === "cube") {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "cube",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "cube",
+                                          name: "Кубик",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;
@@ -2544,29 +2582,52 @@ function StepTwo({
                                     ...t,
                                     selectedLegProduct: product,
                                     legSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (acc.accessory_type === "leg") {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "leg",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "leg",
+                                          name: "Ножка",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;
@@ -2601,29 +2662,52 @@ function StepTwo({
                                     ...t,
                                     selectedGlassProduct: product,
                                     glassSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (acc.accessory_type === "glass") {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "glass",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "glass",
+                                          name: "Стекло",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;
@@ -2658,29 +2742,52 @@ function StepTwo({
                                     ...t,
                                     selectedLockProduct: product,
                                     lockSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (acc.accessory_type === "lock") {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "lock",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "lock",
+                                          name: "Замок",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;
@@ -2715,29 +2822,52 @@ function StepTwo({
                                     ...t,
                                     selectedTopsaProduct: product,
                                     topsaSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (acc.accessory_type === "topsa") {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "topsa",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "topsa",
+                                          name: "Топса",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;
@@ -2772,31 +2902,52 @@ function StepTwo({
                                     ...t,
                                     selectedBeadingProduct: product,
                                     beadingSearch: product?.name || "",
-                                    doors: t.doors.map((door: any) => ({
-                                      ...door,
-                                      accessories:
-                                        door.accessories?.map((acc: any) => {
-                                          if (
-                                            acc.accessory_type === "beading"
-                                          ) {
-                                            return {
-                                              ...acc,
-                                              model: product
-                                                ? product.id
-                                                : acc.model,
-                                              price_type: acc.price_type || "",
-                                              price: product
-                                                ? (product.salePrices?.find(
-                                                    (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                                  )?.value || 0) / 100
-                                                : acc.price,
-                                            };
-                                          }
-                                          return acc;
-                                        }) || [],
-                                    })),
+                                    doors: t.doors.map((door: any) => {
+                                      const updatedAccessories = [
+                                        ...(door.accessories || []),
+                                      ];
+                                      const existingIndex =
+                                        updatedAccessories.findIndex(
+                                          (acc: any) =>
+                                            acc.accessory_type === "beading",
+                                        );
+
+                                      if (existingIndex >= 0) {
+                                        // Update existing accessory
+                                        updatedAccessories[existingIndex] = {
+                                          ...updatedAccessories[existingIndex],
+                                          model: product ? product.id : "",
+                                          price_type: "",
+                                          price: product
+                                            ? (product.salePrices?.find(
+                                                (p: any) =>
+                                                  p.priceType.name ===
+                                                  "Цена продажи",
+                                              )?.value || 0) / 100
+                                            : 0,
+                                        };
+                                      } else if (product) {
+                                        // Create new accessory if it doesn't exist
+                                        updatedAccessories.push({
+                                          model: product.id,
+                                          price_type: "",
+                                          price:
+                                            (product.salePrices?.find(
+                                              (p: any) =>
+                                                p.priceType.name ===
+                                                "Цена продажи",
+                                            )?.value || 0) / 100,
+                                          quantity: 0,
+                                          accessory_type: "beading",
+                                          name: "Шпингалет",
+                                        });
+                                      }
+
+                                      return {
+                                        ...door,
+                                        accessories: updatedAccessories,
+                                      };
+                                    }),
                                   };
                                 }
                                 return t;

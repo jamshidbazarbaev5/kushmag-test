@@ -2296,7 +2296,7 @@ function StepTwo({
                           </Select>
                         </TableCell>
 
-                        {/* Paska Orin - Always editable */}
+                        {/*    - Always editable */}
                         <TableCell className="align-middle">
                           <MultiSelect
                             value={
