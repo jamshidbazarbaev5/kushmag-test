@@ -77,7 +77,7 @@ export default function OrdersPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize, setPageSize] = useState(20);
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [activeStatusTab, setActiveStatusTab] = useState(
@@ -997,7 +997,7 @@ export default function OrdersPage() {
                   className="h-9 min-w-[140px]"
                   value={filters.created_at_before}
                   onChange={(e) =>
-                    handleFilterChange("created_at_date_before", e.target.value)
+                    handleFilterChange("created_at_before", e.target.value)
                   }
                 />
               </div>

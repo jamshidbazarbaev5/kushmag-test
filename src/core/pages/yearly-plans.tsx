@@ -338,10 +338,7 @@ export default function YearlyPlansPage() {
                       <TrendingDown className="w-4 h-4 text-red-600" />
                     )}
                   </div>
-                  <p className="text-xs text-orange-600 mt-1">
-                    {enhancedStats.performanceTrend >= 0 ? "+" : ""}
-                    {enhancedStats.performanceTrend.toFixed(1)}% trend
-                  </p>
+                
                 </div>
                 <PerformanceGauge
                   percentage={enhancedStats.overallPerformance}
@@ -379,7 +376,7 @@ export default function YearlyPlansPage() {
         </div>
 
         {/* Top Performer Highlight - Only show for admin users */}
-        {isAdmin && enhancedStats.topPerformer && (
+        {/* {isAdmin && enhancedStats.topPerformer && (
           <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -407,7 +404,7 @@ export default function YearlyPlansPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
 
       <Tabs
@@ -682,9 +679,9 @@ export default function YearlyPlansPage() {
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-col gap-1">
-                    <label className="text-sm font-medium text-gray-600">
+                    {/* <label className="text-sm font-medium text-gray-600">
                       Select Date:
-                    </label>
+                    </label> */}
                     <input
                       type="date"
                       value={format(selectedDate, "yyyy-MM-dd")}
@@ -694,7 +691,7 @@ export default function YearlyPlansPage() {
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
+                  {/* <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-gray-600 opacity-0">
                       Quick:
                     </label>
@@ -706,25 +703,13 @@ export default function YearlyPlansPage() {
                       <CalendarIcon className="w-4 h-4" />
                       {t("daily_plans.today")}
                     </Button>
-                  </div>
-                </div>
-
-                {/* User Search for Daily Plans
-                <div className="flex items-center gap-2 flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder={t("placeholders.search_user")}
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="flex-1"
-                  />
-                </div> */}
+                  </div> */}
 
                 {/* Role Filter for Daily Plans - Only show for admin users */}
                 {isAdmin && (
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-gray-600">
-                      {t("forms.role")}:
+                      {/* {t("forms.role")}: */}
                     </span>
                     <Select
                       value={selectedRole || "all"}
@@ -761,6 +746,19 @@ export default function YearlyPlansPage() {
                     </Select>
                   </div>
                 )}
+                </div>
+
+                {/* User Search for Daily Plans
+                <div className="flex items-center gap-2 flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-gray-500" />
+                  <Input
+                    placeholder={t("placeholders.search_user")}
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="flex-1"
+                  />
+                </div> */}
+
               </div>
 
               {/* <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">

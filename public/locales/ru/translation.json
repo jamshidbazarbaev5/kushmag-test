@@ -10,7 +10,7 @@
   "common": {
     "language":"Язык",
     "orders":"Заказы",
-    "view_pdf":"Скачать PDF",
+    "view_pdf":"Распечатать",
     "remove_table":"Удалить таблицу",
     "download_pdf": "Скачать PDF",
     "current":"Текущий",

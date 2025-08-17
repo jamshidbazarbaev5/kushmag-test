@@ -1313,6 +1313,20 @@ function StepTwo({
     setTables(updatedTables);
   };
 
+  // Function to remove the last door from a table
+  const handleRemoveLastDoor = (tableId: number) => {
+    const updatedTables = tables.map((table) => {
+      if (table.id === tableId && table.doors.length > 0) {
+        return {
+          ...table,
+          doors: table.doors.slice(0, -1), // Remove the last door
+        };
+      }
+      return table;
+    });
+    setTables(updatedTables);
+  };
+
   // Real-time field change handler - updates doors directly in tables
   const handleFieldChange = (
     doorIndex: number,
@@ -2987,8 +3001,8 @@ function StepTwo({
                 </Table>
               </div>
 
-              {/* Add Row Button - Bottom Right */}
-              <div className="flex justify-end mt-4">
+              {/* Add Row and Remove Row Buttons - Bottom Right */}
+              <div className="flex justify-end gap-2 mt-4">
                 <Button
                   onClick={() => {
                     handleAddNewRow(table.id);
@@ -2999,6 +3013,18 @@ function StepTwo({
                   <Plus className="h-5 w-5" />
                   {t("forms.add_row")}
                 </Button>
+                {table.doors.length > 0 && (
+                  <Button
+                    onClick={() => {
+                      handleRemoveLastDoor(table.id);
+                    }}
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    {t("common.delete")}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
