@@ -28,7 +28,10 @@ import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
 import { useGetAttributeSettings } from "../api/attributeSettings";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { formatReferenceOptions } from "../helpers/formatters";
+import {
+  formatReferenceOptions,
+  formatZamershikOptions,
+} from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
 import { useForm } from "react-hook-form";
 import {
@@ -351,7 +354,7 @@ export default function CreateOrderPage() {
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
     branchOptions: formatReferenceOptions(branches),
-    zamershikOptions: formatReferenceOptions(zamershiks),
+    zamershikOptions: formatZamershikOptions(zamershiks),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
@@ -717,6 +720,7 @@ export default function CreateOrderPage() {
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
       branch: getMetaById(branches, data.branch),
+
       // Hydrate door data with full product info
       doors: doors.map((door: any) => ({
         ...door,

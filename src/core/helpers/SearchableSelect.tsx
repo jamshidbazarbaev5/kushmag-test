@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '../../components/ui/input';
-import { Button } from '../../components/ui/button';
-import { Check, ChevronDown, Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect, useRef } from "react";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Check, ChevronDown, Search, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Option {
   value: string | number;
@@ -18,6 +18,7 @@ interface SearchableSelectProps {
   isLoading?: boolean;
   disabled?: boolean;
   className?: string;
+  allowReset?: boolean;
 }
 
 export function SearchableSelect({
@@ -29,9 +30,10 @@ export function SearchableSelect({
   isLoading = false,
   disabled = false,
   className,
+  allowReset = true,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<Option[]>(options);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -39,15 +41,18 @@ export function SearchableSelect({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
-        setSearchTerm('');
+        setSearchTerm("");
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -56,8 +61,8 @@ export function SearchableSelect({
     if (!searchTerm) {
       setFilteredOptions(options);
     } else {
-      const filtered = options.filter(option =>
-        option.label.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = options.filter((option) =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredOptions(filtered);
     }
@@ -78,7 +83,7 @@ export function SearchableSelect({
   const handleOptionSelect = (option: Option) => {
     onChange(option.value);
     setIsOpen(false);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   // Handle dropdown toggle
@@ -97,15 +102,23 @@ export function SearchableSelect({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       setIsOpen(false);
-      setSearchTerm('');
+      setSearchTerm("");
     }
   };
 
+  // Handle reset
+  const handleReset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange("");
+    setSearchTerm("");
+  };
+
   // Get display value
-  const selectedOption = options.find(option => option.value === value);
-  const displayValue = selectedOption ? selectedOption.label : '';
+  const selectedOption = options.find((option) => option.value === value);
+  const displayValue = selectedOption ? selectedOption.label : "";
+  const hasValue = value !== undefined && value !== null && value !== "";
 
   return (
     <div className={cn("relative", className)} ref={containerRef}>
@@ -118,20 +131,31 @@ export function SearchableSelect({
         className={cn(
           "w-full justify-between h-10 px-3 py-2 text-sm",
           !displayValue && "text-muted-foreground",
-          disabled && "opacity-50 cursor-not-allowed"
+          disabled && "opacity-50 cursor-not-allowed",
+          hasValue && allowReset && "pr-16",
         )}
         onClick={handleToggle}
         disabled={disabled}
       >
-        <span className="truncate">
-          {displayValue || placeholder}
-        </span>
-        <ChevronDown
-          className={cn(
-            "ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform",
-            isOpen && "rotate-180"
+        <span className="truncate">{displayValue || placeholder}</span>
+        <div className="flex items-center gap-1 ml-2">
+          {hasValue && allowReset && !disabled && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="h-4 w-4 rounded-sm opacity-50 hover:opacity-80 hover:bg-gray-100 flex items-center justify-center transition-colors"
+              aria-label="Clear selection"
+            >
+              <X className="h-3 w-3" />
+            </button>
           )}
-        />
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 shrink-0 opacity-50 transition-transform",
+              isOpen && "rotate-180",
+            )}
+          />
+        </div>
       </Button>
 
       {/* Dropdown */}
@@ -167,7 +191,7 @@ export function SearchableSelect({
                   key={option.value}
                   className={cn(
                     "relative flex cursor-pointer select-none items-center px-3 py-2 text-sm hover:bg-gray-100",
-                    value === option.value && "bg-blue-50 text-blue-600"
+                    value === option.value && "bg-blue-50 text-blue-600",
                   )}
                   onClick={() => handleOptionSelect(option)}
                 >
@@ -179,7 +203,9 @@ export function SearchableSelect({
               ))
             ) : (
               <div className="p-3 text-center text-gray-500 text-sm">
-                {searchTerm ? `No results for "${searchTerm}"` : 'No options available'}
+                {searchTerm
+                  ? `No results for "${searchTerm}"`
+                  : "No options available"}
               </div>
             )}
           </div>

@@ -84,6 +84,7 @@ export interface FormField {
     | "operators"
     | "counterparties"
     | "zamershiks";
+  allowReset?: boolean;
 }
 
 // Update the ResourceFormProps interface to be more specific about generic type T
@@ -326,6 +327,7 @@ export function ResourceForm<T extends Record<string, any>>({
                                     field.resourceType || "materials"
                                   }
                                   disabled={field.disabled}
+                                  allowReset={field.allowReset}
                                 />
                               ) : field.type === "multi-select" ? (
                                 <MultiSelect

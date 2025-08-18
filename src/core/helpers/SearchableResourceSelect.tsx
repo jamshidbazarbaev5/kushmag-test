@@ -43,6 +43,7 @@ interface SearchableResourceSelectProps {
     | "zamershiks";
   disabled?: boolean;
   className?: string;
+  allowReset?: boolean;
 }
 
 export function SearchableResourceSelect({
@@ -52,6 +53,7 @@ export function SearchableResourceSelect({
   resourceType,
   disabled = false,
   className,
+  allowReset = true,
 }: SearchableResourceSelectProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -160,6 +162,7 @@ export function SearchableResourceSelect({
       isLoading={isLoading}
       disabled={disabled}
       className={className}
+      allowReset={allowReset}
     />
   );
 }

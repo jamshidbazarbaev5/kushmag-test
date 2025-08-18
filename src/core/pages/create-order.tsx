@@ -30,7 +30,10 @@ import { useGetAttributeSettings } from "../api/attributeSettings";
 import { useGetPriceSettings } from "../api/priceSettings";
 import { useState, useEffect, useMemo, useRef } from "react";
 import React from "react";
-import { formatReferenceOptions } from "../helpers/formatters";
+import {
+  formatReferenceOptions,
+  formatZamershikOptions,
+} from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
 import { useForm } from "react-hook-form";
 import {
@@ -111,6 +114,27 @@ const convertToNumber = (value: any, defaultValue: number = 0) => {
     return isNaN(parsed) ? defaultValue : parsed;
   }
   return defaultValue;
+};
+
+// Helper function to convert numeric fields from empty strings to 0
+const convertNumericFields = (obj: any) => {
+  const numericFields = ["height", "width", "price", "quantity"];
+  const converted = { ...obj };
+
+  numericFields.forEach((field) => {
+    if (
+      converted[field] === "" ||
+      converted[field] === null ||
+      converted[field] === undefined
+    ) {
+      converted[field] = 0;
+    } else if (typeof converted[field] === "string") {
+      const num = convertToNumber(converted[field], 0);
+      converted[field] = num;
+    }
+  });
+
+  return converted;
 };
 
 // Price type mapping for different product types
@@ -275,7 +299,7 @@ export default function CreateOrderPage() {
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
-    zamershikOptions: formatReferenceOptions(zamershiks),
+    zamershikOptions: formatZamershikOptions(zamershiks),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
@@ -491,7 +515,7 @@ export default function CreateOrderPage() {
             door.extensions
               ?.map((ext: any) => {
                 const model = getProductById(productsList, ext.model);
-                return {
+                return convertNumericFields({
                   ...ext,
                   model,
                   price_type: model
@@ -500,14 +524,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("extension", priceSettingsList),
-                };
+                });
               })
-              .filter((ext: any) => ext.quantity > 0) || [],
+              .filter(
+                (ext: any) =>
+                  ext.quantity > 0 &&
+                  ext.model &&
+                  (ext.model.id ||
+                    (typeof ext.model === "string" && ext.model !== "")),
+              ) || [],
           casings:
             door.casings
               ?.map((casing: any) => {
                 const model = getProductById(productsList, casing.model);
-                return {
+                return convertNumericFields({
                   ...casing,
                   model,
                   price_type: model
@@ -516,14 +546,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("casing", priceSettingsList),
-                };
+                });
               })
-              .filter((casing: any) => casing.quantity > 0) || [],
+              .filter(
+                (casing: any) =>
+                  casing.quantity > 0 &&
+                  casing.model &&
+                  (casing.model.id ||
+                    (typeof casing.model === "string" && casing.model !== "")),
+              ) || [],
           crowns:
             door.crowns
               ?.map((crown: any) => {
                 const model = getProductById(productsList, crown.model);
-                return {
+                return convertNumericFields({
                   ...crown,
                   model,
                   price_type: model
@@ -532,14 +568,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("crown", priceSettingsList),
-                };
+                });
               })
-              .filter((crown: any) => crown.quantity > 0) || [],
+              .filter(
+                (crown: any) =>
+                  crown.quantity > 0 &&
+                  crown.model &&
+                  (crown.model.id ||
+                    (typeof crown.model === "string" && crown.model !== "")),
+              ) || [],
           accessories:
             door.accessories
               ?.map((acc: any) => {
                 const model = getProductById(productsList, acc.model);
-                return {
+                return convertNumericFields({
                   ...acc,
                   model,
                   price_type: model
@@ -548,15 +590,14 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("lock", priceSettingsList),
-                };
+                });
               })
               .filter(
                 (acc: any) =>
-                  (acc.model && acc.model.id && acc.quantity > 0) ||
-                  (acc.model &&
-                    typeof acc.model === "string" &&
-                    acc.model !== "" &&
-                    acc.quantity > 0),
+                  acc.quantity > 0 &&
+                  acc.model &&
+                  (acc.model.id ||
+                    (typeof acc.model === "string" && acc.model !== "")),
               ) || [],
         };
       }),
@@ -618,19 +659,6 @@ export default function CreateOrderPage() {
   const onSubmit = async (data: any) => {
     const { total_sum, discountAmount, remainingBalance } = totals;
 
-    // Validate that all doors have valid models
-    const incompleteDoors = doors.filter(
-      (door: any) => !door.model || door.model === "" || door.model === null,
-    );
-
-    if (incompleteDoors.length > 0) {
-      toast.error(
-        t("messages.incomplete_doors_error") ||
-          "Please select models for all doors before submitting",
-      );
-      return;
-    }
-
     // Note: Extensions, casings, crowns, and accessories without models or with quantity 0 are automatically filtered out
 
     //  const discount = convertToNumber(discount_percentage, 0);
@@ -656,7 +684,7 @@ export default function CreateOrderPage() {
       doors: doors.map((door: any) => {
         const doorModel = getProductById(productsList, door.model);
 
-        return {
+        return convertNumericFields({
           ...door,
           model: doorModel,
           price_type: doorModel
@@ -666,7 +694,7 @@ export default function CreateOrderPage() {
             door.extensions
               ?.map((ext: any) => {
                 const model = getProductById(productsList, ext.model);
-                return {
+                return convertNumericFields({
                   ...ext,
                   model,
                   price_type: model
@@ -675,14 +703,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("extension", priceSettingsList),
-                };
+                });
               })
-              .filter((ext: any) => ext.quantity > 0) || [],
+              .filter(
+                (ext: any) =>
+                  ext.quantity > 0 &&
+                  ext.model &&
+                  (ext.model.id ||
+                    (typeof ext.model === "string" && ext.model !== "")),
+              ) || [],
           casings:
             door.casings
               ?.map((casing: any) => {
                 const model = getProductById(productsList, casing.model);
-                return {
+                return convertNumericFields({
                   ...casing,
                   model,
                   price_type: model
@@ -691,14 +725,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("casing", priceSettingsList),
-                };
+                });
               })
-              .filter((casing: any) => casing.quantity > 0) || [],
+              .filter(
+                (casing: any) =>
+                  casing.quantity > 0 &&
+                  casing.model &&
+                  (casing.model.id ||
+                    (typeof casing.model === "string" && casing.model !== "")),
+              ) || [],
           crowns:
             door.crowns
               ?.map((crown: any) => {
                 const model = getProductById(productsList, crown.model);
-                return {
+                return convertNumericFields({
                   ...crown,
                   model,
                   price_type: model
@@ -707,14 +747,20 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("crown", priceSettingsList),
-                };
+                });
               })
-              .filter((crown: any) => crown.quantity > 0) || [],
+              .filter(
+                (crown: any) =>
+                  crown.quantity > 0 &&
+                  crown.model &&
+                  (crown.model.id ||
+                    (typeof crown.model === "string" && crown.model !== "")),
+              ) || [],
           accessories:
             door.accessories
               ?.map((acc: any) => {
                 const model = getProductById(productsList, acc.model);
-                return {
+                return convertNumericFields({
                   ...acc,
                   model,
                   price_type: model
@@ -723,17 +769,16 @@ export default function CreateOrderPage() {
                         priceSettingsList,
                       )
                     : getPriceTypeByProduct("lock", priceSettingsList),
-                };
+                });
               })
               .filter(
                 (acc: any) =>
-                  (acc.model && acc.model.id && acc.quantity > 0) ||
-                  (acc.model &&
-                    typeof acc.model === "string" &&
-                    acc.model !== "" &&
-                    acc.quantity > 0),
+                  acc.quantity > 0 &&
+                  acc.model &&
+                  (acc.model.id ||
+                    (typeof acc.model === "string" && acc.model !== "")),
               ) || [],
-        };
+        });
       }),
 
       // Add calculated totals
@@ -919,6 +964,138 @@ function StepTwo({
 }: any) {
   const { t } = useTranslation();
 
+  // Function to create a default door with empty values
+  const createDefaultDoor = (orderData: any = {}) => {
+    const defaultExtensions = [
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 1,
+        height: 0,
+        width: 0,
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 1,
+        height: 0,
+        width: 0,
+      },
+    ];
+
+    const defaultCasings = [
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 1,
+        casing_type: "боковой",
+        casing_formula: casingFormula ? "formula1" : "formula2",
+        casing_range: "",
+        height: 0,
+        width: casingSize || 0,
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 1,
+        casing_type: "прямой",
+        casing_formula: casingFormula ? "formula1" : "formula2",
+        casing_range: "",
+        height: 0,
+        width: casingSize || 0,
+      },
+    ];
+
+    const defaultCrowns = [
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 1,
+        height: 0,
+        width: crownSize || 0,
+      },
+    ];
+
+    const defaultAccessories = [
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "cube",
+        name: "Кубик",
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "leg",
+        name: "Ножка",
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "glass",
+        name: "Стекло",
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "lock",
+        name: "Замок",
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "topsa",
+        name: "Топса",
+      },
+      {
+        model: "",
+        price_type: "",
+        price: 0,
+        quantity: 0,
+        accessory_type: "beading",
+        name: "Шпингалет",
+      },
+    ];
+
+    return {
+      model: "",
+      price_type: "",
+      price: 0,
+      quantity: 1,
+      height: 0,
+      width: 0,
+      material: orderData.material || "",
+      material_type: orderData.material_type || "",
+      massif: orderData.massif || "",
+      color: orderData.color || "",
+      patina_color: orderData.patina_color || "",
+      beading_main: orderData.beading_main || "",
+      beading_additional: orderData.beading_additional || null,
+      glass_type: "",
+      threshold: "",
+      paska_orin: [],
+      extensions: defaultExtensions,
+      casings: defaultCasings,
+      crowns: defaultCrowns,
+      accessories: defaultAccessories,
+    };
+  };
+
   // Tables state - each table has its own door model and doors array
   const [tables, setTables] = useState([
     {
@@ -926,7 +1103,7 @@ function StepTwo({
       doorModel: null as any,
       // Removed doorPriceType from table state
       doorSearch: "",
-      doors: doors || [],
+      doors: [] as any[],
       // Table-specific search states
       extensionSearch: "",
       casingSearch: "",
@@ -963,7 +1140,7 @@ function StepTwo({
     setDoors(allDoors);
   }, [tables]);
 
-  // Initialize tables with existing doors
+  // Initialize tables with existing doors or ensure default row
   useEffect(() => {
     if (doors && doors.length > 0 && tables[0].doors.length === 0) {
       setTables([
@@ -975,14 +1152,29 @@ function StepTwo({
     }
   }, [doors]);
 
+  // Ensure at least one default row on component mount
+  useEffect(() => {
+    const orderData = orderForm.getValues();
+    setTables((prevTables: any[]) =>
+      prevTables.map((table: any) => ({
+        ...table,
+        doors:
+          table.doors.length === 0
+            ? [createDefaultDoor(orderData)]
+            : table.doors,
+      })),
+    );
+  }, []);
+
   // Add new table functionality
   const handleAddNewTable = () => {
     const newTableId = Math.max(...tables.map((t) => t.id)) + 1;
+    const orderData = orderForm.getValues();
     const newTable = {
       id: newTableId,
       doorModel: null as any,
       doorSearch: "",
-      doors: [],
+      doors: [createDefaultDoor(orderData)],
       // Table-specific search states
       extensionSearch: "",
       casingSearch: "",
@@ -1305,9 +1497,18 @@ function StepTwo({
   const handleRemoveDoor = (index: number, tableId: number) => {
     const updatedTables = tables.map((table) => {
       if (table.id === tableId) {
+        const filteredDoors = table.doors.filter(
+          (_: any, i: number) => i !== index,
+        );
+        // Ensure at least one row always remains - if all doors would be removed, add a default one
+        const finalDoors =
+          filteredDoors.length === 0
+            ? [createDefaultDoor(orderForm.getValues())]
+            : filteredDoors;
+
         return {
           ...table,
-          doors: table.doors.filter((_: any, i: number) => i !== index),
+          doors: finalDoors,
         };
       }
       return table;
@@ -1512,6 +1713,14 @@ function StepTwo({
                         onProductSelect={(product) => {
                           const updatedTables = tables.map((t) => {
                             if (t.id === table.id) {
+                              // Calculate door price from product
+                              const doorPrice = product
+                                ? (product.salePrices?.find(
+                                    (p: any) =>
+                                      p.priceType.name === "Цена продажи",
+                                  )?.value || 0) / 100
+                                : 0;
+
                               // If this table was empty and we're selecting a model, add one row automatically
                               const shouldAddRow =
                                 t.doors.length === 0 && product;
@@ -1519,12 +1728,6 @@ function StepTwo({
                               let newDoors = t.doors;
                               if (shouldAddRow) {
                                 const orderData = orderForm.getValues();
-                                const defaultDoorPrice = product
-                                  ? (product.salePrices?.find(
-                                      (p: any) =>
-                                        p.priceType.name === "Цена продажи",
-                                    )?.value || 0) / 100
-                                  : 0;
 
                                 // Create 2 default extensions (dobors) - with selected product if available, otherwise empty entries
                                 const defaultExtensions = [
@@ -1720,7 +1923,7 @@ function StepTwo({
                                 const newDoor = {
                                   model: product.id,
                                   price_type: "",
-                                  price: defaultDoorPrice,
+                                  price: doorPrice,
                                   quantity: 1,
                                   height: 0,
                                   width: 0,
@@ -1741,6 +1944,13 @@ function StepTwo({
                                   accessories: defaultAccessories,
                                 };
                                 newDoors = [newDoor];
+                              } else {
+                                // Update existing doors with new model and price
+                                newDoors = t.doors.map((door: any) => ({
+                                  ...door,
+                                  model: product ? product.id : "",
+                                  price: doorPrice,
+                                }));
                               }
 
                               return {
@@ -2985,7 +3195,6 @@ function StepTwo({
                     handleAddNewRow(table.id);
                   }}
                   className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  disabled={!table.doorModel}
                 >
                   <Plus className="h-5 w-5" />
                   {t("forms.add_row")}

@@ -132,7 +132,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               ? operators
               : zamershiks;
         const staffMember = staffList?.find(
-          (staff) => staff.meta.href === userData.moy_sklad_staff?.meta.href,
+          (staff:any) => staff.meta.href === userData.moy_sklad_staff?.meta.href,
         );
         if (staffMember) {
           userData.staff_member = JSON.stringify(staffMember);
@@ -187,7 +187,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : [];
 
     return (
-      staffList?.map((staff) => ({
+      staffList?.map((staff:any) => ({
         label: staff.name,
         value: JSON.stringify(staff),
       })) || []
@@ -437,7 +437,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {getStaffOptions().map((option) => (
+                        {getStaffOptions().map((option:any) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

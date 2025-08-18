@@ -34,7 +34,10 @@ import { useGetThresholds } from "../api/threshold";
 import { useGetCasingRanges } from "../api/casingRange";
 import { useGetAttributeSettings } from "../api/attributeSettings";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { formatReferenceOptions } from "../helpers/formatters";
+import {
+  formatReferenceOptions,
+  formatZamershikOptions,
+} from "../helpers/formatters";
 import { Button } from "../../components/ui/button";
 import { useForm } from "react-hook-form";
 import {
@@ -524,7 +527,7 @@ export default function EditOrderPage() {
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
     colorOptions: formatReferenceOptions(colors),
-    zamershikOptions: formatReferenceOptions(zamershiks),
+    zamershikOptions: formatZamershikOptions(zamershiks),
     patinaColorOptions: formatReferenceOptions(patinaColors),
     beadingMainOptions: formatReferenceOptions(
       Array.isArray(beadings)
