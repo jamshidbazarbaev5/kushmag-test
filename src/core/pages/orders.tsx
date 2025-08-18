@@ -1375,7 +1375,7 @@ export default function OrdersPage() {
                     </td>
                   )}
                   {visibleColumns.created_at && (
-                    <td className="px-3 py-2 text-xs text-gray-600">
+                    <td className="px-3 py-2 text-xs font-medium text-black-600">
                       <div
                         className="truncate"
                         title={formatDate(order.created_at)}
@@ -1425,42 +1425,42 @@ export default function OrdersPage() {
                     </td>
                   )}
                   {visibleColumns.total_amount && (
-                    <td className="px-3 py-2 text-right text-sm font-semibold text-green-700">
+                    <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                       {order.total_amount
                         ? Number(order.total_amount).toLocaleString()
                         : "0"}
                     </td>
                   )}
                   {visibleColumns.advance_payment && (
-                    <td className="px-3 py-2 text-right text-sm text-blue-600">
+                    <td className="px-3 py-2 text-right text-sm text-black">
                       {order.advance_payment
                         ? Number(order.advance_payment).toLocaleString()
                         : "0"}
                     </td>
                   )}
                   {visibleColumns.discount_amount && (
-                    <td className="px-3 py-2 text-right text-sm text-orange-600">
+                    <td className="px-3 py-2 text-right text-sm text-black">
                       {order.discount_amount
                         ? Number(order.discount_amount).toLocaleString()
                         : "0"}
                     </td>
                   )}
                   {visibleColumns.discount_percentage && (
-                    <td className="px-3 py-2 text-right text-sm text-purple-600">
+                    <td className="px-3 py-2 text-right text-sm text-black">
                       {order.discount_percentage
                         ? `${order.discount_percentage}%`
                         : "0%"}
                     </td>
                   )}
                   {visibleColumns.agreement_amount && (
-                    <td className="px-3 py-2 text-right text-sm text-indigo-600">
+                    <td className="px-3 py-2 text-right text-sm text-black">
                       {order.agreement_amount
                         ? Number(order.agreement_amount).toLocaleString()
                         : "0"}
                     </td>
                   )}
                   {visibleColumns.remaining_balance && (
-                    <td className="px-3 py-2 text-right text-sm font-medium text-red-700">
+                    <td className="px-3 py-2 text-right text-sm font-medium text-black">
                       {order.remaining_balance
                         ? Number(order.remaining_balance).toLocaleString()
                         : "0"}
@@ -1654,21 +1654,21 @@ export default function OrdersPage() {
                 {visibleColumns.organization && <td className="px-3 py-2"></td>}
                 {visibleColumns.address && <td className="px-3 py-2"></td>}
                 {visibleColumns.total_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                     {Number(
                       pageTotals.total_total_amount || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.advance_payment && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                     {Number(
                       pageTotals.total_advance_payment || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.discount_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                     {Number(
                       pageTotals.total_discount_amount || 0,
                     ).toLocaleString()}
@@ -1683,14 +1683,14 @@ export default function OrdersPage() {
                   </td>
                 )}
                 {visibleColumns.agreement_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                     {Number(
                       pageTotals.total_agreement_amount || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.remaining_balance && (
-                  <td className="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                  <td className="px-3 py-2 text-right text-sm font-semibold text-black">
                     {Number(
                       pageTotals.total_remaining_balance || 0,
                     ).toLocaleString()}
@@ -1741,28 +1741,28 @@ export default function OrdersPage() {
                 {visibleColumns.organization && <td className="px-3 py-2"></td>}
                 {visibleColumns.address && <td className="px-3 py-2"></td>}
                 {visibleColumns.total_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_total_amount || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.advance_payment && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_advance_payment || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.discount_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_discount_amount || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.discount_percentage && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_discount_percentage || 0,
                     ).toFixed(2)}
@@ -1770,14 +1770,14 @@ export default function OrdersPage() {
                   </td>
                 )}
                 {visibleColumns.agreement_amount && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_agreement_amount || 0,
                     ).toLocaleString()}
                   </td>
                 )}
                 {visibleColumns.remaining_balance && (
-                  <td className="px-3 py-2 text-right text-sm font-bold text-blue-900">
+                  <td className="px-3 py-2 text-right text-sm font-bold text-black">
                     {Number(
                       overallTotals.total_remaining_balance || 0,
                     ).toLocaleString()}

@@ -3519,29 +3519,37 @@ function StepThree({
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-black">
                       {priceBreakdown.doors.toFixed(0)} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
-                    <span>{priceBreakdown.extensions.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {priceBreakdown.extensions.toFixed(0)} сум
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
-                    <span>{priceBreakdown.casings.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {priceBreakdown.casings.toFixed(0)} сум
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
-                    <span>{priceBreakdown.crowns.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {priceBreakdown.crowns.toFixed(0)} сум
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
-                    <span>{priceBreakdown.accessories.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {priceBreakdown.accessories.toFixed(0)} сум
+                    </span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
-                    <span className="font-bold">
+                    <span className="font-bold text-black">
                       {totals.total_sum.toFixed(0)} сум
                     </span>
                   </div>
@@ -3694,7 +3702,7 @@ function StepThree({
                       </div>
                     </div>
                     {(discount_percentage > 0 || discountAmountInput > 0) && (
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-black">
                         {t("forms.discount_amount")}:{" "}
                         {discountAmountInput > 0
                           ? discountAmountInput.toFixed(0)
@@ -3791,7 +3799,7 @@ function StepThree({
                       </div>
                     </div>
                     {agreementAmountInput > 0 && (
-                      <p className="text-sm text-blue-600">
+                      <p className="text-sm text-black">
                         {t("forms.agreement_amount")}:{" "}
                         {agreementAmountInput.toFixed(0)} сум
                         <br />
@@ -3807,7 +3815,7 @@ function StepThree({
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
-                  <span className="font-semibold">
+                  <span className="font-semibold text-black">
                     {totals.total_sum.toFixed(0)} сум
                   </span>
                 </div>
@@ -3817,7 +3825,7 @@ function StepThree({
                     <span>
                       {t("forms.discount")} ({discount_percentage || 0}%)
                     </span>
-                    <span>
+                    <span className="text-black">
                       {(
                         (totals.total_sum * (discount_percentage || 0)) /
                         100
@@ -3831,7 +3839,9 @@ function StepThree({
                 {agreementAmountInput > 0 && (
                   <div className="flex justify-between text-purple-600">
                     <span>{t("forms.agreement")}</span>
-                    <span>{agreementAmountInput.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {agreementAmountInput.toFixed(0)} сум
+                    </span>
                   </div>
                 )}
 
@@ -3848,18 +3858,22 @@ function StepThree({
                         : 0}
                       %)
                     </span>
-                    <span>{totals.discountAmount.toFixed(0)} сум</span>
+                    <span className="text-black">
+                      {totals.discountAmount.toFixed(0)} сум
+                    </span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span>{advance.toFixed(0)} сум</span>
+                  <span className="text-black">{advance.toFixed(0)} сум</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t("forms.remaining_balance")}</span>
-                  <span>{totals.remainingBalance.toFixed(0)} сум</span>
+                  <span className="text-black">
+                    {totals.remainingBalance.toFixed(0)} сум
+                  </span>
                 </div>
               </div>
 
