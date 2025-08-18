@@ -163,8 +163,8 @@
     "create_user": "Создать пользователя",
     "measures": "Замеры",
     "create_measure": "Создать замер",
-    "monthly_salaries": "Месячные зарплаты",
-    "yearly_plans": "Годовые планы",
+    "monthly_salaries": "Зарплаты",
+    "yearly_plans": "Годовой план",
     "price_settings": "Настройки цен"
   },
   "settings": {

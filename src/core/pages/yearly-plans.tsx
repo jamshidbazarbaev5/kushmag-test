@@ -338,7 +338,6 @@ export default function YearlyPlansPage() {
                       <TrendingDown className="w-4 h-4 text-red-600" />
                     )}
                   </div>
-                
                 </div>
                 <PerformanceGauge
                   percentage={enhancedStats.overallPerformance}
@@ -557,7 +556,7 @@ export default function YearlyPlansPage() {
 
                     <div className="flex items-center gap-4 ml-4">
                       <div className="text-xs text-gray-600 font-medium">
-                        {t('forms.performance')}
+                        {t("forms.performance")}
                       </div>
                       <div className="flex items-center gap-2 px-2 py-1 bg-green-100 rounded-full">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -705,47 +704,47 @@ export default function YearlyPlansPage() {
                     </Button>
                   </div> */}
 
-                {/* Role Filter for Daily Plans - Only show for admin users */}
-                {isAdmin && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-600">
-                      {/* {t("forms.role")}: */}
-                    </span>
-                    <Select
-                      value={selectedRole || "all"}
-                      onValueChange={(value) =>
-                        setSelectedRole(value === "all" ? "" : value)
-                      }
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue
-                          placeholder={t("placeholders.select_role")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t("common.all")}</SelectItem>
-                        <SelectItem value="ADMIN">
-                          {t("roles.admin")}
-                        </SelectItem>
-                        <SelectItem value="PRODAVEC">
-                          {t("roles.prodavec")}
-                        </SelectItem>
-                        <SelectItem value="ZAMERSHIK">
-                          {t("roles.zamershik")}
-                        </SelectItem>
-                        <SelectItem value="OPERATOR">
-                          {t("roles.operator")}
-                        </SelectItem>
-                        <SelectItem value="SOTRUDNIK">
-                          {t("roles.sotrudnik")}
-                        </SelectItem>
-                        <SelectItem value="MANUFACTURE">
-                          {t("roles.manufacture")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                  {/* Role Filter for Daily Plans - Only show for admin users */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-600">
+                        {/* {t("forms.role")}: */}
+                      </span>
+                      <Select
+                        value={selectedRole || "all"}
+                        onValueChange={(value) =>
+                          setSelectedRole(value === "all" ? "" : value)
+                        }
+                      >
+                        <SelectTrigger className="w-40">
+                          <SelectValue
+                            placeholder={t("placeholders.select_role")}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">{t("common.all")}</SelectItem>
+                          <SelectItem value="ADMIN">
+                            {t("roles.admin")}
+                          </SelectItem>
+                          <SelectItem value="PRODAVEC">
+                            {t("roles.prodavec")}
+                          </SelectItem>
+                          <SelectItem value="ZAMERSHIK">
+                            {t("roles.zamershik")}
+                          </SelectItem>
+                          <SelectItem value="OPERATOR">
+                            {t("roles.operator")}
+                          </SelectItem>
+                          <SelectItem value="SOTRUDNIK">
+                            {t("roles.sotrudnik")}
+                          </SelectItem>
+                          <SelectItem value="MANUFACTURE">
+                            {t("roles.manufacture")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </div>
 
                 {/* User Search for Daily Plans
@@ -758,7 +757,6 @@ export default function YearlyPlansPage() {
                     className="flex-1"
                   />
                 </div> */}
-
               </div>
 
               {/* <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
