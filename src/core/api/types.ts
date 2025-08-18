@@ -9,7 +9,13 @@ export interface Product {
   };
 }
 
-export type AccessoryType = 'cube' | 'leg' | 'glass' | 'lock' | 'topsa' | 'beading';
+export type AccessoryType =
+  | "cube"
+  | "leg"
+  | "glass"
+  | "lock"
+  | "topsa"
+  | "beading";
 
 export interface Accessory {
   id: string;
@@ -53,7 +59,7 @@ export interface PatinaColor {
 export interface Beading {
   id: number;
   name: string;
-  type: 'main' | 'additional';
+  type: "main" | "additional";
 }
 
 export interface GlassType {
@@ -93,4 +99,24 @@ export interface MonthlySalary {
     fixed_salary: number;
     order_percentage: number;
   };
+}
+
+export interface Frame {
+  id: number;
+  name: string;
+}
+
+export interface Cladding {
+  id: number;
+  name: string;
+}
+
+export interface Lock {
+  id: number;
+  name: string;
+}
+
+export interface SteelColor {
+  id: number;
+  name: string;
 }

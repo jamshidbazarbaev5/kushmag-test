@@ -139,11 +139,13 @@
   "navigation": {
     "orders": "Заказы",
     "daily_plans": "Ежедневные планы",
-
+    "steel_colors": "Цвета стали",
+    "frames":"Коробка",
+    "claddings": "Общибка",
     "sales_overview": "Зарплата",
     "attribute_settings": "Настройки атрибутов",
     "casing_ranges": "Диапазоны наличников",
-
+    "locks": "Замок",
     "beadings": "Штапик",
     "colors": "Цвета",
     "materials": "Материалы",
@@ -250,6 +252,10 @@
   },
 
   "forms": {
+    "steel_color_name": "Название цвета стали",
+    "cladding_name": "Название обшивки",
+    "frame_name": "Название коробки",
+    "lock_name": "Название замка",
     "remove": "Удалить таблицу",
     "remove_table": "Удалить таблицу",
     "achievment": "Достижение",
@@ -602,6 +608,10 @@
     "error_sending_to_moy_sklad": "Ошибка при отправке заказа в Мой Склад"
   },
   "placeholders": {
+    "search_frame": "Поиск коробки",
+    "search_cladding": "Поиск общибки",
+    "search_lock": "Поиск замоков",
+    "search_steel_color": "Поиск цвета стали",
     "search_doors": "Поиск двери",
     "select_crown_model": "Выберите модель короны",
     "select_casing_model": "Поиск модели наличника",

@@ -555,7 +555,7 @@ export default function EditMeasure() {
                       <TableCell>
                         <Input
                           placeholder="W"
-                          type="number"
+                          type="text"
                           value={door.width}
                           onChange={(e) =>
                             handleDoorChange(idx, "width", e.target.value)
@@ -566,7 +566,7 @@ export default function EditMeasure() {
                       <TableCell>
                         <Input
                           placeholder="H"
-                          type="number"
+                          type="text"
                           value={door.height}
                           onChange={(e) =>
                             handleDoorChange(idx, "height", e.target.value)
@@ -577,7 +577,7 @@ export default function EditMeasure() {
                       <TableCell>
                         <Input
                           placeholder="Qty"
-                          type="number"
+                          type="text"
                           value={door.quantity}
                           onChange={(e) =>
                             handleDoorChange(idx, "quantity", e.target.value)
@@ -739,7 +739,7 @@ export default function EditMeasure() {
                                 >
                                   <Input
                                     placeholder="W"
-                                    type="number"
+                                    type="text"
                                     value={ext.width}
                                     onChange={(e) =>
                                       handleExtensionChange(
@@ -753,7 +753,7 @@ export default function EditMeasure() {
                                   />
                                   <Input
                                     placeholder="H"
-                                    type="number"
+                                    type="text"
                                     value={ext.height}
                                     onChange={(e) =>
                                       handleExtensionChange(
@@ -767,7 +767,7 @@ export default function EditMeasure() {
                                   />
                                   <Input
                                     placeholder="Q"
-                                    type="number"
+                                    type="text"
                                     value={ext.quantity}
                                     onChange={(e) =>
                                       handleExtensionChange(
@@ -829,7 +829,7 @@ export default function EditMeasure() {
                                 >
                                   <Input
                                     placeholder="Qty"
-                                    type="number"
+                                    type="text"
                                     value={crown.quantity}
                                     onChange={(e) =>
                                       handleCrownChange(
