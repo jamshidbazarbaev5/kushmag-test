@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 
-import { useGetUsers } from "../api/user";
+import { useGetAllUsers } from "../api/user";
 import EditableConsolidatedSalesPlanTable from "@/components/EditableConsolidatedSalesPlanTable";
 import {
   useGetYearlyPlans,
@@ -63,7 +63,7 @@ export default function YearlyPlansPage() {
   const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
   const [userSearchTerm] = useState<string>("");
 
-  const { data: users } = useGetUsers();
+  const { data: users } = useGetAllUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
     params: {
       year: 2025,
@@ -81,7 +81,7 @@ export default function YearlyPlansPage() {
   const { mutate: createYearlyPlan } = useCreateYearlyPlan();
   const { mutate: updateYearlyPlan } = useUpdateYearlyPlan();
 
-  const usersList = Array.isArray(users) ? users : users?.results || [];
+  const usersList = users || [];
   const plansList = Array.isArray(yearlyPlans)
     ? yearlyPlans
     : yearlyPlans?.results || [];

@@ -6,7 +6,7 @@ import {
   useUpdateMonthlySalary,
   useDeleteMonthlySalary,
 } from "../api/monthlySalary";
-import { useGetUsers, useCreateUser } from "../api/user";
+import { useGetAllUsers, useCreateUser } from "../api/user";
 import type { MonthlySalary } from "../api/types";
 import type { User } from "../api/user";
 import {
@@ -69,9 +69,7 @@ export default function MonthlySalariesPage() {
     },
   }) as { data: MonthlySalary[] | undefined; isLoading: boolean };
 
-  const { data: usersData } = useGetUsers() as {
-    data: User[] | { results: User[] } | undefined;
-  };
+  const { data: usersData } = useGetAllUsers();
 
   const { mutate: createMonthlySalary, isPending: isCreating } =
     useCreateMonthlySalary();
@@ -81,12 +79,7 @@ export default function MonthlySalariesPage() {
   const { mutate: createUser } = useCreateUser();
 
   const monthlySalaries = monthlySalariesData || [];
-  const users =
-    !Array.isArray(usersData) && usersData?.results
-      ? usersData.results
-      : Array.isArray(usersData)
-        ? usersData
-        : [];
+  const users = usersData || [];
 
   // Chart colors
 

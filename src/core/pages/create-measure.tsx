@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ResourceForm } from '../helpers/ResourceForm';
 import { toast } from 'sonner';
 // import { useCreateMeasure } from '../api/measure';
-import { useGetUsers } from '../api/user';
+import { useGetAllUsers } from '../api/user';
 import { useCreateMeasure } from '../api/measure';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 
@@ -17,10 +17,9 @@ export default function CreateMeasurePage() {
   const { data: currentUser } = useCurrentUser();
   
   // Fetch all users and filter zamershiks
-  const { data: usersData } = useGetUsers();
+  const { data: usersData } = useGetAllUsers();
 
-  const zamershiks = (Array.isArray(usersData) ? usersData : usersData?.results || [])
-    .filter(user => user.role === 'ZAMERSHIK');
+  const zamershiks = (usersData || []).filter((user: any) => user.role === 'ZAMERSHIK');
 
   // Check if current user is a zamershik
   const isCurrentUserZamershik = currentUser?.role === 'ZAMERSHIK';

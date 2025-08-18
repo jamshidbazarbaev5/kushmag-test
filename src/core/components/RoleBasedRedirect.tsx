@@ -12,6 +12,8 @@ export default function RoleBasedRedirect() {
       if (
         currentUser.role === "ADMIN" ||
         currentUser.role === "MANUFACTURE" ||
+        currentUser.role === "PRODAVEC" ||
+            currentUser.role === "OPERATOR" ||
         currentUser.is_superuser
       ) {
         navigate("/orders", { replace: true });

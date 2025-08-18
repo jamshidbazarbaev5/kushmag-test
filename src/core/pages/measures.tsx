@@ -6,7 +6,7 @@ import {
   useExportMeasure,
 } from "../api/measure";
 import { toast } from "sonner";
-import { useGetUsers } from "../api/user";
+import { useGetAllUsers } from "../api/user";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { ResourceTable } from "../helpers/ResourceTable";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,7 @@ export default function MeasuresPage() {
   } = useGetMeasures({
     params: buildQueryParams(),
   });
-  const { data: users } = useGetUsers();
+  const { data: users } = useGetAllUsers();
   const { mutate: deleteMeasure } = useDeleteMeasure();
   const { mutate: exportMeasure } = useExportMeasure();
 
@@ -89,12 +89,7 @@ export default function MeasuresPage() {
     : (measuresData as { count: number })?.count || 0;
 
   // Get filtered users based on role
-  const zamershikUsers =
-    !Array.isArray(users) && users?.results
-      ? users.results.filter((user: any) => user.role === "ZAMERSHIK")
-      : Array.isArray(users)
-        ? users.filter((user: any) => user.role === "ZAMERSHIK")
-        : [];
+  const zamershikUsers = (users || []).filter((user: any) => user.role === "ZAMERSHIK");
 
   const handleFilterChange = (key: string, value: string) => {
     // Convert "all" back to empty string for API
