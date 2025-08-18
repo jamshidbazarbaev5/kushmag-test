@@ -804,6 +804,7 @@ export default function EditOrderPage() {
     const orderUpdateData = {
       ...data,
       id: orderData?.id,
+    
       // Map IDs to full meta objects for the API
       // rate: getMetaById(currencies, data.rate),
       created_at: new Date(),

@@ -126,6 +126,7 @@ export default function CreateOrderPage() {
     : attributeSettings?.results || [];
   const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
   const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
+  const casingFormula = attributeSettingsArray[0]?.casing_formula ?? true; // Default to true (Formula 1)
   // Extract measure ID from URL params or query params
   // Supports both: /orders/create-from-measure/:measureId and /orders/create?measure_id=123
   const searchParams = new URLSearchParams(location.search);
@@ -147,6 +148,7 @@ export default function CreateOrderPage() {
     remainingBalance: 0,
   });
   const [measureProcessed, setMeasureProcessed] = useState(false);
+  const [measureDoors, setMeasureDoors] = useState<any[]>([]);
   const [discountAmount, setDiscountAmount] = useState<string>("");
   const [discountPercentage, setDiscountPercentage] = useState<string>("");
   const [advancePayment, setAdvancePayment] = useState<string>("");
@@ -233,7 +235,7 @@ export default function CreateOrderPage() {
                 height: casing.height || 0,
                 width: casing.width || 0,
                 casing_type: casing.casing_type || "",
-                casing_formula: casing.casing_formula || "",
+                casing_formula: casingFormula ? "formula1" : "formula2",
                 casing_range: casing.casing_range?.id
                   ? String(casing.casing_range.id)
                   : "",
@@ -251,7 +253,7 @@ export default function CreateOrderPage() {
                 height: 0,
                 width: 0,
                 casing_type: isFirst ? "боковой" : "прямой",
-                casing_formula: "formula1",
+                casing_formula: casingFormula ? "formula1" : "formula2",
                 casing_range: "",
               });
             }
@@ -290,7 +292,8 @@ export default function CreateOrderPage() {
           measureDoor: measureDoor,
           isFromMeasure: true, // Flag to identify doors from measure
         }));
-        setDoors(measureDoors);
+        // Store measure doors separately to pass to StepTwo
+        setMeasureDoors(measureDoors);
 
         // Debug logging to check if glass_type and threshold are being set
         console.log("Measure doors created:", measureDoors);
@@ -846,6 +849,9 @@ export default function CreateOrderPage() {
             orderForm={orderForm}
             casingSize={casingSize}
             crownSize={crownSize}
+            casingFormula={casingFormula}
+            measureDoors={measureDoors}
+            measureProcessed={measureProcessed}
           />
 
           {currentUser?.role !== "MANUFACTURE" && (
@@ -958,10 +964,14 @@ function StepTwo({
   orderForm,
   casingSize,
   crownSize,
+  casingFormula,
+  measureDoors,
+  measureProcessed,
 }: any) {
   const { t } = useTranslation();
 
   // Tables state - each table has its own door model, doors array, and search states
+  const [tablesInitialized, setTablesInitialized] = useState(false);
   const [tables, setTables] = useState([
     {
       id: 1,
@@ -995,6 +1005,52 @@ function StepTwo({
 
   // Remove currentTable and currentDoors as we're displaying all tables
 
+  // Function to calculate casing dimensions based on formula and type
+  const calculateCasingDimensions = (
+    casing: any,
+    doorData: any,
+    fieldOptions: any,
+    casingSize: number,
+  ) => {
+    if (!doorData) return casing;
+    const convertToNumber = (value: any, defaultValue: number = 0) => {
+      if (typeof value === "number") return value;
+      if (typeof value === "string") {
+        const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+        if (normalized === "" || normalized === ".") return defaultValue;
+        const parsed = parseFloat(normalized);
+        return isNaN(parsed) ? defaultValue : parsed;
+      }
+      return defaultValue;
+    };
+
+    const doorWidth = convertToNumber(doorData.width, 0);
+    const doorHeight = convertToNumber(doorData.height, 0);
+
+    // Auto-calculate height based on formula
+    if (!casingFormula && casing.casing_range) {
+      // Formula 2: Use casing ranges
+      const selectedRange = fieldOptions.casingRangeOptions?.find(
+        (range: any) => range.value === String(casing.casing_range),
+      );
+      if (selectedRange && selectedRange.casing_size !== undefined) {
+        casing.height = selectedRange.casing_size;
+      }
+    } else {
+      // Formula 1: Calculate based on door dimensions
+      if (casing.casing_type === "боковой") {
+        casing.height = doorHeight + casingSize;
+      } else if (casing.casing_type === "прямой") {
+        casing.height = doorWidth + 2 * casingSize;
+      }
+    }
+
+    // Always set width to casingSize for casings
+    casing.width = casingSize;
+
+    return casing;
+  };
+
   // Sync doors with parent component
   useEffect(() => {
     // Flatten all doors from all tables
@@ -1002,17 +1058,62 @@ function StepTwo({
     setDoors(allDoors);
   }, [tables]);
 
-  // Initialize tables with existing doors
+  // Initialize tables with measure doors when available, or with existing doors
   useEffect(() => {
-    if (doors && doors.length > 0 && tables[0].doors.length === 0) {
-      setTables([
-        {
-          ...tables[0],
-          doors: doors,
-        },
-      ]);
+    if (tables[0].doors.length === 0 && !tablesInitialized) {
+      if (measureDoors && measureDoors.length > 0 && measureProcessed) {
+        // Use measure doors if available and calculate casing dimensions and crown widths
+        const doorsWithCalculations = measureDoors.map((door: any) => {
+          const convertToNumber = (value: any, defaultValue: number = 0) => {
+            if (typeof value === "number") return value;
+            if (typeof value === "string") {
+              const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+              if (normalized === "" || normalized === ".") return defaultValue;
+              const parsed = parseFloat(normalized);
+              return isNaN(parsed) ? defaultValue : parsed;
+            }
+            return defaultValue;
+          };
+
+          return {
+            ...door,
+            casings: door.casings?.map((casing: any) =>
+              calculateCasingDimensions(
+                { ...casing },
+                door,
+                fieldOptions,
+                casingSize,
+              ),
+            ) || [],
+            crowns: door.crowns?.map((crown: any) => ({
+              ...crown,
+              width: convertToNumber(door.width, 0) + (crownSize || 0),
+            })) || [],
+          };
+        });
+
+        setTables([
+          {
+            ...tables[0],
+            doors: doorsWithCalculations,
+          },
+        ]);
+        setTablesInitialized(true);
+      } else if (doors && doors.length > 0) {
+        // Fallback to existing doors
+        setTables([
+          {
+            ...tables[0],
+            doors: doors,
+          },
+        ]);
+        setTablesInitialized(true);
+      }
     }
-  }, [doors]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [measureDoors, measureProcessed, doors, tablesInitialized]);
+
+
 
   // Helper function to auto-apply selected product to specific table
   const autoApplyProductToTable = (
@@ -1185,7 +1286,7 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "боковой",
-        casing_formula: "formula1",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1200,7 +1301,7 @@ function StepTwo({
           : 0,
         quantity: 1,
         casing_type: "прямой",
-        casing_formula: "formula1",
+        casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
         height: 0,
         width: casingSize,
@@ -1503,51 +1604,7 @@ function StepTwo({
     setTables(updatedTables);
   };
 
-  // Function to calculate casing dimensions based on formula and type
-  const calculateCasingDimensions = (
-    casing: any,
-    doorData: any,
-    fieldOptions: any,
-    casingSize: number,
-  ) => {
-    if (!doorData) return casing;
-    const convertToNumber = (value: any, defaultValue: number = 0) => {
-      if (typeof value === "number") return value;
-      if (typeof value === "string") {
-        const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
-        if (normalized === "" || normalized === ".") return defaultValue;
-        const parsed = parseFloat(normalized);
-        return isNaN(parsed) ? defaultValue : parsed;
-      }
-      return defaultValue;
-    };
 
-    const doorWidth = convertToNumber(doorData.width, 0);
-    const doorHeight = convertToNumber(doorData.height, 0);
-
-    // Auto-calculate height based on formula
-    if (casing.casing_formula === "formula2" && casing.casing_range) {
-      // Find the selected casing range object to get its casing_size
-      const selectedRange = fieldOptions.casingRangeOptions?.find(
-        (range: any) => range.value === String(casing.casing_range),
-      );
-      if (selectedRange && selectedRange.casing_size !== undefined) {
-        casing.height = selectedRange.casing_size;
-      }
-    } else if (casing.casing_formula === "formula1" || !casing.casing_formula) {
-      // Original logic using door dimensions
-      if (casing.casing_type === "боковой") {
-        casing.height = doorHeight + casingSize;
-      } else if (casing.casing_type === "прямой") {
-        casing.height = doorWidth + 2 * casingSize;
-      }
-    }
-
-    // Always set width to casingSize for casings
-    casing.width = casingSize;
-
-    return casing;
-  };
 
   const getProductName = (modelId: string | any) => {
     if (typeof modelId === "object" && modelId !== null) {
@@ -2400,9 +2457,7 @@ function StepTwo({
                                         className="h-8"
                                         placeholder="Auto-calc"
                                         title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                        disabled={
-                                          casing.casing_formula === "formula2"
-                                        }
+                                        disabled={!casingFormula}
                                       />
                                     </div>
                                     {/* <div>
@@ -2456,7 +2511,7 @@ function StepTwo({
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                    {casing.casing_formula === "formula2" && (
+                                    {!casingFormula && (
                                       <div>
                                         <label className="text-xs text-gray-600">
                                           Диапазон
