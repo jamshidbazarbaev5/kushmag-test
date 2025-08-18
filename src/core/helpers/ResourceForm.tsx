@@ -310,7 +310,17 @@ export function ResourceForm<T extends Record<string, any>>({
                                 "searchable-resource-select" ? (
                                 <SearchableResourceSelect
                                   value={formField.value}
-                                  onChange={formField.onChange}
+                                  onChange={(selectedValue) => {
+                                    console.log(
+                                      "ResourceForm - SearchableResourceSelect onChange called:",
+                                      { fieldName: field.name, selectedValue },
+                                    );
+                                    formField.onChange(selectedValue);
+                                    console.log(
+                                      "ResourceForm - formField.onChange completed for:",
+                                      field.name,
+                                    );
+                                  }}
                                   placeholder={field.placeholder}
                                   resourceType={
                                     field.resourceType || "materials"

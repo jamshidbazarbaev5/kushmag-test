@@ -650,6 +650,7 @@ export default function CreateOrderPage() {
       salesChannel: getMetaById(salesChannels, data.salesChannel),
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
+
       branch: getMetaById(branches, data.branch),
       // Hydrate door data with full product info and add price_type
       doors: doors.map((door: any) => {

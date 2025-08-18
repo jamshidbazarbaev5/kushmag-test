@@ -55,6 +55,14 @@ export function SearchableResourceSelect({
 }: SearchableResourceSelectProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Debug logging
+  console.log(`SearchableResourceSelect [${resourceType}]:`, {
+    value,
+    disabled,
+    placeholder,
+    searchTerm,
+  });
+
   // Map resource types to their corresponding hooks
   const useResourceHook = useMemo(() => {
     switch (resourceType) {
@@ -108,19 +116,44 @@ export function SearchableResourceSelect({
 
   // Format options for the select component
   const options = useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
-    return formatSearchableOptions(data);
-  }, [data]);
+    if (!data || !Array.isArray(data)) {
+      console.log(
+        `SearchableResourceSelect [${resourceType}] - No data:`,
+        data,
+      );
+      return [];
+    }
+    const formattedOptions = formatSearchableOptions(data);
+    console.log(
+      `SearchableResourceSelect [${resourceType}] - Options:`,
+      formattedOptions,
+    );
+    return formattedOptions;
+  }, [data, resourceType]);
 
   // Handle errors
   if (error) {
     console.error(`Error loading ${resourceType}:`, error);
   }
 
+  // Debug loading state
+  console.log(
+    `SearchableResourceSelect [${resourceType}] - Loading:`,
+    isLoading,
+  );
+
   return (
     <SearchableSelect
       value={value}
-      onChange={onChange}
+      onChange={(selectedValue) => {
+        console.log(
+          "SearchableResourceSelect - onChange called with:",
+          selectedValue,
+        );
+        console.log("SearchableResourceSelect - Calling parent onChange");
+        onChange(selectedValue);
+        console.log("SearchableResourceSelect - Parent onChange completed");
+      }}
       placeholder={placeholder}
       options={options}
       onSearch={handleSearch}

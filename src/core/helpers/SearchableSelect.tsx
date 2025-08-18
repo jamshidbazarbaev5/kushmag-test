@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
-import { Check, ChevronDown, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect, useRef } from 'react';
+import { Input } from '../../components/ui/input';
+import { Button } from '../../components/ui/button';
+import { Check, ChevronDown, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Option {
   value: string | number;
@@ -32,31 +31,23 @@ export function SearchableSelect({
   className,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<Option[]>(options);
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setSearchTerm("");
+        setSearchTerm('');
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -65,8 +56,8 @@ export function SearchableSelect({
     if (!searchTerm) {
       setFilteredOptions(options);
     } else {
-      const filtered = options.filter((option) =>
-        option.label.toLowerCase().includes(searchTerm.toLowerCase()),
+      const filtered = options.filter(option =>
+        option.label.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredOptions(filtered);
     }
@@ -87,28 +78,13 @@ export function SearchableSelect({
   const handleOptionSelect = (option: Option) => {
     onChange(option.value);
     setIsOpen(false);
-    setSearchTerm("");
-  };
-
-  // Update dropdown position
-  const updateDropdownPosition = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
-    }
+    setSearchTerm('');
   };
 
   // Handle dropdown toggle
   const handleToggle = () => {
     if (disabled) return;
 
-    if (!isOpen) {
-      updateDropdownPosition();
-    }
     setIsOpen(!isOpen);
 
     // Focus search input when opening
@@ -119,100 +95,17 @@ export function SearchableSelect({
     }
   };
 
-  // Update position on scroll/resize
-  useEffect(() => {
-    if (isOpen) {
-      const handleResize = () => updateDropdownPosition();
-      const handleScroll = () => updateDropdownPosition();
-
-      window.addEventListener("resize", handleResize);
-      window.addEventListener("scroll", handleScroll, true);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        window.removeEventListener("scroll", handleScroll, true);
-      };
-    }
-  }, [isOpen]);
-
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       setIsOpen(false);
-      setSearchTerm("");
+      setSearchTerm('');
     }
   };
 
   // Get display value
-  const selectedOption = options.find((option) => option.value === value);
-  const displayValue = selectedOption ? selectedOption.label : "";
-
-  // Render dropdown content
-  const renderDropdown = () => {
-    if (!isOpen) return null;
-
-    return createPortal(
-      <div
-        className="fixed bg-white border border-gray-200 rounded-md shadow-lg max-h-96 overflow-hidden"
-        style={{
-          top: dropdownPosition.top,
-          left: dropdownPosition.left,
-          width: dropdownPosition.width,
-          zIndex: 9999,
-        }}
-      >
-        {/* Search Input */}
-        <div className="p-2 border-b border-gray-100">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyDown={handleKeyDown}
-              className="pl-8 h-8 text-sm"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-
-        {/* Options List */}
-        <div className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-          {isLoading ? (
-            <div className="p-3 text-center text-gray-500 flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-              Loading...
-            </div>
-          ) : filteredOptions.length > 0 ? (
-            filteredOptions.map((option) => (
-              <div
-                key={option.value}
-                className={cn(
-                  "relative flex cursor-pointer select-none items-center px-3 py-2 text-sm hover:bg-gray-100",
-                  value === option.value && "bg-blue-50 text-blue-600",
-                )}
-                onClick={() => handleOptionSelect(option)}
-              >
-                <span className="truncate">{option.label}</span>
-                {value === option.value && (
-                  <Check className="ml-auto h-4 w-4" />
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="p-3 text-center text-gray-500 text-sm">
-              {searchTerm
-                ? `No results for "${searchTerm}"`
-                : "No options available"}
-            </div>
-          )}
-        </div>
-      </div>,
-      document.body,
-    );
-  };
+  const selectedOption = options.find(option => option.value === value);
+  const displayValue = selectedOption ? selectedOption.label : '';
 
   return (
     <div className={cn("relative", className)} ref={containerRef}>
@@ -225,22 +118,73 @@ export function SearchableSelect({
         className={cn(
           "w-full justify-between h-10 px-3 py-2 text-sm",
           !displayValue && "text-muted-foreground",
-          disabled && "opacity-50 cursor-not-allowed",
+          disabled && "opacity-50 cursor-not-allowed"
         )}
         onClick={handleToggle}
         disabled={disabled}
       >
-        <span className="truncate">{displayValue || placeholder}</span>
+        <span className="truncate">
+          {displayValue || placeholder}
+        </span>
         <ChevronDown
           className={cn(
             "ml-2 h-4 w-4 shrink-0 opacity-50 transition-transform",
-            isOpen && "rotate-180",
+            isOpen && "rotate-180"
           )}
         />
       </Button>
 
-      {/* Render dropdown using portal */}
-      {renderDropdown()}
+      {/* Dropdown */}
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+          {/* Search Input */}
+          <div className="p-2 border-b border-gray-100">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onKeyDown={handleKeyDown}
+                className="pl-8 h-8 text-sm"
+                autoComplete="off"
+              />
+            </div>
+          </div>
+
+          {/* Options List */}
+          <div className="max-h-60 overflow-auto">
+            {isLoading ? (
+              <div className="p-3 text-center text-gray-500 flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                Loading...
+              </div>
+            ) : filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <div
+                  key={option.value}
+                  className={cn(
+                    "relative flex cursor-pointer select-none items-center px-3 py-2 text-sm hover:bg-gray-100",
+                    value === option.value && "bg-blue-50 text-blue-600"
+                  )}
+                  onClick={() => handleOptionSelect(option)}
+                >
+                  <span className="truncate">{option.label}</span>
+                  {value === option.value && (
+                    <Check className="ml-auto h-4 w-4" />
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="p-3 text-center text-gray-500 text-sm">
+                {searchTerm ? `No results for "${searchTerm}"` : 'No options available'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
