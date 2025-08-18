@@ -207,7 +207,7 @@ export default function CreateOrderPage() {
       } else {
         clearAllDrafts();
         // Set default value for beading_additional
-        orderForm.setValue("beading_additional", "2");
+        orderForm.setValue("beading_additional", null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -743,6 +743,7 @@ export default function CreateOrderPage() {
       remaining_balance: remainingBalance.toFixed(2),
       agreement_amount: agreementAmountInput.toFixed(2),
       beading_additional: data.beading_additional,
+      discount_percentage: convertToNumber(data.discount_percentage, 0),
     };
 
     createOrder(orderData, {
@@ -1222,7 +1223,7 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: orderData.beading_additional || "2",
+      beading_additional: orderData.beading_additional || null,
       glass_type: "",
       threshold: "",
       paska_orin: [],
@@ -1280,7 +1281,7 @@ function StepTwo({
           color: color || "",
           patina_color: patina_color || "",
           beading_main: beading_main || "",
-          beading_additional: beading_additional || "2",
+          beading_additional: beading_additional || null,
         })),
       }));
 
@@ -1314,19 +1315,7 @@ function StepTwo({
     setTables(updatedTables);
   };
 
-  // Function to remove the last door from a table
-  const handleRemoveLastDoor = (tableId: number) => {
-    const updatedTables = tables.map((table) => {
-      if (table.id === tableId && table.doors.length > 0) {
-        return {
-          ...table,
-          doors: table.doors.slice(0, -1), // Remove the last door
-        };
-      }
-      return table;
-    });
-    setTables(updatedTables);
-  };
+
 
   // Real-time field change handler - updates doors directly in tables
   const handleFieldChange = (
@@ -1744,7 +1733,7 @@ function StepTwo({
                                   patina_color: orderData.patina_color || "",
                                   beading_main: orderData.beading_main || "",
                                   beading_additional:
-                                    orderData.beading_additional || "2",
+                                    orderData.beading_additional || null,
                                   glass_type: "",
                                   threshold: "",
                                   paska_orin: [],
@@ -1772,16 +1761,7 @@ function StepTwo({
                   </div>
                 </div>
 
-                {tables.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveTable(table.id)}
-                    className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                  >
-                    ×
-                  </Button>
-                )}
+              
               </div>
               {/* {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
@@ -3014,17 +2994,18 @@ function StepTwo({
                   <Plus className="h-5 w-5" />
                   {t("forms.add_row")}
                 </Button>
-                <Button
-                  onClick={() => {
-                    handleRemoveLastDoor(table.id);
-                  }}
-                  variant="destructive"
-                  className="flex items-center gap-2"
-                  disabled={table.doors.length === 0}
-                >
-                  <Trash2 className="h-5 w-5" />
-                  {t("forms.remove")}
-                </Button>
+                 {tables.length > 1 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRemoveTable(table.id)}
+                    className="h-8 flex items-center gap-1 px-2 text-white bg-red-600 hover:bg-red-700"
+                    title="Удалить всю таблицу"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span className="text-xs">Удалить</span>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
