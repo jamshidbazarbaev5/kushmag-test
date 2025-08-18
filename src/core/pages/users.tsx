@@ -43,19 +43,20 @@ export default function UsersPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const { t } = useTranslation();
 
   const { data: usersData, isLoading } = useGetUsers({
     params: {
       search: searchTerm,
+      page: currentPage,
     },
   });
 
   const users = Array.isArray(usersData) ? usersData : usersData?.results || [];
-  const enhancedUsers = users.map((user: User, index: number) => ({
-    ...user,
-    displayId: index + 1,
-  }));
+  const totalCount = Array.isArray(usersData)
+    ? usersData.length
+    : usersData?.count || 0;
 
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const { mutate: deleteUser } = useDeleteUser();
@@ -107,17 +108,24 @@ export default function UsersPage() {
           placeholder={t("placeholders.search_user")}
           className="w-full p-2 border rounded"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
       <ResourceTable
-        data={enhancedUsers}
+        data={users}
         columns={columns(t)}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onAdd={() => navigate("/create-user")}
+        totalCount={totalCount}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        pageSize={10}
       />
 
       <EditUserModal

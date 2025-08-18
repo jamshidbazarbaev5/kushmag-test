@@ -199,7 +199,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                           </div>
                         </div>
                         {newMeasuresCount > 0 &&
-                          currentUser?.role !== "MANUFACTURE" && (
+                          currentUser?.role !== "MANUFACTURE" &&
+                          currentUser?.role !== "PRODAVEC" &&
+                          currentUser?.role !== "OPERATOR" && (
                             <div className="mt-3 p-2 bg-red-50 rounded-lg">
                               <div className="text-xs font-medium text-red-600 mb-1">
                                 New Measures
@@ -276,9 +278,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Main Navigation Items */}
           <div className="flex items-center gap-4">
-            {/* Orders - for ADMIN and MANUFACTURE */}
+            {/* Orders - for ADMIN, MANUFACTURE, PRODAVEC and OPERATOR */}
             {(currentUser?.role === "ADMIN" ||
-              currentUser?.role === "MANUFACTURE") && (
+              currentUser?.role === "MANUFACTURE" ||
+              currentUser?.role === "PRODAVEC" ||
+              currentUser?.role === "OPERATOR") && (
               <a
                 href="/orders"
                 onClick={(e) => {
@@ -303,36 +307,40 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </a>
             )}
 
-            {/* Measures - available for all roles except MANUFACTURE */}
-            {currentUser?.role !== "MANUFACTURE" && (
-              <a
-                href="/measures"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/measures");
-                }}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                  location.pathname === "/measures"
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
-                    : "text-sidebar-foreground hover:bg-gray-50"
-                }`}
-              >
-                <Package
-                  size={16}
-                  className={
+            {/* Measures - available for all roles except MANUFACTURE, PRODAVEC and OPERATOR */}
+            {currentUser?.role !== "MANUFACTURE" &&
+              currentUser?.role !== "PRODAVEC" &&
+              currentUser?.role !== "OPERATOR" && (
+                <a
+                  href="/measures"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/measures");
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                     location.pathname === "/measures"
-                      ? "text-emerald-500"
-                      : "text-gray-500"
-                  }
-                />
-                <span className="font-medium">{t("navigation.measures")}</span>
-                {newMeasuresCount > 0 && (
-                  <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
-                    {newMeasuresCount}
-                  </div>
-                )}
-              </a>
-            )}
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground underline"
+                      : "text-sidebar-foreground hover:bg-gray-50"
+                  }`}
+                >
+                  <Package
+                    size={16}
+                    className={
+                      location.pathname === "/measures"
+                        ? "text-emerald-500"
+                        : "text-gray-500"
+                    }
+                  />
+                  <span className="font-medium">
+                    {t("navigation.measures")}
+                  </span>
+                  {newMeasuresCount > 0 && (
+                    <div className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
+                      {newMeasuresCount}
+                    </div>
+                  )}
+                </a>
+              )}
             {(currentUser?.role === "ZAMERSHIK" ||
               currentUser?.role === "PRODAVEC" ||
               currentUser?.role === "OPERATOR" ||
@@ -609,7 +617,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <User size={18} className="text-emerald-600" />
                 </div>
                 {newMeasuresCount > 0 &&
-                  currentUser?.role !== "MANUFACTURE" && (
+                  currentUser?.role !== "MANUFACTURE" &&
+                  currentUser?.role !== "PRODAVEC" &&
+                  currentUser?.role !== "OPERATOR" && (
                     <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                       {newMeasuresCount}
                     </div>
@@ -687,9 +697,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {/* Mobile Navigation Items */}
                 <nav className="flex-1 overflow-y-auto">
                   <div className="space-y-2">
-                    {/* Orders - for ADMIN and MANUFACTURE */}
+                    {/* Orders - for ADMIN, MANUFACTURE, PRODAVEC and OPERATOR */}
                     {(currentUser?.role === "ADMIN" ||
-                      currentUser?.role === "MANUFACTURE") && (
+                      currentUser?.role === "MANUFACTURE" ||
+                      currentUser?.role === "PRODAVEC" ||
+                      currentUser?.role === "OPERATOR") && (
                       <a
                         href="/orders"
                         onClick={(e) => {
