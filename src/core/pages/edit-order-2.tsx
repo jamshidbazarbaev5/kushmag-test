@@ -314,6 +314,14 @@ export default function EditOrderPage() {
       console.log("Form data being set:", formData); // Debug log
       console.log("Original order data:", orderData); // Debug log
 
+      // Debug zamershik field initialization
+      console.log("Zamershik initialization debug:", {
+        originalZamershik: orderData?.zamershik,
+        zamershikId: orderData?.zamershik?.id,
+        formDataZamershik: formData.zamershik,
+        zamershiksList: zamershiks,
+      });
+
       // Use setTimeout to ensure the form components are rendered before setting values
       setTimeout(() => {
         // Use reset method for better form initialization
@@ -783,6 +791,13 @@ export default function EditOrderPage() {
   const onSubmit = async (data: any) => {
     const { total_sum, remainingBalance } = totals;
 
+    // Debug zamershik field
+    console.log("Form submission - zamershik data:", {
+      formZamershik: data.zamershik,
+      zamershiksList: zamershiks,
+      zamershikFound: getMetaById(zamershiks, data.zamershik),
+    });
+
     const orderUpdateData = {
       ...data,
       id: orderData?.id,
@@ -800,7 +815,7 @@ export default function EditOrderPage() {
       seller: getMetaById(sellers, data.seller),
       operator: getMetaById(operators, data.operator),
       branch: getMetaById(branches, data.branch),
-      zamershik: getMetaById(zamershiks, data.zamershik),
+      zamershik: data.zamershik,
       // Hydrate door data with full product info
       doors: doors.map((door: any) => ({
         ...door,

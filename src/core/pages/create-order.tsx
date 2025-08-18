@@ -1315,8 +1315,6 @@ function StepTwo({
     setTables(updatedTables);
   };
 
-
-
   // Real-time field change handler - updates doors directly in tables
   const handleFieldChange = (
     doorIndex: number,
@@ -1760,8 +1758,6 @@ function StepTwo({
                     </div>
                   </div>
                 </div>
-
-              
               </div>
               {/* {!table.doorModel && (
                 <p className="text-xs text-red-500 mt-2">
@@ -2994,7 +2990,7 @@ function StepTwo({
                   <Plus className="h-5 w-5" />
                   {t("forms.add_row")}
                 </Button>
-                 {tables.length > 1 && (
+                {tables.length > 1 && (
                   <Button
                     variant="destructive"
                     size="sm"

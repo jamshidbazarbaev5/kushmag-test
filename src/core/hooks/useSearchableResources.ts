@@ -6,6 +6,13 @@ interface BaseResource {
   name: string;
 }
 
+interface User {
+  id: number;
+  username: string;
+  full_name: string;
+  role: string;
+}
+
 interface SearchableResourceHookOptions {
   search?: string;
   enabled?: boolean;
@@ -105,10 +112,43 @@ export const useSearchCounterparties = createSearchableResourceHook(
   "counterparty/",
   "searchable-counterparties",
 );
-export const useSearchZamershiks = createSearchableResourceHook(
-  "zamershiks/",
-  "searchable-zamershiks",
-);
+export const useSearchZamershiks = (
+  options: SearchableResourceHookOptions = {},
+) => {
+  const { search = "", enabled = true } = options;
+
+  return useQuery({
+    queryKey: ["searchable-zamershiks", "search", search],
+    queryFn: async () => {
+      const params: Record<string, string> = {
+        role: "ZAMERSHIK",
+      };
+
+      // Always include search parameter, even if empty
+      params.search = search;
+
+      const response = await api.get("users/", { params });
+
+      // Handle both array and paginated response formats
+      if (Array.isArray(response.data)) {
+        return response.data.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      } else if (response.data?.results) {
+        return response.data.results.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      }
+
+      return response.data;
+    },
+    enabled,
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes
+  });
+};
 
 // Utility function to format options for select components
 export const formatSearchableOptions = (data: BaseResource[] = []) => {

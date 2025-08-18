@@ -21,6 +21,7 @@ import {
   useSearchableCounterparties,
 } from "../api/references";
 import { useSearchableUsers } from "../api/user";
+import { useSearchZamershiks } from "../hooks/useSearchableResources";
 import {
   Pencil,
   Trash,
@@ -339,7 +340,7 @@ export default function OrdersPage() {
   const { data: operators, isLoading: operatorsLoading } =
     useSearchableOperators(operatorSearchQuery);
   const { data: zamershikUsers, isLoading: zamershikUsersLoading } =
-    useSearchableUsers(zamershikSearchQuery);
+    useSearchZamershiks({ search: zamershikSearchQuery });
   const { data: adminUsers, isLoading: adminUsersLoading } =
     useSearchableUsers(adminSearchQuery);
   const { data: counterparties, isLoading: counterpartiesLoading } =
@@ -463,12 +464,9 @@ export default function OrdersPage() {
   };
 
   // Get filtered users based on role
-  const filteredZamershikUsers =
-    !Array.isArray(zamershikUsers) && zamershikUsers?.results
-      ? zamershikUsers.results.filter((user: any) => user.role === "ZAMERSHIK")
-      : Array.isArray(zamershikUsers)
-        ? zamershikUsers.filter((user: any) => user.role === "ZAMERSHIK")
-        : [];
+  const filteredZamershikUsers = Array.isArray(zamershikUsers)
+    ? zamershikUsers
+    : [];
 
   const filteredAdminUsers =
     !Array.isArray(adminUsers) && adminUsers?.results
@@ -924,10 +922,12 @@ export default function OrdersPage() {
                   {t("forms.zamershik")}
                 </label>
                 <SearchableSelect
-                  options={filteredZamershikUsers.map((user: any) => ({
-                    id: user.id,
-                    name: user.full_name,
-                  }))}
+                  options={filteredZamershikUsers.map(
+                    (user: { id: number; name: string }) => ({
+                      id: user.id,
+                      name: user.name,
+                    }),
+                  )}
                   value={filters.zamershik || "all"}
                   onValueChange={(value) =>
                     handleFilterChange("zamershik", String(value))

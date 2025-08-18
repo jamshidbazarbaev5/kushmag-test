@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import api from './api';
+import { useQuery } from "@tanstack/react-query";
+import api from "./api";
 
 export interface StaffMember {
   id: string;
@@ -12,11 +12,19 @@ export interface StaffMember {
   };
 }
 
+export interface User {
+  id: number;
+  username: string;
+  full_name: string;
+  phone_number: string;
+  role: string;
+}
+
 export const useGetSellers = () => {
   return useQuery({
-    queryKey: ['sellers'],
+    queryKey: ["sellers"],
     queryFn: async () => {
-      const { data } = await api.get<StaffMember[]>('/sellers');
+      const { data } = await api.get<StaffMember[]>("/sellers");
       return data;
     },
   });
@@ -24,9 +32,9 @@ export const useGetSellers = () => {
 
 export const useGetOperators = () => {
   return useQuery({
-    queryKey: ['operators'],
+    queryKey: ["operators"],
     queryFn: async () => {
-      const { data } = await api.get<StaffMember[]>('/operators');
+      const { data } = await api.get<StaffMember[]>("/operators");
       return data;
     },
   });
@@ -34,10 +42,41 @@ export const useGetOperators = () => {
 
 export const useGetZamershiks = () => {
   return useQuery({
-    queryKey: ['zamershiks'],
+    queryKey: ["zamershiks"],
     queryFn: async () => {
-      const { data } = await api.get<StaffMember[]>('/zamershiks');
-      return data;
+      const params = {
+        role: "ZAMERSHIK",
+        search: "", // Include empty search to show all results
+      };
+
+      const response = await api.get("/users/", { params });
+
+      // Handle both array and paginated response formats
+      if (Array.isArray(response.data)) {
+        return response.data.map((user: User) => ({
+          id: user.id.toString(),
+          accountId: user.id.toString(),
+          name: user.full_name || user.username,
+          meta: {
+            href: "",
+            type: "employee",
+            mediaType: "application/json",
+          },
+        }));
+      } else if (response.data?.results) {
+        return response.data.results.map((user: User) => ({
+          id: user.id.toString(),
+          accountId: user.id.toString(),
+          name: user.full_name || user.username,
+          meta: {
+            href: "",
+            type: "employee",
+            mediaType: "application/json",
+          },
+        }));
+      }
+
+      return response.data;
     },
   });
 };
