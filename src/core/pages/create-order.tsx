@@ -1603,6 +1603,108 @@ function StepTwo({
     setTables(updatedTables);
   };
 
+  // Functions to add new items
+  const addNewCasing = (doorIndex: number, tableId: number) => {
+    const updatedTables = tables.map((table) => {
+      if (table.id === tableId) {
+        const updatedDoors = [...table.doors];
+        const door = updatedDoors[doorIndex];
+
+        const newCasing = {
+          model: table.selectedCasingProduct
+            ? table.selectedCasingProduct.id
+            : "",
+          price_type: "",
+          price: table.selectedCasingProduct
+            ? (table.selectedCasingProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100
+            : 0,
+          quantity: 1,
+          casing_type: "боковой",
+          casing_formula: casingFormula ? "formula1" : "formula2",
+          casing_range: "",
+          height: 0,
+          width: casingSize,
+        };
+
+        updatedDoors[doorIndex] = {
+          ...door,
+          casings: [...(door.casings || []), newCasing],
+        };
+
+        return { ...table, doors: updatedDoors };
+      }
+      return table;
+    });
+    setTables(updatedTables);
+  };
+
+  const addNewExtension = (doorIndex: number, tableId: number) => {
+    const updatedTables = tables.map((table) => {
+      if (table.id === tableId) {
+        const updatedDoors = [...table.doors];
+        const door = updatedDoors[doorIndex];
+
+        const newExtension = {
+          model: table.selectedExtensionProduct
+            ? table.selectedExtensionProduct.id
+            : "",
+          price_type: "",
+          price: table.selectedExtensionProduct
+            ? (table.selectedExtensionProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100
+            : 0,
+          quantity: 1,
+          height: 0,
+          width: 0,
+        };
+
+        updatedDoors[doorIndex] = {
+          ...door,
+          extensions: [...(door.extensions || []), newExtension],
+        };
+
+        return { ...table, doors: updatedDoors };
+      }
+      return table;
+    });
+    setTables(updatedTables);
+  };
+
+  const addNewCrown = (doorIndex: number, tableId: number) => {
+    const updatedTables = tables.map((table) => {
+      if (table.id === tableId) {
+        const updatedDoors = [...table.doors];
+        const door = updatedDoors[doorIndex];
+
+        const newCrown = {
+          model: table.selectedCrownProduct
+            ? table.selectedCrownProduct.id
+            : "",
+          price_type: "",
+          price: table.selectedCrownProduct
+            ? (table.selectedCrownProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100
+            : 0,
+          quantity: 1,
+          width: convertToNumber(door.width, 0) + crownSize,
+        };
+
+        updatedDoors[doorIndex] = {
+          ...door,
+          crowns: [...(door.crowns || []), newCrown],
+        };
+
+        return { ...table, doors: updatedDoors };
+      }
+      return table;
+    });
+    setTables(updatedTables);
+  };
+
   // Function to calculate casing dimensions based on formula and type
   const calculateCasingDimensions = (
     casing: any,
@@ -1997,9 +2099,22 @@ function StepTwo({
                       <TableHead className="w-28">Паска орыны</TableHead>
                       <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center justify-between gap-1">
                             <span>{t("forms.casings")}</span>
-                            {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-green-100"
+                              onClick={() => {
+                                // Add new casing to all doors in this table
+                                tableCurrentDoors.forEach((_, index) => {
+                                  addNewCasing(index, table.id);
+                                });
+                              }}
+                              title="Добавить новый наличник"
+                            >
+                              <Plus className="h-3 w-3 text-green-600" />
+                            </Button>
                           </div>
                           <HeaderSearch
                             value={table.casingSearch}
@@ -2047,9 +2162,22 @@ function StepTwo({
                       </TableHead>
                       <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between gap-2">
                             <span>{t("forms.extensions")}</span>
-                            {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-blue-100"
+                              onClick={() => {
+                                // Add new extension to all doors in this table
+                                tableCurrentDoors.forEach((_, index) => {
+                                  addNewExtension(index, table.id);
+                                });
+                              }}
+                              title="Добавить новое расширение"
+                            >
+                              <Plus className="h-3 w-3 text-blue-600" />
+                            </Button>
                           </div>
                           <HeaderSearch
                             value={table.extensionSearch}
@@ -2097,9 +2225,22 @@ function StepTwo({
                       </TableHead>
                       <TableHead className="min-w-[200px]">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between gap-2">
                             <span>{t("forms.crowns")}</span>
-                            {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0 hover:bg-purple-100"
+                              onClick={() => {
+                                // Add new crown to all doors in this table
+                                tableCurrentDoors.forEach((_, index) => {
+                                  addNewCrown(index, table.id);
+                                });
+                              }}
+                              title="Добавить новую корону"
+                            >
+                              <Plus className="h-3 w-3 text-purple-600" />
+                            </Button>
                           </div>
                           <HeaderSearch
                             value={table.crownSearch}
