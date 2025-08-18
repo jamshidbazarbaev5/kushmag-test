@@ -1520,9 +1520,9 @@ export default function OrdersPage() {
                     <td className="px-3 py-2 text-sm">
                       <div
                         className="truncate text-gray-700"
-                        title={order.zamershik?.name}
+                        title={order.zamershik?.full_name}
                       >
-                        {order.zamershik?.name || "-"}
+                        {order.zamershik?.full_name || "-"}
                       </div>
                     </td>
                   )}
@@ -1530,9 +1530,9 @@ export default function OrdersPage() {
                     <td className="px-3 py-2 text-sm">
                       <div
                         className="truncate text-gray-700"
-                        title={order.admin?.name}
+                        title={order.admin?.full_name}
                       >
-                        {order.admin?.name || "-"}
+                        {order.admin?.full_name || "-"}
                       </div>
                     </td>
                   )}
