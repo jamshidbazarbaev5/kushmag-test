@@ -99,7 +99,7 @@ export default function OrdersPage() {
     string | null
   >(null);
   const statusChangeDropdownRef = useRef<HTMLDivElement>(null);
-  const [deadlineDayValue, setDeadlineDayValue] = useState<number | null>(null);
+  const [_deadlineDayValue, setDeadlineDayValue] = useState<number | null>(null);
 
   // Search states for all selects
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
