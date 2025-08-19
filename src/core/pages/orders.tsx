@@ -16,10 +16,9 @@ import {
   useSearchableStores,
   useSearchableOrganizations,
   useSearchableSalesChannels,
-  useSearchableSellers,
-  useSearchableOperators,
   useSearchableCounterparties,
 } from "../api/references";
+import { useGetSellers, useGetOperators } from "../api/user";
 import { useSearchableUsers } from "../api/user";
 import { useSearchZamershiks } from "../hooks/useSearchableResources";
 import {
@@ -335,10 +334,8 @@ export default function OrdersPage() {
     useSearchableOrganizations(organizationSearchQuery);
   const { data: salesChannels, isLoading: salesChannelsLoading } =
     useSearchableSalesChannels(salesChannelSearchQuery);
-  const { data: sellers, isLoading: sellersLoading } =
-    useSearchableSellers(sellerSearchQuery);
-  const { data: operators, isLoading: operatorsLoading } =
-    useSearchableOperators(operatorSearchQuery);
+  const { data: sellers, isLoading: sellersLoading } = useGetSellers();
+  const { data: operators, isLoading: operatorsLoading } = useGetOperators();
   const { data: zamershikUsers, isLoading: zamershikUsersLoading } =
     useSearchZamershiks({ search: zamershikSearchQuery });
   const { data: adminUsers, isLoading: adminUsersLoading } =
@@ -864,13 +861,12 @@ export default function OrdersPage() {
                   {t("forms.seller")}
                 </label>
                 <SearchableSelect
-                  options={(Array.isArray(sellers)
-                    ? sellers
-                    : sellers?.results || []
-                  ).map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                  }))}
+                  options={((sellers as any)?.results || []).map(
+                    (item: any) => ({
+                      id: item.id,
+                      name: item.full_name,
+                    }),
+                  )}
                   value={filters.seller || "all"}
                   onValueChange={(value) =>
                     handleFilterChange("seller", String(value))
@@ -893,13 +889,12 @@ export default function OrdersPage() {
                   {t("forms.operator")}
                 </label>
                 <SearchableSelect
-                  options={(Array.isArray(operators)
-                    ? operators
-                    : operators?.results || []
-                  ).map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                  }))}
+                  options={((operators as any)?.results || []).map(
+                    (item: any) => ({
+                      id: item.id,
+                      name: item.full_name,
+                    }),
+                  )}
                   value={filters.operator || "all"}
                   onValueChange={(value) =>
                     handleFilterChange("operator", String(value))
@@ -1510,9 +1505,9 @@ export default function OrdersPage() {
                     <td className="px-3 py-2 text-sm">
                       <div
                         className="truncate text-gray-700"
-                        title={order.seller?.name}
+                        title={order.seller?.full_name || order.seller?.name}
                       >
-                        {order.seller?.name || "-"}
+                        {order.seller?.full_name || order.seller?.name || "-"}
                       </div>
                     </td>
                   )}
@@ -1540,9 +1535,13 @@ export default function OrdersPage() {
                     <td className="px-3 py-2 text-sm">
                       <div
                         className="truncate text-gray-700"
-                        title={order.operator?.name}
+                        title={
+                          order.operator?.full_name || order.operator?.name
+                        }
                       >
-                        {order.operator?.name || "-"}
+                        {order.operator?.full_name ||
+                          order.operator?.name ||
+                          "-"}
                       </div>
                     </td>
                   )}

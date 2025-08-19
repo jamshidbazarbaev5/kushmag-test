@@ -18,10 +18,9 @@ import {
   useGetCounterparties,
   useGetOrganizations,
   useGetSalesChannels,
-  useGetSellers,
-  useGetOperators,
   useGetBranches,
 } from "../api/references";
+import { useGetSellers, useGetOperators } from "../api/user";
 import { useGetProducts } from "../api/products";
 import { useGetMaterials } from "../api/material";
 import { useGetMaterialTypes } from "../api/materialType";
@@ -276,8 +275,20 @@ export default function EditOrderPage() {
           : null,
         organization: orderData.organization?.id || orderData.organization,
         salesChannel: orderData.salesChannel?.id || orderData.salesChannel,
-        seller: orderData.seller?.id || orderData.seller,
-        operator: orderData.operator?.id || orderData.operator,
+        seller:
+          ((sellers as any)?.results || (sellers as any))?.find(
+            (s: any) =>
+              s.id === orderData.seller?.id || s.id === orderData.seller,
+          )?.id ||
+          orderData.seller?.id ||
+          orderData.seller,
+        operator:
+          ((operators as any)?.results || (operators as any))?.find(
+            (o: any) =>
+              o.id === orderData.operator?.id || o.id === orderData.operator,
+          )?.id ||
+          orderData.operator?.id ||
+          orderData.operator,
         address: orderData.address || "",
         // order_code: orderData.order_code || "",
         // order_date: formatDateForInput(orderData.created_at),
@@ -521,8 +532,10 @@ export default function EditOrderPage() {
     agentOptions: formatReferenceOptions(counterparties),
     organizationOptions: formatReferenceOptions(organizations),
     salesChannelOptions: formatReferenceOptions(salesChannels),
-    sellerOptions: formatReferenceOptions(sellers),
-    operatorOptions: formatReferenceOptions(operators),
+    sellerOptions: formatReferenceOptions((sellers as any)?.results || sellers),
+    operatorOptions: formatReferenceOptions(
+      (operators as any)?.results || operators,
+    ),
     materialOptions: formatReferenceOptions(materials),
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
@@ -804,7 +817,7 @@ export default function EditOrderPage() {
     const orderUpdateData = {
       ...data,
       id: orderData?.id,
-    
+
       // Map IDs to full meta objects for the API
       // rate: getMetaById(currencies, data.rate),
       created_at: new Date(),

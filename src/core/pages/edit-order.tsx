@@ -12,10 +12,9 @@ import {
   useGetCounterparties,
   useGetOrganizations,
   useGetSalesChannels,
-  useGetSellers,
-  useGetOperators,
   useGetBranches,
 } from "../api/references";
+import { useGetSellers, useGetOperators } from "../api/user";
 import { useGetProducts } from "../api/products";
 import { useGetMaterials } from "../api/material";
 import { useGetMaterialTypes } from "../api/materialType";
@@ -350,8 +349,10 @@ export default function CreateOrderPage() {
     agentOptions: formatReferenceOptions(counterparties),
     organizationOptions: formatReferenceOptions(organizations),
     salesChannelOptions: formatReferenceOptions(salesChannels),
-    sellerOptions: formatReferenceOptions(sellers),
-    operatorOptions: formatReferenceOptions(operators),
+    sellerOptions: formatReferenceOptions((sellers as any)?.results || sellers),
+    operatorOptions: formatReferenceOptions(
+      (operators as any)?.results || operators,
+    ),
     materialOptions: formatReferenceOptions(materials),
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
@@ -480,8 +481,12 @@ export default function CreateOrderPage() {
     {
       name: "seller",
       label: t("forms.seller"),
-      type: "searchable-resource-select",
-      resourceType: "sellers",
+      type: "select",
+      options:
+        ((sellers as any)?.results || (sellers as any))?.map((seller: any) => ({
+          value: seller.id,
+          label: seller.full_name,
+        })) || [],
       placeholder: t("placeholders.select_seller"),
       required: true,
     },
@@ -496,8 +501,14 @@ export default function CreateOrderPage() {
     {
       name: "operator",
       label: t("forms.operator"),
-      type: "searchable-resource-select",
-      resourceType: "operators",
+      type: "select",
+      options:
+        ((operators as any)?.results || (operators as any))?.map(
+          (operator: any) => ({
+            value: operator.id,
+            label: operator.full_name,
+          }),
+        ) || [],
       placeholder: t("placeholders.select_operator"),
       required: true,
     },
@@ -632,8 +643,14 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, orderData.agent),
       organization: getMetaById(organizations, orderData.organization),
       salesChannel: getMetaById(salesChannels, orderData.salesChannel),
-      seller: getMetaById(sellers, orderData.seller),
-      operator: getMetaById(operators, orderData.operator),
+      seller:
+        ((sellers as any)?.results || (sellers as any))?.find(
+          (s: any) => s.id === orderData.seller,
+        )?.id || orderData.seller,
+      operator:
+        ((operators as any)?.results || (operators as any))?.find(
+          (o: any) => o.id === orderData.operator,
+        )?.id || orderData.operator,
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
       doors: updatedDoors.map((door: any) => ({
@@ -720,8 +737,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
-      seller: getMetaById(sellers, data.seller),
-      operator: getMetaById(operators, data.operator),
+      seller: data.seller,
+      operator: data.operator,
       branch: getMetaById(branches, data.branch),
 
       // Hydrate door data with full product info
@@ -1067,7 +1084,9 @@ function StepTwo({
           const convertToNumber = (value: any, defaultValue: number = 0) => {
             if (typeof value === "number") return value;
             if (typeof value === "string") {
-              const normalized = value.replace(/,/g, ".").replace(/[^\d.]/g, "");
+              const normalized = value
+                .replace(/,/g, ".")
+                .replace(/[^\d.]/g, "");
               if (normalized === "" || normalized === ".") return defaultValue;
               const parsed = parseFloat(normalized);
               return isNaN(parsed) ? defaultValue : parsed;
@@ -1077,18 +1096,20 @@ function StepTwo({
 
           return {
             ...door,
-            casings: door.casings?.map((casing: any) =>
-              calculateCasingDimensions(
-                { ...casing },
-                door,
-                fieldOptions,
-                casingSize,
-              ),
-            ) || [],
-            crowns: door.crowns?.map((crown: any) => ({
-              ...crown,
-              width: convertToNumber(door.width, 0) + (crownSize || 0),
-            })) || [],
+            casings:
+              door.casings?.map((casing: any) =>
+                calculateCasingDimensions(
+                  { ...casing },
+                  door,
+                  fieldOptions,
+                  casingSize,
+                ),
+              ) || [],
+            crowns:
+              door.crowns?.map((crown: any) => ({
+                ...crown,
+                width: convertToNumber(door.width, 0) + (crownSize || 0),
+              })) || [],
           };
         });
 
@@ -1112,8 +1133,6 @@ function StepTwo({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measureDoors, measureProcessed, doors, tablesInitialized]);
-
-
 
   // Helper function to auto-apply selected product to specific table
   const autoApplyProductToTable = (
@@ -1603,8 +1622,6 @@ function StepTwo({
 
     setTables(updatedTables);
   };
-
-
 
   const getProductName = (modelId: string | any) => {
     if (typeof modelId === "object" && modelId !== null) {

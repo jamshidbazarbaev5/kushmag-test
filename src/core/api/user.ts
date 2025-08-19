@@ -75,8 +75,8 @@ export const useGetAllUsers = (options?: { search?: string }) => {
         nextUrl = data.next;
 
         // If next URL is relative, make it relative to the base URL
-        if (nextUrl && nextUrl.startsWith('/api/')) {
-          nextUrl = nextUrl.replace('/api/', '');
+        if (nextUrl && nextUrl.startsWith("/api/")) {
+          nextUrl = nextUrl.replace("/api/", "");
         }
       }
 
@@ -84,3 +84,58 @@ export const useGetAllUsers = (options?: { search?: string }) => {
     },
   });
 };
+
+// Hook to fetch users by role using the existing resource API hooks
+export const useGetUsersByRole = (role: User["role"]) => {
+  return useGetUsers({ params: { role } });
+};
+
+// Hook to fetch operators
+export const useGetOperators = () => {
+  return useGetUsers({ params: { role: "OPERATOR" } });
+};
+
+// Hook to fetch sellers (PRODAVEC in this system)
+export const useGetSellers = () => {
+  return useGetUsers({ params: { role: "PRODAVEC" } });
+};
+
+// Hook to fetch both operators and sellers
+export const useGetOperatorsAndSellers = () => {
+  return useQuery({
+    queryKey: ["users", "operators-and-sellers"],
+    queryFn: async (): Promise<{ operators: User[]; sellers: User[] }> => {
+      const [operatorsResponse, sellersResponse] = await Promise.all([
+        api.get<PaginatedUsersResponse>(`${USER_URL}`, {
+          params: { role: "OPERATOR" },
+        }),
+        api.get<PaginatedUsersResponse>(`${USER_URL}`, {
+          params: { role: "PRODAVEC" },
+        }),
+      ]);
+
+      return {
+        operators: operatorsResponse.data.results || [],
+        sellers: sellersResponse.data.results || [],
+      };
+    },
+  });
+};
+
+/**
+ * Example usage of the user role filtering functions:
+ *
+ * // Get all operators
+ * const { data: operators, isLoading: operatorsLoading } = useGetOperators();
+ *
+ * // Get all sellers (PRODAVEC role)
+ * const { data: sellers, isLoading: sellersLoading } = useGetSellers();
+ *
+ * // Get both operators and sellers in one call
+ * const { data: operatorsAndSellers, isLoading } = useGetOperatorsAndSellers();
+ * // operatorsAndSellers = { operators: User[], sellers: User[] }
+ *
+ * // Get users by any specific role
+ * const { data: admins } = useGetUsersByRole("ADMIN");
+ * const { data: manufacturers } = useGetUsersByRole("MANUFACTURE");
+ */

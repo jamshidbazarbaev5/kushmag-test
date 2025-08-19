@@ -12,10 +12,9 @@ import {
   useGetCounterparties,
   useGetOrganizations,
   useGetSalesChannels,
-  useGetSellers,
-  useGetOperators,
   useGetBranches,
 } from "../api/references";
+import { useGetSellers, useGetOperators } from "../api/user";
 import { useGetProducts } from "../api/products";
 import { useGetMaterials } from "../api/material";
 import { useGetMaterialTypes } from "../api/materialType";
@@ -293,8 +292,10 @@ export default function CreateOrderPage() {
     agentOptions: formatReferenceOptions(counterparties),
     organizationOptions: formatReferenceOptions(organizations),
     salesChannelOptions: formatReferenceOptions(salesChannels),
-    sellerOptions: formatReferenceOptions(sellers),
-    operatorOptions: formatReferenceOptions(operators),
+    sellerOptions: formatReferenceOptions((sellers as any)?.results || sellers),
+    operatorOptions: formatReferenceOptions(
+      (operators as any)?.results || operators,
+    ),
     materialOptions: formatReferenceOptions(materials),
     materialTypeOptions: formatReferenceOptions(materialTypes),
     massifOptions: formatReferenceOptions(massifs),
@@ -397,8 +398,12 @@ export default function CreateOrderPage() {
     {
       name: "seller",
       label: t("forms.seller"),
-      type: "searchable-resource-select",
-      resourceType: "sellers",
+      type: "select",
+      options:
+        ((sellers as any)?.results || (sellers as any))?.map((seller: any) => ({
+          value: seller.id,
+          label: seller.full_name,
+        })) || [],
       placeholder: t("placeholders.select_seller"),
       required: true,
     },
@@ -413,8 +418,14 @@ export default function CreateOrderPage() {
     {
       name: "operator",
       label: t("forms.operator"),
-      type: "searchable-resource-select",
-      resourceType: "operators",
+      type: "select",
+      options:
+        ((operators as any)?.results || (operators as any))?.map(
+          (operator: any) => ({
+            value: operator.id,
+            label: operator.full_name,
+          }),
+        ) || [],
       placeholder: t("placeholders.select_operator"),
       required: true,
     },
@@ -499,8 +510,14 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, orderData.agent),
       organization: getMetaById(organizations, orderData.organization),
       salesChannel: getMetaById(salesChannels, orderData.salesChannel),
-      seller: getMetaById(sellers, orderData.seller),
-      operator: getMetaById(operators, orderData.operator),
+      seller:
+        ((sellers as any)?.results || (sellers as any))?.find(
+          (s: any) => s.id === orderData.seller,
+        )?.id || orderData.seller,
+      operator:
+        ((operators as any)?.results || (operators as any))?.find(
+          (o: any) => o.id === orderData.operator,
+        )?.id || orderData.operator,
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
       doors: doors.map((door: any) => {
@@ -676,8 +693,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
-      seller: getMetaById(sellers, data.seller),
-      operator: getMetaById(operators, data.operator),
+      seller: data.seller,
+      operator: data.operator,
 
       branch: getMetaById(branches, data.branch),
       // Hydrate door data with full product info and add price_type
