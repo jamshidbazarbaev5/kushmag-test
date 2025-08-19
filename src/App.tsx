@@ -37,6 +37,7 @@ import CreateOrderPage from "./core/pages/create-order";
 import EditOrderPage from "./core/pages/edit-order";
 import EditOrder2Page from "./core/pages/edit-order-2";
 import RoleBasedRedirect from "./core/components/RoleBasedRedirect";
+import ProtectedRoute from "./core/components/ProtectedRoute";
 import YearlyPlansPage from "./core/pages/yearly-plans";
 import DailyPlansPage from "./core/pages/daily-plans";
 import YearlyPlanDemo from "./components/YearlyPlanDemo";
@@ -54,9 +55,11 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route
             element={
-              <Layout>
-                <Outlet />
-              </Layout>
+              <ProtectedRoute>
+                <Layout>
+                  <Outlet />
+                </Layout>
+              </ProtectedRoute>
             }
           >
             <Route path="/" element={<RoleBasedRedirect />} />
@@ -135,7 +138,7 @@ function App() {
             <Route path="/yearly-plan-demo" element={<YearlyPlanDemo />} />
             <Route path="/yearly-plan-api" element={<YearlyPlanApiExample />} />
 
-              {/* <Route path="/test" element={<EnhancedYearlyPlansPage />} /> */}
+            {/* <Route path="/test" element={<EnhancedYearlyPlansPage />} /> */}
           </Route>
         </Routes>
         <Toaster position="top-right" richColors />

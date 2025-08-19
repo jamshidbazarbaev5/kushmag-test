@@ -94,6 +94,7 @@ import {
   useUpdateSteelColor,
   useDeleteSteelColor,
 } from "../api/steelColor";
+import { useGetDeadlineDays, useUpdateDeadlineDay } from "../api/deadlineDay";
 
 // Import types
 import type {
@@ -110,6 +111,7 @@ import type {
   Cladding,
   Lock,
   SteelColor,
+  DeadlineDay,
 } from "../api/types";
 import type { PriceSettingWithPriceType } from "../api/priceSettings";
 
@@ -466,6 +468,8 @@ export default function SettingsPage() {
         page_size: steelColorPageSize,
       },
     });
+  const { data: deadlineDaysResponse, isLoading: deadlineDaysLoading } =
+    useGetDeadlineDays();
 
   // Helper function to extract data and pagination info from API responses
   const extractPaginatedData = (
@@ -553,6 +557,9 @@ export default function SettingsPage() {
       steelColorPageSize,
       steelColorPage,
     );
+  const deadlineDaysData = Array.isArray(deadlineDaysResponse)
+    ? deadlineDaysResponse
+    : [];
 
   // Mutation hooks
   const { mutateAsync: createMaterial } = useCreateMaterial();
@@ -612,6 +619,8 @@ export default function SettingsPage() {
   const { mutateAsync: createSteelColor } = useCreateSteelColor();
   const { mutateAsync: updateSteelColor } = useUpdateSteelColor();
   const { mutateAsync: deleteSteelColor } = useDeleteSteelColor();
+
+  const { mutateAsync: updateDeadlineDay } = useUpdateDeadlineDay();
 
   // Field definitions for each entity type
   const materialFields: TableField[] = [
@@ -752,6 +761,17 @@ export default function SettingsPage() {
       label: t("forms.steel_color_name"),
       type: "text",
       placeholder: t("placeholders.enter_name"),
+      required: true,
+      editable: true,
+    },
+  ];
+
+  const deadlineDayFields: TableField[] = [
+    {
+      name: "deadline_day",
+      label: t("forms.deadline_day"),
+      type: "number",
+      placeholder: t("placeholders.enter_deadline_day"),
       required: true,
       editable: true,
     },
@@ -1058,6 +1078,13 @@ export default function SettingsPage() {
     await deleteSteelColor(id);
   };
 
+  const handleDeadlineDayUpdate = async (
+    id: number,
+    data: Partial<DeadlineDay>,
+  ) => {
+    await updateDeadlineDay({ id, deadline_day: data.deadline_day || 0 });
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -1354,7 +1381,7 @@ export default function SettingsPage() {
         {/* Claddings Section */}
         {currentUser?.role === "ADMIN" && (
           <InlineEditableTable
-            title={t('navigation.claddings')}
+            title={t("navigation.claddings")}
             data={claddingsData}
             fields={claddingFields}
             isLoading={claddingsLoading}
@@ -1392,7 +1419,7 @@ export default function SettingsPage() {
         {/* Steel Colors Section */}
         {currentUser?.role === "ADMIN" && (
           <InlineEditableTable
-            title={t('navigation.steel_colors')}
+            title={t("navigation.steel_colors")}
             data={steelColorsData}
             fields={steelColorFields}
             isLoading={steelColorsLoading}
@@ -1405,6 +1432,25 @@ export default function SettingsPage() {
             pagination={steelColorsPagination}
             onPageChange={setSteelColorPage}
             onPageSizeChange={setSteelColorPageSize}
+          />
+        )}
+
+        {/* Deadline Day Section */}
+        {currentUser?.role === "ADMIN" && (
+          <InlineEditableTable
+            title={t("navigation.deadline_day")}
+            data={deadlineDaysData}
+            fields={deadlineDayFields}
+            isLoading={deadlineDaysLoading}
+            searchTerm=""
+            onSearchChange={() => {}}
+            onCreate={async () => {}}
+            onUpdate={handleDeadlineDayUpdate}
+            onDelete={async () => {}}
+            searchPlaceholder=""
+            pagination={null}
+            onPageChange={() => {}}
+            onPageSizeChange={() => {}}
           />
         )}
       </div>

@@ -21,6 +21,7 @@ import {
 import { useGetSellers, useGetOperators } from "../api/user";
 import { useSearchableUsers } from "../api/user";
 import { useSearchZamershiks } from "../hooks/useSearchableResources";
+import { useGetDeadlineDays } from "../api/deadlineDay";
 import {
   Pencil,
   Trash,
@@ -80,10 +81,15 @@ export default function OrdersPage() {
   const [pageSize, setPageSize] = useState(20);
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [showDoorTypeDialog, setShowDoorTypeDialog] = useState(false);
   const [activeStatusTab, setActiveStatusTab] = useState(
     currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
   );
   const [activeDoorTypeFilter, setActiveDoorTypeFilter] =
+    useState<string>("all");
+  const [activeProductionStatusFilter, setActiveProductionStatusFilter] =
+    useState<string>("all");
+  const [activeProductionDoorTypeFilter, setActiveProductionDoorTypeFilter] =
     useState<string>("all");
   const [counterpartSearchQuery, setCounterpartSearchQuery] = useState("");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -93,6 +99,7 @@ export default function OrdersPage() {
     string | null
   >(null);
   const statusChangeDropdownRef = useRef<HTMLDivElement>(null);
+  const [deadlineDayValue, setDeadlineDayValue] = useState<number | null>(null);
 
   // Search states for all selects
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
@@ -103,6 +110,7 @@ export default function OrdersPage() {
   const [operatorSearchQuery, setOperatorSearchQuery] = useState("");
   const [zamershikSearchQuery, setZamershikSearchQuery] = useState("");
   const [adminSearchQuery, setAdminSearchQuery] = useState("");
+  const [descriptionFilter, setDescriptionFilter] = useState("");
 
   const [filters, setFilters] = useState({
     project: "",
@@ -198,6 +206,7 @@ export default function OrdersPage() {
     { key: "draft", label: t("order_status.draft") },
     { key: "moy_sklad", label: t("order_status.moy_sklad") },
     { key: "cancelled", label: t("order_status.cancelled") },
+    { key: "deadline_day", label: t("navigation.deadline_day") },
   ];
 
   // Fetch statuses from API
@@ -346,6 +355,15 @@ export default function OrdersPage() {
   const { data: counterparties, isLoading: counterpartiesLoading } =
     useSearchableCounterparties(counterpartSearchQuery);
 
+  // Fetch deadline day data
+  const { data: deadlineDaysResponse } = useGetDeadlineDays();
+
+  // Extract deadline day value from API response
+  const deadlineDaysData = Array.isArray(deadlineDaysResponse)
+    ? deadlineDaysResponse
+    : deadlineDaysResponse?.results || [];
+  const currentDeadlineDay = deadlineDaysData.length > 0 ? deadlineDaysData[0].deadline_day : 7;
+
   // Build query params for API call
   const buildQueryParams = () => {
     const params: Record<string, any> = {};
@@ -361,8 +379,12 @@ export default function OrdersPage() {
     } else {
       // Add status filter based on active tab for other roles
       if (activeStatusTab !== "all") {
+        // Check if activeStatusTab is deadline_day
+        if (activeStatusTab === "deadline_day") {
+          params.days_left_lte = currentDeadlineDay;
+        }
         // Check if activeStatusTab is a numeric status ID
-        if (!isNaN(Number(activeStatusTab))) {
+        else if (!isNaN(Number(activeStatusTab))) {
           params.status = Number(activeStatusTab);
         } else {
           // Fallback to old behavior for string-based status
@@ -374,6 +396,25 @@ export default function OrdersPage() {
     // Add door type filter
     if (activeDoorTypeFilter !== "all") {
       params.door_material_type = activeDoorTypeFilter;
+    }
+
+    // Add production status filter
+    if (activeProductionStatusFilter !== "all") {
+      params.status = Number(activeProductionStatusFilter);
+    }
+
+    // Add production door type filter
+    if (activeProductionDoorTypeFilter !== "all") {
+      params.door_type = activeProductionDoorTypeFilter;
+      if (activeProductionStatusFilter === "all") {
+        // Default to status 2 for production door type filters
+        params.status = 2;
+      }
+    }
+
+    // Add description filter
+    if (descriptionFilter) {
+      params.description = descriptionFilter;
     }
 
     params.page = currentPage;
@@ -429,15 +470,37 @@ export default function OrdersPage() {
     }
     setActiveStatusTab(status);
     setCurrentPage(1);
+
+    // If deadline_day tab is selected, store the deadline day value
+    if (status === "deadline_day") {
+      setDeadlineDayValue(currentDeadlineDay);
+    } else {
+      setDeadlineDayValue(null);
+    }
   };
 
   const handleDoorTypeFilterChange = (doorType: string) => {
     setActiveDoorTypeFilter(doorType);
+    setCurrentPage(1);
     setFilters((prev) => ({
       ...prev,
       door_type: doorType === "all" ? "" : doorType,
     }));
+  };
+
+  const handleProductionStatusFilterChange = (status: string) => {
+    setActiveProductionStatusFilter(status);
     setCurrentPage(1);
+  };
+
+  const handleProductionDoorTypeFilterChange = (doorType: string) => {
+    setActiveProductionDoorTypeFilter(doorType);
+    setCurrentPage(1);
+  };
+
+  const handleCreateOrder = (doorType: "WOOD" | "STEEL") => {
+    navigate(`/orders/create?door_type=${doorType}`);
+    setShowDoorTypeDialog(false);
   };
 
   const handleCounterpartSelect = (value: string | number) => {
@@ -467,6 +530,9 @@ export default function OrdersPage() {
       currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
     );
     setActiveDoorTypeFilter("all");
+    setActiveProductionStatusFilter("all");
+    setActiveProductionDoorTypeFilter("all");
+    setDeadlineDayValue(null);
     setCounterpartSearchQuery("");
     setProjectSearchQuery("");
     setStoreSearchQuery("");
@@ -595,6 +661,49 @@ export default function OrdersPage() {
             ))}
           </div>
 
+          {/* Description Filter Input */}
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              placeholder="Код ордера..."
+              value={descriptionFilter}
+              onChange={(e) => setDescriptionFilter(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setCurrentPage(1);
+                }
+              }}
+              className="h-8 w-48"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDescriptionFilter("");
+                setCurrentPage(1);
+              }}
+              className="h-8 px-3"
+            >
+              Очистить
+            </Button>
+          </div>
+
+          {/* Production Status Filter */}
+          <div className="flex gap-1 border rounded-md">
+            <Button
+              variant={
+                activeProductionStatusFilter === "all" ? "default" : "ghost"
+              }
+              size="sm"
+              onClick={() => handleProductionStatusFilterChange("all")}
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Все
+            </Button>
+          </div>
+
+          {/* Production Door Type Filter */}
+
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
@@ -672,7 +781,7 @@ export default function OrdersPage() {
           </div>
 
           {currentUser?.role !== "MANUFACTURE" && (
-            <Button onClick={() => navigate("/orders/create")}>
+            <Button onClick={() => setShowDoorTypeDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               {t("common.create")}
             </Button>
@@ -749,7 +858,7 @@ export default function OrdersPage() {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            {t("common.steel",)}
+            {t("common.steel")}
           </button>
           <button
             onClick={() => handleDoorTypeFilterChange("WOOD")}
@@ -761,6 +870,38 @@ export default function OrdersPage() {
           >
             {t("common.wood")}
           </button>
+          <div className="flex gap-1 border rounded-md">
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "all" ? "default" : "ghost"
+              }
+              size="sm"
+              onClick={() => handleProductionDoorTypeFilterChange("all")}
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Все типы
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "WOOD" ? "default" : "ghost"
+              }
+              size="sm"
+              onClick={() => handleProductionDoorTypeFilterChange("WOOD")}
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Агаш производство
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "STEEL" ? "default" : "ghost"
+              }
+              size="sm"
+              onClick={() => handleProductionDoorTypeFilterChange("STEEL")}
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Темир производство
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1983,6 +2124,50 @@ export default function OrdersPage() {
             isSubmitting={isUpdating}
             title={t("messages.edit")}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Door Type Selection Dialog */}
+      <Dialog open={showDoorTypeDialog} onOpenChange={setShowDoorTypeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col items-center justify-center space-y-6 py-6">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                Выберите тип двери
+              </h2>
+              <p className="text-sm text-gray-600">
+                Выберите тип двери для создания заказа
+              </p>
+            </div>
+
+            <div className="flex gap-4 w-full">
+              <Button
+                onClick={() => handleCreateOrder("WOOD")}
+                className="flex-1 h-20 flex flex-col items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700"
+                size="lg"
+              >
+                {/* <span className="text-lg font-medium">WOOD</span> */}
+                <span className="text-sm opacity-90">Деревянные двери</span>
+              </Button>
+
+              <Button
+                onClick={() => handleCreateOrder("STEEL")}
+                className="flex-1 h-20 flex flex-col items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700"
+                size="lg"
+              >
+                {/* <span className="text-lg font-medium">STEEL</span> */}
+                <span className="text-sm opacity-90">Стальные двери</span>
+              </Button>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={() => setShowDoorTypeDialog(false)}
+              className="w-full"
+            >
+              Отмена
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

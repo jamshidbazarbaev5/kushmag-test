@@ -140,6 +140,8 @@
     "december": "Декабрь"
   },
   "navigation": {
+    "deadline_day":"День крайнего срока",
+
     "orders": "Заказы",
     "daily_plans": "Ежедневные планы",
     "steel_colors": "Цвета стали",
@@ -255,6 +257,7 @@
   },
 
   "forms": {
+    "deadline_day":"День крайнего срока",
     "extra_comment":"Коментария",
     "steel_color_name": "Название цвета стали",
     "cladding_name": "Название обшивки",

@@ -120,3 +120,8 @@ export interface SteelColor {
   id: number;
   name: string;
 }
+
+export interface DeadlineDay {
+  id: number;
+  deadline_day: number;
+}

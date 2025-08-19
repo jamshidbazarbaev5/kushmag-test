@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
@@ -168,7 +168,14 @@ export default function CreateOrderPage() {
   const { mutate: calculateOrder, isPending: isCalculating } =
     useCalculateOrder();
   const [doors, setDoors] = useState<any[]>([]);
-  const [doorType, setDoorType] = useState<"WOOD" | "STEEL">("WOOD");
+  const [searchParams] = useSearchParams();
+  const doorTypeFromUrl = searchParams.get("door_type") as
+    | "WOOD"
+    | "STEEL"
+    | null;
+  const [doorType, setDoorType] = useState<"WOOD" | "STEEL">(
+    doorTypeFromUrl || "WOOD",
+  );
   const [totals, setTotals] = useState({
     total_sum: 0,
     door_price: 0,
@@ -1019,7 +1026,7 @@ function StepTwo({
   crownSize,
   casingFormula,
   doorType,
-  setDoorType,
+  
 }: any) {
   const { t } = useTranslation();
 
@@ -1035,7 +1042,7 @@ function StepTwo({
         price_type: "",
         price: 0,
         quantity: 0,
-        height:0,
+        height: 0,
         width: 0,
         door_name: "", // Text input for door name
         steel_color: "", // From steel colors endpoint
@@ -1318,9 +1325,9 @@ function StepTwo({
         model: defaultDoorModel,
         price_type: "",
         price: defaultDoorPrice,
-        quantity: 1,
-        height: 2.1,
-        width: 0.9,
+        quantity: 0,
+        height: 0,
+        width: 0,
         door_name: "",
         steel_color: "",
         crown_casing: [],
@@ -1914,22 +1921,8 @@ function StepTwo({
   return (
     <div className="space-y-6">
       {/* Door Type Selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-medium">Тип двери:</label>
-          <Select
-            value={doorType}
-            onValueChange={(value: "WOOD" | "STEEL") => setDoorType(value)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Выберите тип двери" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="WOOD">WOOD (агаш қапы)</SelectItem>
-              <SelectItem value="STEEL">STEEL (темир қапы)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="flex items-center justify-end">
+    
 
         {/* Add New Table Button */}
         <Button

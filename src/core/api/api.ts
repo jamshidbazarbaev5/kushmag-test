@@ -68,7 +68,12 @@ api.interceptors.response.use(
         }
         return api(originalRequest);
       } catch (refreshError) {
-        window.location.href = "/login";
+        // Clear tokens from localStorage when refresh fails
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+
+        // Don't redirect here - let the AuthContext handle it
+        // This prevents infinite loops and page refreshes
         return Promise.reject(refreshError);
       }
     }
