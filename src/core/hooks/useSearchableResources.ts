@@ -100,14 +100,81 @@ export const useSearchSalesChannels = createSearchableResourceHook(
   "saleschannel/",
   "searchable-sales-channels",
 );
-export const useSearchSellers = createSearchableResourceHook(
-  "sellers/",
-  "searchable-sellers",
-);
-export const useSearchOperators = createSearchableResourceHook(
-  "operators/",
-  "searchable-operators",
-);
+export const useSearchSellers = (
+  options: SearchableResourceHookOptions = {},
+) => {
+  const { search = "", enabled = true } = options;
+
+  return useQuery({
+    queryKey: ["searchable-sellers", "search", search],
+    queryFn: async () => {
+      const params: Record<string, string> = {
+        role: "PRODAVEC",
+      };
+
+      // Always include search parameter, even if empty
+      params.search = search;
+
+      const response = await api.get("users/", { params });
+
+      // Handle both array and paginated response formats
+      if (Array.isArray(response.data)) {
+        return response.data.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      } else if (response.data?.results) {
+        return response.data.results.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      }
+
+      return response.data;
+    },
+    enabled,
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes
+  });
+};
+
+export const useSearchOperators = (
+  options: SearchableResourceHookOptions = {},
+) => {
+  const { search = "", enabled = true } = options;
+
+  return useQuery({
+    queryKey: ["searchable-operators", "search", search],
+    queryFn: async () => {
+      const params: Record<string, string> = {
+        role: "OPERATOR",
+      };
+
+      // Always include search parameter, even if empty
+      params.search = search;
+
+      const response = await api.get("users/", { params });
+
+      // Handle both array and paginated response formats
+      if (Array.isArray(response.data)) {
+        return response.data.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      } else if (response.data?.results) {
+        return response.data.results.map((user: User) => ({
+          id: user.id.toString(),
+          name: user.full_name || user.username,
+        }));
+      }
+
+      return response.data;
+    },
+    enabled,
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes
+  });
+};
 export const useSearchCounterparties = createSearchableResourceHook(
   "counterparty/",
   "searchable-counterparties",

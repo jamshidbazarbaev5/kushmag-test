@@ -58,6 +58,7 @@ interface Door {
 
 export interface Order {
   id?: number;
+  extra_comment?:string;
   rate: ModelReference;
   store: ModelReference;
   project: ModelReference;

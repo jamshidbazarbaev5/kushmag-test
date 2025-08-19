@@ -9,6 +9,9 @@
   },
   "common": {
     "language": "Язык",
+    "wood":"Агаш капы",
+    "door_type":"Тип двери",
+    "steel": "Темир капы",
     "orders": "Заказы",
     "view_pdf": "Распечатать",
     "remove_table": "Удалить таблицу",
@@ -252,6 +255,7 @@
   },
 
   "forms": {
+    "extra_comment":"Коментария",
     "steel_color_name": "Название цвета стали",
     "cladding_name": "Название обшивки",
     "frame_name": "Название коробки",
@@ -390,7 +394,7 @@
     "create_order_description": "Создание заказа",
     "edit_order": "Редактировать заказ",
     "edit_order_description": "Редактирование существующего заказа",
-    "description": "Описание",
+    "description": "Код заказа",
     "organization_info": "Информация об организации",
 
     "project": "Проект",
@@ -608,6 +612,7 @@
     "error_sending_to_moy_sklad": "Ошибка при отправке заказа в Мой Склад"
   },
   "placeholders": {
+    "enter_extra_comment":"Пишите коментарий",
     "search_frame": "Поиск коробки",
     "search_cladding": "Поиск общибки",
     "search_lock": "Поиск замоков",
@@ -631,7 +636,7 @@
     "enter_max_size": "Введите максимальный размер",
     "enter_casing_size": "Введите размер наличника",
     "enter_price": "Введите цену",
-    "enter_description": "Введите описание",
+    "enter_description": "Введите код заказа",
     "enter_order_information": "Введите информацию о заказе",
     "enter_create_order_description": "Введите описание создания заказа",
     "select_currency": "Выберите валюту",
@@ -669,7 +674,7 @@
     "select_color": "Выберите цвет",
     "select_patina_color": "Выберите цвет патины",
     "select_beading_main": "Основной штапик",
-    "select_beading_additional": "Выберите дополнительный штапик",
+    "select_beading_additional": "штапик",
     "select_glass_type": "Выберите тип стекла",
     "select_threshold": "Выберите порог",
     "enter_name": "Введите название",

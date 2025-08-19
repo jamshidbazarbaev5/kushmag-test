@@ -481,12 +481,8 @@ export default function CreateOrderPage() {
     {
       name: "seller",
       label: t("forms.seller"),
-      type: "select",
-      options:
-        ((sellers as any)?.results || (sellers as any))?.map((seller: any) => ({
-          value: seller.id,
-          label: seller.full_name,
-        })) || [],
+        type: "searchable-resource-select",
+      resourceType: "sellers",
       placeholder: t("placeholders.select_seller"),
       required: true,
     },
@@ -501,14 +497,8 @@ export default function CreateOrderPage() {
     {
       name: "operator",
       label: t("forms.operator"),
-      type: "select",
-      options:
-        ((operators as any)?.results || (operators as any))?.map(
-          (operator: any) => ({
-            value: operator.id,
-            label: operator.full_name,
-          }),
-        ) || [],
+      type: "searchable-resource-select",
+      resourceType: "operators",
       placeholder: t("placeholders.select_operator"),
       required: true,
     },
@@ -576,6 +566,12 @@ export default function CreateOrderPage() {
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
     },
+    {
+      name: "extra_comment",
+      label: t("forms.extra_comment"),
+      type: "textarea",
+      placeholder: t("placeholders.enter_extra_comment"),
+    },
   ];
 
   // Synchronize form material fields with globalDoorSettings
@@ -619,6 +615,7 @@ export default function CreateOrderPage() {
     // First, apply global door settings to all doors
     const updatedDoors = doors.map((door: any) => ({
       ...door,
+
       material: globalDoorSettings.material,
       material_type: globalDoorSettings.material_type,
       massif: globalDoorSettings.massif,
@@ -634,6 +631,7 @@ export default function CreateOrderPage() {
     // Prepare order data for calculation
     const calculationData = {
       ...orderData,
+      door_type:"WOOD",
       // Map IDs to full meta objects for the API
       store: getMetaById(stores, orderData.store),
       project: getMetaById(projects, orderData.project),
@@ -643,14 +641,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, orderData.agent),
       organization: getMetaById(organizations, orderData.organization),
       salesChannel: getMetaById(salesChannels, orderData.salesChannel),
-      seller:
-        ((sellers as any)?.results || (sellers as any))?.find(
-          (s: any) => s.id === orderData.seller,
-        )?.id || orderData.seller,
-      operator:
-        ((operators as any)?.results || (operators as any))?.find(
-          (o: any) => o.id === orderData.operator,
-        )?.id || orderData.operator,
+      seller: getMetaById(sellers, orderData.seller),
+      operator: getMetaById(operators, orderData.operator),
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
       doors: updatedDoors.map((door: any) => ({
@@ -726,6 +718,7 @@ export default function CreateOrderPage() {
 
     const orderData = {
       ...cleanData,
+      door_type:"WOOD",
       // Map IDs to full meta objects for the API
       created_at: new Date().toISOString(),
       rate: getMetaById(currencies, data.rate),
@@ -737,8 +730,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
-      seller: data.seller,
-      operator: data.operator,
+      seller: getMetaById(sellers, data.seller),
+      operator: getMetaById(operators, data.operator),
       branch: getMetaById(branches, data.branch),
 
       // Hydrate door data with full product info
@@ -939,7 +932,7 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 isSubmitting={isLoading}
                 hideSubmitButton={true}
                 form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
+                gridClassName="md:grid-cols-2 gap-6"
               />
             </CardContent>
           </Card>
@@ -1775,13 +1768,13 @@ function StepTwo({
                   <TableHeader>
                     <TableRow className="bg-gray-50">
                       <TableHead className="w-12">#</TableHead>
-                      <TableHead className="w-16">
-                        {t("forms.quantity")}
-                      </TableHead>
                       <TableHead className="w-20">
                         {t("forms.height")}
                       </TableHead>
                       <TableHead className="w-20">{t("forms.width")}</TableHead>
+                      <TableHead className="w-16">
+                        {t("forms.quantity")}
+                      </TableHead>
                       <TableHead className="w-28">
                         {t("forms.glass_type")}
                       </TableHead>
@@ -2137,24 +2130,6 @@ function StepTwo({
                           {index + 1}
                         </TableCell>
 
-                        {/* Quantity - Always editable */}
-                        <TableCell className="align-middle">
-                          <Input
-                            type="text"
-                            inputMode="decimal"
-                            value={door.quantity?.toString() || ""}
-                            onChange={(e) =>
-                              handleFieldChange(
-                                index,
-                                table.id,
-                                "quantity",
-                                e.target.value,
-                              )
-                            }
-                            className="w-16"
-                          />
-                        </TableCell>
-
                         {/* Height - Always editable */}
                         <TableCell className="align-middle">
                           <Input
@@ -2188,6 +2163,24 @@ function StepTwo({
                               )
                             }
                             className="w-20"
+                          />
+                        </TableCell>
+
+                        {/* Quantity - Always editable */}
+                        <TableCell className="align-middle">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={door.quantity?.toString() || ""}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                index,
+                                table.id,
+                                "quantity",
+                                e.target.value,
+                              )
+                            }
+                            className="w-16"
                           />
                         </TableCell>
 
@@ -2298,43 +2291,6 @@ function StepTwo({
                                     <div>
                                       {extIndex === 0 && (
                                         <label className="text-xs text-gray-600">
-                                          Кол-во
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={
-                                          extension.quantity?.toString() || ""
-                                        }
-                                        onChange={(e) => {
-                                          const updatedExtensions = [
-                                            ...door.extensions,
-                                          ];
-                                          updatedExtensions[extIndex] = {
-                                            ...updatedExtensions[extIndex],
-                                            model:
-                                              table.selectedExtensionProduct
-                                                ? table.selectedExtensionProduct
-                                                    .id
-                                                : updatedExtensions[extIndex]
-                                                    ?.model || "",
-                                            quantity: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "extensions",
-                                            updatedExtensions,
-                                          );
-                                        }}
-                                        className="h-8"
-                                        placeholder="Кол-во"
-                                      />
-                                    </div>
-                                    <div>
-                                      {extIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
                                           Высота
                                         </label>
                                       )}
@@ -2394,6 +2350,43 @@ function StepTwo({
                                         placeholder="Ширина"
                                       />
                                     </div>
+                                    <div>
+                                      {extIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
+                                          Кол-во
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.quantity?.toString() || ""
+                                        }
+                                        onChange={(e) => {
+                                          const updatedExtensions = [
+                                            ...door.extensions,
+                                          ];
+                                          updatedExtensions[extIndex] = {
+                                            ...updatedExtensions[extIndex],
+                                            model:
+                                              table.selectedExtensionProduct
+                                                ? table.selectedExtensionProduct
+                                                    .id
+                                                : updatedExtensions[extIndex]
+                                                    ?.model || "",
+                                            quantity: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "extensions",
+                                            updatedExtensions,
+                                          );
+                                        }}
+                                        className="h-8"
+                                        placeholder="Кол-во"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               ),
@@ -2411,6 +2404,37 @@ function StepTwo({
                                   className="bg-green-50 p-2 rounded border space-y-1"
                                 >
                                   <div className="grid grid-cols-4 gap-1">
+                                    <div>
+                                      {casIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
+                                          Высота
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={casing.height?.toString() || ""}
+                                        onChange={(e) => {
+                                          const updatedCasings = [
+                                            ...door.casings,
+                                          ];
+                                          updatedCasings[casIndex] = {
+                                            ...updatedCasings[casIndex],
+                                            height: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "casings",
+                                            updatedCasings,
+                                          );
+                                        }}
+                                        className="h-8"
+                                        placeholder="Auto-calc"
+                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
+                                        disabled={!casingFormula}
+                                      />
+                                    </div>
                                     <div>
                                       {casIndex === 0 && (
                                         <label className="text-xs text-gray-600">
@@ -2444,37 +2468,6 @@ function StepTwo({
                                         }}
                                         className="h-8"
                                         placeholder="Кол-во"
-                                      />
-                                    </div>
-                                    <div>
-                                      {casIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Высота
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={casing.height?.toString() || ""}
-                                        onChange={(e) => {
-                                          const updatedCasings = [
-                                            ...door.casings,
-                                          ];
-                                          updatedCasings[casIndex] = {
-                                            ...updatedCasings[casIndex],
-                                            height: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "casings",
-                                            updatedCasings,
-                                          );
-                                        }}
-                                        className="h-8"
-                                        placeholder="Auto-calc"
-                                        title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                        disabled={!casingFormula}
                                       />
                                     </div>
                                     {/* <div>
@@ -2598,6 +2591,35 @@ function StepTwo({
                                     <div>
                                       {crownIndex === 0 && (
                                         <label className="text-xs text-gray-600">
+                                          Ширина
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={crown.width?.toString() || ""}
+                                        onChange={(e) => {
+                                          const updatedCrowns = [
+                                            ...door.crowns,
+                                          ];
+                                          updatedCrowns[crownIndex] = {
+                                            ...updatedCrowns[crownIndex],
+                                            width: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "crowns",
+                                            updatedCrowns,
+                                          );
+                                        }}
+                                        placeholder="Ширина"
+                                        className="h-8"
+                                      />
+                                    </div>
+                                    <div>
+                                      {crownIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
                                           Кол-во
                                         </label>
                                       )}
@@ -2625,35 +2647,6 @@ function StepTwo({
                                           );
                                         }}
                                         placeholder="Кол-во"
-                                        className="h-8"
-                                      />
-                                    </div>
-                                    <div>
-                                      {crownIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Ширина
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={crown.width?.toString() || ""}
-                                        onChange={(e) => {
-                                          const updatedCrowns = [
-                                            ...door.crowns,
-                                          ];
-                                          updatedCrowns[crownIndex] = {
-                                            ...updatedCrowns[crownIndex],
-                                            width: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "crowns",
-                                            updatedCrowns,
-                                          );
-                                        }}
-                                        placeholder="Ширина"
                                         className="h-8"
                                       />
                                     </div>

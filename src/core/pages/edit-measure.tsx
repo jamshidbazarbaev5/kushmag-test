@@ -134,6 +134,11 @@ export default function EditMeasure() {
   const [doors, setDoors] = useState<Door[]>([{ ...defaultDoor }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+
+  const onBack = ()=>{
+    navigate('/measures')
+  }
+
   // For nested extensions/crowns per door
   const handleDoorChange = (idx: number, field: keyof Door, value: string) => {
     setDoors((prev) =>
@@ -361,15 +366,22 @@ export default function EditMeasure() {
             <h1 className="text-3xl font-bold text-gray-900">
               {t("titles.edit_measure")}
             </h1>
+
           </div>
-          <Button
-            onClick={handleViewPDF}
-            disabled={!id}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t("common.view_pdf") || "View PDF"}
-          </Button>
+          <div  className='flex justify-end mb-4 gap-4'>
+            <Button
+                onClick={handleViewPDF}
+                disabled={!id}
+                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t("common.view_pdf") || "View PDF"}
+            </Button>
+            <Button onClick={onBack} className="flex items-center gap-2">
+              Назад
+            </Button>
+          </div>
+
         </div>
       </div>
 

@@ -115,8 +115,11 @@ export function SearchableSelect({
     setSearchTerm("");
   };
 
-  // Get display value
-  const selectedOption = options.find((option) => option.value === value);
+  // Get display value - handle both string and number comparisons
+  const selectedOption = options.find((option) =>
+    option.value === value ||
+    option.value?.toString() === value?.toString()
+  );
   const displayValue = selectedOption ? selectedOption.label : "";
   const hasValue = value !== undefined && value !== null && value !== "";
 
@@ -191,12 +194,12 @@ export function SearchableSelect({
                   key={option.value}
                   className={cn(
                     "relative flex cursor-pointer select-none items-center px-3 py-2 text-sm hover:bg-gray-100",
-                    value === option.value && "bg-blue-50 text-blue-600",
+                    (value === option.value || value?.toString() === option.value?.toString()) && "bg-blue-50 text-blue-600",
                   )}
                   onClick={() => handleOptionSelect(option)}
                 >
                   <span className="truncate">{option.label}</span>
-                  {value === option.value && (
+                  {(value === option.value || value?.toString() === option.value?.toString()) && (
                     <Check className="ml-auto h-4 w-4" />
                   )}
                 </div>

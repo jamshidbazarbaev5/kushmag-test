@@ -83,6 +83,8 @@ export default function OrdersPage() {
   const [activeStatusTab, setActiveStatusTab] = useState(
     currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
   );
+  const [activeDoorTypeFilter, setActiveDoorTypeFilter] =
+    useState<string>("all");
   const [counterpartSearchQuery, setCounterpartSearchQuery] = useState("");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [statuses, setStatuses] = useState<any[]>([]);
@@ -117,6 +119,7 @@ export default function OrdersPage() {
     deadline_date_before: "",
     zamershik: "",
     admin: "",
+    door_type: "",
   });
 
   // Column visibility state with localStorage persistence
@@ -368,6 +371,11 @@ export default function OrdersPage() {
       }
     }
 
+    // Add door type filter
+    if (activeDoorTypeFilter !== "all") {
+      params.door_material_type = activeDoorTypeFilter;
+    }
+
     params.page = currentPage;
     params.page_size = pageSize;
     return params;
@@ -423,6 +431,15 @@ export default function OrdersPage() {
     setCurrentPage(1);
   };
 
+  const handleDoorTypeFilterChange = (doorType: string) => {
+    setActiveDoorTypeFilter(doorType);
+    setFilters((prev) => ({
+      ...prev,
+      door_type: doorType === "all" ? "" : doorType,
+    }));
+    setCurrentPage(1);
+  };
+
   const handleCounterpartSelect = (value: string | number) => {
     setFilters((prev) => ({ ...prev, agent: String(value) }));
     setCurrentPage(1);
@@ -444,10 +461,12 @@ export default function OrdersPage() {
       deadline_date_before: "",
       zamershik: "",
       admin: "",
+      door_type: "",
     });
     setActiveStatusTab(
       currentUser?.role === "MANUFACTURE" ? "moy_sklad" : "all",
     );
+    setActiveDoorTypeFilter("all");
     setCounterpartSearchQuery("");
     setProjectSearchQuery("");
     setStoreSearchQuery("");
@@ -661,49 +680,89 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Status Tabs - Hidden for MANUFACTURE role */}
-      {currentUser?.role !== "MANUFACTURE" && (
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => handleStatusTabChange(tab.key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeStatusTab === tab.key
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-
-          {/* Show active status filter if numeric ID is selected */}
-          {!isNaN(Number(activeStatusTab)) && activeStatusTab !== "all" && (
-            <div className="flex items-center ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
-              <span>
-                {statuses.find((s) => s.id.toString() === activeStatusTab)
-                  ?.status || `Status ${activeStatusTab}`}
-              </span>
+      {/* Status and Filter Controls */}
+      <div className="space-y-3">
+        {/* Status Tabs - Hidden for MANUFACTURE role */}
+        {currentUser?.role !== "MANUFACTURE" && (
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            {statusTabs.map((tab) => (
               <button
-                onClick={() => setActiveStatusTab("all")}
-                className="ml-2 text-blue-600 hover:text-blue-800"
+                key={tab.key}
+                onClick={() => handleStatusTabChange(tab.key)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeStatusTab === tab.key
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
               >
-                ×
+                {tab.label}
               </button>
-            </div>
-          )}
-        </div>
-      )}
+            ))}
 
-      {/* Status indicator for MANUFACTURE role */}
-      {currentUser?.role === "MANUFACTURE" && (
-        <div className="flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <span className="text-sm font-medium text-blue-800">
-            {t("order_status.moy_sklad")} {t("common.orders") || "Orders"}
+            {/* Show active status filter if numeric ID is selected */}
+            {!isNaN(Number(activeStatusTab)) && activeStatusTab !== "all" && (
+              <div className="flex items-center ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">
+                <span>
+                  {statuses.find((s) => s.id.toString() === activeStatusTab)
+                    ?.status || `Status ${activeStatusTab}`}
+                </span>
+                <button
+                  onClick={() => setActiveStatusTab("all")}
+                  className="ml-2 text-blue-600 hover:text-blue-800"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Status indicator for MANUFACTURE role */}
+        {currentUser?.role === "MANUFACTURE" && (
+          <div className="flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+            <span className="text-sm font-medium text-blue-800">
+              {t("order_status.moy_sklad")} {t("common.orders") || "Orders"}
+            </span>
+          </div>
+        )}
+
+        {/* Door Type Filter */}
+        <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg">
+          <span className="px-2 py-2 text-sm font-medium text-gray-600">
+            {t("common.door_type")}:
           </span>
+          <button
+            onClick={() => handleDoorTypeFilterChange("all")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeDoorTypeFilter === "all"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {t("common.all")}
+          </button>
+          <button
+            onClick={() => handleDoorTypeFilterChange("STEEL")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeDoorTypeFilter === "STEEL"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {t("common.steel",)}
+          </button>
+          <button
+            onClick={() => handleDoorTypeFilterChange("WOOD")}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeDoorTypeFilter === "WOOD"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {t("common.wood")}
+          </button>
         </div>
-      )}
+      </div>
 
       {showFilters && (
         <Card>
