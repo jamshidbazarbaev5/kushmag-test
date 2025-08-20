@@ -26,7 +26,7 @@ import {
   WideDialogTitle,
   WideDialogFooter,
 } from "@/components/ui/wide-dialog";
-import { Save, X, Edit, Plus, Calendar, Eye, Star } from "lucide-react";
+import { Save, X, Edit, Plus, Calendar, Eye, Star, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/core/context/AuthContext";
@@ -327,6 +327,52 @@ const EditableConsolidatedSalesPlanTable: React.FC<
         displayYears.map((displayYear) => {
           const yearData = groupedByYear[displayYear] || [];
 
+          // Sort yearData by performance for trophy display
+          const sortedYearData = [...yearData].sort((a, b) => {
+            const totalPlannedA = a.details.reduce(
+              (sum, detail) =>
+                sum + parseFloat(String(detail.sales_plan) || "0"),
+              0,
+            );
+            const totalActualA = a.details.reduce(
+              (sum, detail) => sum + (detail.sales || 0),
+              0,
+            );
+            const performanceA =
+              totalPlannedA > 0 ? (totalActualA / totalPlannedA) * 100 : 0;
+
+            const totalPlannedB = b.details.reduce(
+              (sum, detail) =>
+                sum + parseFloat(String(detail.sales_plan) || "0"),
+              0,
+            );
+            const totalActualB = b.details.reduce(
+              (sum, detail) => sum + (detail.sales || 0),
+              0,
+            );
+            const performanceB =
+              totalPlannedB > 0 ? (totalActualB / totalPlannedB) * 100 : 0;
+
+            return performanceB - performanceA; // Descending order
+          });
+
+          // Function to get trophy icon for top performers
+          const getTrophyIcon = (index: number) => {
+            if (index === 0)
+              return (
+                <Trophy className="w-4 h-4 text-yellow-500 fill-current ml-2" />
+              );
+            if (index === 1)
+              return (
+                <Trophy className="w-4 h-4 text-gray-400 fill-current ml-2" />
+              );
+            if (index === 2)
+              return (
+                <Trophy className="w-4 h-4 text-amber-600 fill-current ml-2" />
+              );
+            return null;
+          };
+
           if (yearData.length === 0) return null;
 
           return (
@@ -381,7 +427,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {yearData.map((plan) => {
+                      {sortedYearData.map((plan, index) => {
                         // Calculate total for the year
                         const totalPlanned = plan.details.reduce(
                           (sum, detail) => {
@@ -413,6 +459,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                                 {plan.user.role === "ADMIN" && (
                                   <Star className="w-4 h-4 text-yellow-500 fill-current" />
                                 )}
+                                {getTrophyIcon(index)}
                               </div>
                             </TableCell>
                             {Array.from({ length: 12 }, (_, index) => {
@@ -536,7 +583,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                         <TableRow className="bg-gray-50 font-semibold border-t-2">
                           <TableCell>{t("yearly_plans.total")}</TableCell>
                           {Array.from({ length: 12 }, (_, index) => {
-                            const monthTotalPlanned = yearData.reduce(
+                            const monthTotalPlanned = sortedYearData.reduce(
                               (sum, plan) => {
                                 const monthDetail = plan.details.find(
                                   (d) => d.month === index + 1,
@@ -552,7 +599,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                               0,
                             );
 
-                            const monthTotalActual = yearData.reduce(
+                            const monthTotalActual = sortedYearData.reduce(
                               (sum, plan) => {
                                 const monthDetail = plan.details.find(
                                   (d) => d.month === index + 1,
@@ -608,7 +655,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                           <TableCell className="text-center">
                             {viewMode === "comparison" ? (
                               (() => {
-                                const grandTotalPlanned = yearData.reduce(
+                                const grandTotalPlanned = sortedYearData.reduce(
                                   (sum, plan) => {
                                     const planTotal = plan.details.reduce(
                                       (planSum, detail) => {
@@ -626,7 +673,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                                   0,
                                 );
 
-                                const grandTotalActual = yearData.reduce(
+                                const grandTotalActual = sortedYearData.reduce(
                                   (sum, plan) => {
                                     const planTotal = plan.details.reduce(
                                       (planSum, detail) => {

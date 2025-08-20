@@ -1,5 +1,6 @@
 // Edit-order page with create-order pattern
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { formatNumber, formatCurrency } from "../../utils/numberFormat";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
@@ -2211,11 +2212,16 @@ function StepTwo({
             prevDoor.patina_color !== newDoor.patina_color ||
             prevDoor.beading_main !== newDoor.beading_main ||
             prevDoor.beading_additional !== newDoor.beading_additional ||
-            JSON.stringify(prevDoor.crown_casing) !== JSON.stringify(newDoor.crown_casing) ||
-            JSON.stringify(prevDoor.extensions) !== JSON.stringify(newDoor.extensions) ||
-            JSON.stringify(prevDoor.casings) !== JSON.stringify(newDoor.casings) ||
-            JSON.stringify(prevDoor.crowns) !== JSON.stringify(newDoor.crowns) ||
-            JSON.stringify(prevDoor.accessories) !== JSON.stringify(newDoor.accessories)
+            JSON.stringify(prevDoor.crown_casing) !==
+              JSON.stringify(newDoor.crown_casing) ||
+            JSON.stringify(prevDoor.extensions) !==
+              JSON.stringify(newDoor.extensions) ||
+            JSON.stringify(prevDoor.casings) !==
+              JSON.stringify(newDoor.casings) ||
+            JSON.stringify(prevDoor.crowns) !==
+              JSON.stringify(newDoor.crowns) ||
+            JSON.stringify(prevDoor.accessories) !==
+              JSON.stringify(newDoor.accessories)
           ) {
             hasChanges = true;
             break;
@@ -3261,72 +3267,72 @@ function StepTwo({
                                 <span>{t("forms.crowns")}</span>
                                 <div className="flex gap-1">
                                   <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleBulkAddCrowns(table.id);
-                                      }}
-                                      className="p-1 rounded bg-green-100 hover:bg-green-200 text-green-600"
-                                      title="Add crown to all doors"
+                                    type="button"
+                                    onClick={() => {
+                                      handleBulkAddCrowns(table.id);
+                                    }}
+                                    className="p-1 rounded bg-green-100 hover:bg-green-200 text-green-600"
+                                    title="Add crown to all doors"
                                   >
                                     <Plus className="h-3 w-3" />
                                   </button>
                                   <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleBulkRemoveCrowns(table.id);
-                                      }}
-                                      className="p-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
-                                      title="Remove last crown from all doors"
+                                    type="button"
+                                    onClick={() => {
+                                      handleBulkRemoveCrowns(table.id);
+                                    }}
+                                    className="p-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
+                                    title="Remove last crown from all doors"
                                   >
                                     <Minus className="h-3 w-3" />
                                   </button>
                                 </div>
                               </div>
                               <HeaderSearch
-                                  value={table.crownSearch}
-                                  onChange={(value) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return { ...t, crownSearch: value };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
-                                  placeholder={t("forms.search_crowns")}
-                                  selectedProduct={table.selectedCrownProduct}
-                                  onProductSelect={(product) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return {
-                                          ...t,
-                                          selectedCrownProduct: product,
-                                          crownSearch: product?.name || "",
-                                          doors: t.doors.map((door: any) => ({
-                                            ...door,
-                                            crowns:
-                                                door.crowns?.map((crown: any) => ({
-                                                  ...crown,
-                                                  model: product
-                                                      ? product.id
-                                                      : crown.model,
-                                                  price_type:
-                                                      crown.price_type || "",
-                                                  price: product
-                                                      ? (product.salePrices?.find(
-                                                      (p: any) =>
-                                                          p.priceType.name ===
-                                                          "Цена продажи",
+                                value={table.crownSearch}
+                                onChange={(value) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return { ...t, crownSearch: value };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
+                                placeholder={t("forms.search_crowns")}
+                                selectedProduct={table.selectedCrownProduct}
+                                onProductSelect={(product) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return {
+                                        ...t,
+                                        selectedCrownProduct: product,
+                                        crownSearch: product?.name || "",
+                                        doors: t.doors.map((door: any) => ({
+                                          ...door,
+                                          crowns:
+                                            door.crowns?.map((crown: any) => ({
+                                              ...crown,
+                                              model: product
+                                                ? product.id
+                                                : crown.model,
+                                              price_type:
+                                                crown.price_type || "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
                                                   )?.value || 0) / 100
-                                                      : crown.price,
-                                                })) || [],
-                                          })),
-                                        };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
+                                                : crown.price,
+                                            })) || [],
+                                        })),
+                                      };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
                               />
                             </div>
                           </TableHead>
@@ -3336,74 +3342,74 @@ function StepTwo({
                                 <span>{t("forms.extensions")}</span>
                                 <div className="flex gap-1">
                                   <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleBulkAddExtensions(table.id);
-                                      }}
-                                      className="p-1 rounded bg-green-100 hover:bg-green-200 text-green-600"
-                                      title="Add extension to all doors"
+                                    type="button"
+                                    onClick={() => {
+                                      handleBulkAddExtensions(table.id);
+                                    }}
+                                    className="p-1 rounded bg-green-100 hover:bg-green-200 text-green-600"
+                                    title="Add extension to all doors"
                                   >
                                     <Plus className="h-3 w-3" />
                                   </button>
                                   <button
-                                      type="button"
-                                      onClick={() => {
-                                        handleBulkRemoveExtensions(table.id);
-                                      }}
-                                      className="p-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
-                                      title="Remove last extension from all doors"
+                                    type="button"
+                                    onClick={() => {
+                                      handleBulkRemoveExtensions(table.id);
+                                    }}
+                                    className="p-1 rounded bg-red-100 hover:bg-red-200 text-red-600"
+                                    title="Remove last extension from all doors"
                                   >
                                     <Minus className="h-3 w-3" />
                                   </button>
                                 </div>
                               </div>
                               <HeaderSearch
-                                  value={table.extensionSearch}
-                                  onChange={(value) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return { ...t, extensionSearch: value };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
-                                  placeholder={t("forms.search_extensions")}
-                                  selectedProduct={table.selectedExtensionProduct}
-                                  onProductSelect={(product) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return {
-                                          ...t,
-                                          selectedExtensionProduct: product,
-                                          extensionSearch: product?.name || "",
-                                          doors: t.doors.map((door: any) => ({
-                                            ...door,
-                                            extensions:
-                                                door.extensions?.map(
-                                                    (ext: any) => ({
-                                                      ...ext,
-                                                      model: product
-                                                          ? product.id
-                                                          : ext.model,
-                                                      price_type:
-                                                          ext.price_type || "",
-                                                      price: product
-                                                          ? (product.salePrices?.find(
-                                                          (p: any) =>
-                                                              p.priceType.name ===
-                                                              "Цена продажи",
-                                                      )?.value || 0) / 100
-                                                          : ext.price,
-                                                    }),
-                                                ) || [],
-                                          })),
-                                        };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
+                                value={table.extensionSearch}
+                                onChange={(value) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return { ...t, extensionSearch: value };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
+                                placeholder={t("forms.search_extensions")}
+                                selectedProduct={table.selectedExtensionProduct}
+                                onProductSelect={(product) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return {
+                                        ...t,
+                                        selectedExtensionProduct: product,
+                                        extensionSearch: product?.name || "",
+                                        doors: t.doors.map((door: any) => ({
+                                          ...door,
+                                          extensions:
+                                            door.extensions?.map(
+                                              (ext: any) => ({
+                                                ...ext,
+                                                model: product
+                                                  ? product.id
+                                                  : ext.model,
+                                                price_type:
+                                                  ext.price_type || "",
+                                                price: product
+                                                  ? (product.salePrices?.find(
+                                                      (p: any) =>
+                                                        p.priceType.name ===
+                                                        "Цена продажи",
+                                                    )?.value || 0) / 100
+                                                  : ext.price,
+                                              }),
+                                            ) || [],
+                                        })),
+                                      };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
                               />
                             </div>
                           </TableHead>
@@ -4328,200 +4334,200 @@ function StepTwo({
                                 {(() => {
                                   // Ensure we always have at least 2 default casings to display
                                   const casingsToShow =
-                                      door.casings && door.casings.length > 0
-                                          ? door.casings
-                                          : [
-                                            {
-                                              model: table.selectedCasingProduct
-                                                  ? table.selectedCasingProduct.id
-                                                  : "",
-                                              price_type: "",
-                                              price: table.selectedCasingProduct
-                                                  ? (table.selectedCasingProduct.salePrices?.find(
+                                    door.casings && door.casings.length > 0
+                                      ? door.casings
+                                      : [
+                                          {
+                                            model: table.selectedCasingProduct
+                                              ? table.selectedCasingProduct.id
+                                              : "",
+                                            price_type: "",
+                                            price: table.selectedCasingProduct
+                                              ? (table.selectedCasingProduct.salePrices?.find(
                                                   (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                              )?.value || 0) / 100
-                                                  : 0,
-                                              quantity: 0,
-                                              casing_type: "боковой",
-                                              casing_formula: casingFormula
-                                                  ? "formula1"
-                                                  : "formula2",
-                                              casing_range: "",
-                                              height: 0,
-                                              width: 0,
-                                            },
-                                            {
-                                              model: table.selectedCasingProduct
-                                                  ? table.selectedCasingProduct.id
-                                                  : "",
-                                              price_type: "",
-                                              price: table.selectedCasingProduct
-                                                  ? (table.selectedCasingProduct.salePrices?.find(
+                                                    p.priceType.name ===
+                                                    "Цена продажи",
+                                                )?.value || 0) / 100
+                                              : 0,
+                                            quantity: 0,
+                                            casing_type: "боковой",
+                                            casing_formula: casingFormula
+                                              ? "formula1"
+                                              : "formula2",
+                                            casing_range: "",
+                                            height: 0,
+                                            width: 0,
+                                          },
+                                          {
+                                            model: table.selectedCasingProduct
+                                              ? table.selectedCasingProduct.id
+                                              : "",
+                                            price_type: "",
+                                            price: table.selectedCasingProduct
+                                              ? (table.selectedCasingProduct.salePrices?.find(
                                                   (p: any) =>
-                                                      p.priceType.name ===
-                                                      "Цена продажи",
-                                              )?.value || 0) / 100
-                                                  : 0,
-                                              quantity: 0,
-                                              casing_type: "прямой",
-                                              casing_formula: casingFormula
-                                                  ? "formula1"
-                                                  : "formula2",
-                                              casing_range: "",
-                                              height: 0,
-                                              width: 0,
-                                            },
-                                          ];
+                                                    p.priceType.name ===
+                                                    "Цена продажи",
+                                                )?.value || 0) / 100
+                                              : 0,
+                                            quantity: 0,
+                                            casing_type: "прямой",
+                                            casing_formula: casingFormula
+                                              ? "formula1"
+                                              : "formula2",
+                                            casing_range: "",
+                                            height: 0,
+                                            width: 0,
+                                          },
+                                        ];
 
                                   return casingsToShow.map(
-                                      (casing: any, casIndex: number) => (
-                                          <div
-                                              key={casIndex}
-                                              className="bg-green-50 p-2 rounded border space-y-1"
-                                          >
-                                            <div className="grid grid-cols-4 gap-1">
-                                              <div>
-                                                {casIndex === 0 && (
-                                                    <label className="text-xs text-gray-600">
-                                                      Высота
-                                                    </label>
-                                                )}
-                                                <Input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    value={
-                                                        casing.height?.toString() || "0"
-                                                    }
-                                                    onChange={(e) => {
-                                                      const updatedCasings =
-                                                          door.casings &&
-                                                          door.casings.length > 0
-                                                              ? [...door.casings]
-                                                              : casingsToShow.map(
-                                                                  (c: any) => ({ ...c }),
-                                                              );
-                                                      updatedCasings[casIndex] = {
-                                                        ...updatedCasings[casIndex],
-                                                        height: e.target.value,
-                                                      };
-                                                      handleFieldChange(
-                                                          index,
-                                                          table.id,
-                                                          "casings",
-                                                          updatedCasings,
+                                    (casing: any, casIndex: number) => (
+                                      <div
+                                        key={casIndex}
+                                        className="bg-green-50 p-2 rounded border space-y-1"
+                                      >
+                                        <div className="grid grid-cols-4 gap-1">
+                                          <div>
+                                            {casIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Высота
+                                              </label>
+                                            )}
+                                            <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                casing.height?.toString() || "0"
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCasings =
+                                                  door.casings &&
+                                                  door.casings.length > 0
+                                                    ? [...door.casings]
+                                                    : casingsToShow.map(
+                                                        (c: any) => ({ ...c }),
                                                       );
-                                                    }}
-                                                    className="h-8"
-                                                    placeholder="Высота"
-                                                />
-                                              </div>
-                                              <div>
-                                                {casIndex === 0 && (
-                                                    <label className="text-xs text-gray-600">
-                                                      Кол-во
-                                                    </label>
-                                                )}
-                                                <Input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    value={
-                                                        casing.quantity?.toString() ||
-                                                        "0"
-                                                    }
-                                                    onChange={(e) => {
-                                                      const updatedCasings =
-                                                          door.casings &&
-                                                          door.casings.length > 0
-                                                              ? [...door.casings]
-                                                              : casingsToShow.map(
-                                                                  (c: any) => ({ ...c }),
-                                                              );
-                                                      updatedCasings[casIndex] = {
-                                                        ...updatedCasings[casIndex],
-                                                        quantity: e.target.value,
-                                                      };
-                                                      handleFieldChange(
-                                                          index,
-                                                          table.id,
-                                                          "casings",
-                                                          updatedCasings,
-                                                      );
-                                                    }}
-                                                    className="h-8"
-                                                    placeholder="Кол-во"
-                                                />
-                                              </div>
-                                              {!casingFormula && (
-                                                  <div>
-                                                    {casIndex === 0 && (
-                                                        <label className="text-xs text-gray-600 bg-yellow-100 px-1 rounded">
-                                                          Диапазон
-                                                        </label>
-                                                    )}
-                                                    <Select
-                                                        value={
-                                                            casing.casing_range || ""
-                                                        }
-                                                        onValueChange={(value) => {
-                                                          const updatedCasings =
-                                                              door.casings &&
-                                                              door.casings.length > 0
-                                                                  ? [...door.casings]
-                                                                  : casingsToShow.map(
-                                                                      (c: any) => ({
-                                                                        ...c,
-                                                                      }),
-                                                                  );
-                                                          const updatedCasing = {
-                                                            ...updatedCasings[casIndex],
-                                                            casing_range: value,
-                                                          };
-                                                          const originalModel =
-                                                              updatedCasing.model; // Preserve the original model
-                                                          const recalculatedCasing =
-                                                              calculateCasingDimensions(
-                                                                  updatedCasing,
-                                                                  door,
-                                                                  fieldOptions,
-                                                                  casingSize,
-                                                                  casingFormula,
-                                                              );
-                                                          // Ensure the model is preserved after recalculation
-                                                          updatedCasings[casIndex] = {
-                                                            ...recalculatedCasing,
-                                                            model: originalModel,
-                                                          };
-                                                          handleFieldChange(
-                                                              index,
-                                                              table.id,
-                                                              "casings",
-                                                              updatedCasings,
-                                                          );
-                                                        }}
-                                                    >
-                                                      <SelectTrigger className="h-8">
-                                                        <SelectValue placeholder="Диапазон" />
-                                                      </SelectTrigger>
-                                                      <SelectContent className="z-[9999]">
-                                                        {fieldOptions.casingRangeOptions?.map(
-                                                            (option: any) => (
-                                                                <SelectItem
-                                                                    key={option.value}
-                                                                    value={option.value}
-                                                                >
-                                                                  {option.label}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                      </SelectContent>
-                                                    </Select>
-                                                  </div>
-                                              )}
-                                            </div>
+                                                updatedCasings[casIndex] = {
+                                                  ...updatedCasings[casIndex],
+                                                  height: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                  index,
+                                                  table.id,
+                                                  "casings",
+                                                  updatedCasings,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Высота"
+                                            />
                                           </div>
-                                      ),
+                                          <div>
+                                            {casIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Кол-во
+                                              </label>
+                                            )}
+                                            <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                casing.quantity?.toString() ||
+                                                "0"
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCasings =
+                                                  door.casings &&
+                                                  door.casings.length > 0
+                                                    ? [...door.casings]
+                                                    : casingsToShow.map(
+                                                        (c: any) => ({ ...c }),
+                                                      );
+                                                updatedCasings[casIndex] = {
+                                                  ...updatedCasings[casIndex],
+                                                  quantity: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                  index,
+                                                  table.id,
+                                                  "casings",
+                                                  updatedCasings,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Кол-во"
+                                            />
+                                          </div>
+                                          {!casingFormula && (
+                                            <div>
+                                              {casIndex === 0 && (
+                                                <label className="text-xs text-gray-600 bg-yellow-100 px-1 rounded">
+                                                  Диапазон
+                                                </label>
+                                              )}
+                                              <Select
+                                                value={
+                                                  casing.casing_range || ""
+                                                }
+                                                onValueChange={(value) => {
+                                                  const updatedCasings =
+                                                    door.casings &&
+                                                    door.casings.length > 0
+                                                      ? [...door.casings]
+                                                      : casingsToShow.map(
+                                                          (c: any) => ({
+                                                            ...c,
+                                                          }),
+                                                        );
+                                                  const updatedCasing = {
+                                                    ...updatedCasings[casIndex],
+                                                    casing_range: value,
+                                                  };
+                                                  const originalModel =
+                                                    updatedCasing.model; // Preserve the original model
+                                                  const recalculatedCasing =
+                                                    calculateCasingDimensions(
+                                                      updatedCasing,
+                                                      door,
+                                                      fieldOptions,
+                                                      casingSize,
+                                                      casingFormula,
+                                                    );
+                                                  // Ensure the model is preserved after recalculation
+                                                  updatedCasings[casIndex] = {
+                                                    ...recalculatedCasing,
+                                                    model: originalModel,
+                                                  };
+                                                  handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "casings",
+                                                    updatedCasings,
+                                                  );
+                                                }}
+                                              >
+                                                <SelectTrigger className="h-8">
+                                                  <SelectValue placeholder="Диапазон" />
+                                                </SelectTrigger>
+                                                <SelectContent className="z-[9999]">
+                                                  {fieldOptions.casingRangeOptions?.map(
+                                                    (option: any) => (
+                                                      <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                      >
+                                                        {option.label}
+                                                      </SelectItem>
+                                                    ),
+                                                  )}
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ),
                                   );
                                 })()}
                               </div>
@@ -4532,100 +4538,100 @@ function StepTwo({
                                 {(() => {
                                   // Ensure we always have at least 1 default crown to display
                                   const crownsToShow =
-                                      door.crowns && door.crowns.length > 0
-                                          ? door.crowns
-                                          : [
-                                            {
-                                              model: "",
-                                              price_type: "",
-                                              price: 0,
-                                              quantity: 0,
-                                              width: 0,
-                                            },
-                                          ];
+                                    door.crowns && door.crowns.length > 0
+                                      ? door.crowns
+                                      : [
+                                          {
+                                            model: "",
+                                            price_type: "",
+                                            price: 0,
+                                            quantity: 0,
+                                            width: 0,
+                                          },
+                                        ];
 
                                   return crownsToShow.map(
-                                      (crown: any, crownIndex: number) => (
-                                          <div
-                                              key={crownIndex}
-                                              className="bg-purple-50 p-2 rounded border space-y-1"
-                                          >
-                                            <div className="grid grid-cols-2 gap-1">
-                                              <div>
-                                                {crownIndex === 0 && (
-                                                    <label className="text-xs text-gray-600">
-                                                      Ширина
-                                                    </label>
-                                                )}
-                                                <Input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    value={
-                                                        crown.width?.toString() || "0"
-                                                    }
-                                                    onChange={(e) => {
-                                                      const updatedCrowns =
-                                                          door.crowns &&
-                                                          door.crowns.length > 0
-                                                              ? [...door.crowns]
-                                                              : crownsToShow.map(
-                                                                  (c: any) => ({ ...c }),
-                                                              );
-                                                      updatedCrowns[crownIndex] = {
-                                                        ...updatedCrowns[crownIndex],
-                                                        width: e.target.value,
-                                                      };
-                                                      handleFieldChange(
-                                                          index,
-                                                          table.id,
-                                                          "crowns",
-                                                          updatedCrowns,
+                                    (crown: any, crownIndex: number) => (
+                                      <div
+                                        key={crownIndex}
+                                        className="bg-purple-50 p-2 rounded border space-y-1"
+                                      >
+                                        <div className="grid grid-cols-2 gap-1">
+                                          <div>
+                                            {crownIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Ширина
+                                              </label>
+                                            )}
+                                            <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                crown.width?.toString() || "0"
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCrowns =
+                                                  door.crowns &&
+                                                  door.crowns.length > 0
+                                                    ? [...door.crowns]
+                                                    : crownsToShow.map(
+                                                        (c: any) => ({ ...c }),
                                                       );
-                                                    }}
-                                                    placeholder="Ширина"
-                                                    className="h-8"
-                                                />
-                                              </div>
-
-                                              <div>
-                                                {crownIndex === 0 && (
-                                                    <label className="text-xs text-gray-600">
-                                                      Кол-во
-                                                    </label>
-                                                )}
-                                                <Input
-                                                    type="text"
-                                                    inputMode="decimal"
-                                                    value={
-                                                        crown.quantity?.toString() ||
-                                                        "0"
-                                                    }
-                                                    onChange={(e) => {
-                                                      const updatedCrowns =
-                                                          door.crowns &&
-                                                          door.crowns.length > 0
-                                                              ? [...door.crowns]
-                                                              : crownsToShow.map(
-                                                                  (c: any) => ({ ...c }),
-                                                              );
-                                                      updatedCrowns[crownIndex] = {
-                                                        ...updatedCrowns[crownIndex],
-                                                        quantity: e.target.value,
-                                                      };
-                                                      handleFieldChange(
-                                                          index,
-                                                          table.id,
-                                                          "crowns",
-                                                          updatedCrowns,
-                                                      );
-                                                    }}
-                                                    placeholder="Кол-во"
-                                                    className="h-8"
-                                                />
-                                              </div>
-                                            </div>
+                                                updatedCrowns[crownIndex] = {
+                                                  ...updatedCrowns[crownIndex],
+                                                  width: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                  index,
+                                                  table.id,
+                                                  "crowns",
+                                                  updatedCrowns,
+                                                );
+                                              }}
+                                              placeholder="Ширина"
+                                              className="h-8"
+                                            />
                                           </div>
-                                      ),
+
+                                          <div>
+                                            {crownIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Кол-во
+                                              </label>
+                                            )}
+                                            <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                crown.quantity?.toString() ||
+                                                "0"
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCrowns =
+                                                  door.crowns &&
+                                                  door.crowns.length > 0
+                                                    ? [...door.crowns]
+                                                    : crownsToShow.map(
+                                                        (c: any) => ({ ...c }),
+                                                      );
+                                                updatedCrowns[crownIndex] = {
+                                                  ...updatedCrowns[crownIndex],
+                                                  quantity: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                  index,
+                                                  table.id,
+                                                  "crowns",
+                                                  updatedCrowns,
+                                                );
+                                              }}
+                                              placeholder="Кол-во"
+                                              className="h-8"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ),
                                   );
                                 })()}
                               </div>
@@ -4742,8 +4748,6 @@ function StepTwo({
                                 )}
                               </div>
                             </TableCell>
-
-
 
                             {/* Кубик */}
                             <TableCell className="align-midlle">
@@ -5432,37 +5436,37 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold text-black">
-                      {totals.door_price.toFixed(0)} сум
+                      {formatCurrency(totals.door_price)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
                     <span className="text-black">
-                      {totals.extension_price.toFixed(0)} сум
+                      {formatCurrency(totals.extension_price)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
                     <span className="text-black">
-                      {totals.casing_price.toFixed(0)} сум
+                      {formatCurrency(totals.casing_price)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
                     <span className="text-black">
-                      {totals.crown_price.toFixed(0)} сум
+                      {formatCurrency(totals.crown_price)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
                     <span className="text-black">
-                      {totals.accessory_price.toFixed(0)} сум
+                      {formatCurrency(totals.accessory_price)}
                     </span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold text-black">
-                      {totals.total_sum.toFixed(0)} сум
+                      {formatCurrency(totals.total_sum)}
                     </span>
                   </div>
                 </div>
@@ -5492,7 +5496,7 @@ function StepThree({
                         </p>
                         <p>
                           {t("forms.price")}:{" "}
-                          {parseFloat(door.price || 0).toFixed(0)} сум
+                          {formatCurrency(parseFloat(door.price || 0))}
                         </p>
                       </div>
                     </div>
@@ -5696,7 +5700,7 @@ function StepThree({
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold text-black">
-                    {totals.total_sum.toFixed(0)} сум
+                    {formatCurrency(totals.total_sum)}
                   </span>
                 </div>
                 {/* Base Discount */}
@@ -5706,11 +5710,9 @@ function StepThree({
                       {t("forms.discount")} ({discountPercentage || 0}%)
                     </span>
                     <span className="text-black">
-                      {(
-                        (totals.total_sum * (discountPercentage || 0)) /
-                        100
-                      ).toFixed(0)}{" "}
-                      сум
+                      {formatCurrency(
+                        (totals.total_sum * (discountPercentage || 0)) / 100,
+                      )}
                     </span>
                   </div>
                 )}
@@ -5720,7 +5722,7 @@ function StepThree({
                   <div className="flex justify-between text-purple-600">
                     <span>{t("forms.agreement")}</span>
                     <span className="text-black">
-                      {agreementAmountInput.toFixed(0)} сум
+                      {formatCurrency(agreementAmountInput)}
                     </span>
                   </div>
                 )}
@@ -5739,7 +5741,7 @@ function StepThree({
                       %)
                     </span>
                     <span className="text-black">
-                      {totals.discountAmount.toFixed(0)} сум
+                      {formatCurrency(totals.discountAmount)}
                     </span>
                   </div>
                 )}
@@ -5747,14 +5749,14 @@ function StepThree({
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
                   <span className="text-black">
-                    {advancePayment.toFixed(0)} сум
+                    {formatCurrency(advancePayment)}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t("forms.remaining_balance")}</span>
                   <span className="text-black">
-                    {totals.remainingBalance.toFixed(0)} сум
+                    {formatCurrency(totals.remainingBalance)}
                   </span>
                 </div>
               </div>

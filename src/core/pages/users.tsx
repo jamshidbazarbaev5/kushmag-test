@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useGetUsers, useUpdateUser, useDeleteUser } from "../api/user";
 import type { User } from "../api/user";
 import EditUserModal from "@/components/modals/EditUserModal";
+import { formatNumber } from "../helpers/formatters";
 
 const columns = (t: (key: string, options?: Record<string, any>) => string) => [
   {
@@ -31,10 +32,22 @@ const columns = (t: (key: string, options?: Record<string, any>) => string) => [
   {
     header: t("forms.fixed_salary"),
     accessorKey: "fixed_salary",
+    cell: (row: any) => {
+      console.log("Fixed salary cell - row:", row);
+      const value = row.fixed_salary;
+      console.log("Fixed salary value:", value);
+      return formatNumber(value);
+    },
   },
   {
     header: t("forms.order_percentage"),
     accessorKey: "order_percentage",
+    cell: (row: any) => {
+      console.log("Order percentage cell - row:", row);
+      const value = row.order_percentage;
+      console.log("Order percentage value:", value);
+      return formatNumber(value);
+    },
   },
 ];
 

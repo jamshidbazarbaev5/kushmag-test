@@ -38,3 +38,33 @@ export function formatZamershikOptions(
     label: item.full_name,
   }));
 }
+
+/**
+ * Formats numbers with thousand separators (1,234,567)
+ * @param value - The number to format
+ * @returns Formatted string with commas as thousand separators
+ */
+export function formatNumber(
+  value: number | string | null | undefined,
+): string {
+  // Debug logging
+  console.log("formatNumber called with:", value, "type:", typeof value);
+
+  if (value === null || value === undefined || value === "") {
+    return "0";
+  }
+
+  // Handle string numbers that might be "0.00" or similar
+  let num: number;
+  if (typeof value === "string") {
+    num = parseFloat(value);
+  } else {
+    num = Number(value);
+  }
+
+  if (isNaN(num)) {
+    return "0";
+  }
+
+  return num.toLocaleString("en-US");
+}

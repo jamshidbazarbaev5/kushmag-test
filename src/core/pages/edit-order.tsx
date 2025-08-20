@@ -95,6 +95,12 @@ const getProductById = (productsList: any[], id: string | any) => {
   return product || { id: actualId };
 };
 
+// Helper function to format numbers with comma separators
+const formatNumber = (value: string | number): string => {
+  const num = typeof value === "string" ? value : value.toString();
+  return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
 export default function CreateOrderPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -481,7 +487,7 @@ export default function CreateOrderPage() {
     {
       name: "seller",
       label: t("forms.seller"),
-        type: "searchable-resource-select",
+      type: "searchable-resource-select",
       resourceType: "sellers",
       placeholder: t("placeholders.select_seller"),
       required: true,
@@ -631,7 +637,7 @@ export default function CreateOrderPage() {
     // Prepare order data for calculation
     const calculationData = {
       ...orderData,
-      door_type:"WOOD",
+      door_type: "WOOD",
       // Map IDs to full meta objects for the API
       store: getMetaById(stores, orderData.store),
       project: getMetaById(projects, orderData.project),
@@ -718,7 +724,7 @@ export default function CreateOrderPage() {
 
     const orderData = {
       ...cleanData,
-      door_type:"WOOD",
+      door_type: "WOOD",
       // Map IDs to full meta objects for the API
       created_at: new Date().toISOString(),
       rate: getMetaById(currencies, data.rate),
@@ -1878,40 +1884,40 @@ function StepTwo({
                             {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
                           </div>
                           <HeaderSearch
-                              value={table.extensionSearch}
-                              onChange={(value) => {
-                                const updatedTables = tables.map((t) => {
-                                  if (t.id === table.id) {
-                                    return { ...t, extensionSearch: value };
-                                  }
-                                  return t;
-                                });
-                                setTables(updatedTables);
-                              }}
-                              placeholder={t("forms.search_extensions")}
-                              selectedProduct={table.selectedExtensionProduct}
-                              onProductSelect={(product) => {
-                                const updatedTables = tables.map((t) => {
-                                  if (t.id === table.id) {
-                                    return {
-                                      ...t,
-                                      selectedExtensionProduct: product,
-                                      extensionSearch: product?.name || "",
-                                    };
-                                  }
-                                  return t;
-                                });
-                                setTables(updatedTables);
-
-                                // Auto-apply to this table only
-                                if (product) {
-                                  autoApplyProductToTable(
-                                      table.id,
-                                      "extension",
-                                      product,
-                                  );
+                            value={table.extensionSearch}
+                            onChange={(value) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return { ...t, extensionSearch: value };
                                 }
-                              }}
+                                return t;
+                              });
+                              setTables(updatedTables);
+                            }}
+                            placeholder={t("forms.search_extensions")}
+                            selectedProduct={table.selectedExtensionProduct}
+                            onProductSelect={(product) => {
+                              const updatedTables = tables.map((t) => {
+                                if (t.id === table.id) {
+                                  return {
+                                    ...t,
+                                    selectedExtensionProduct: product,
+                                    extensionSearch: product?.name || "",
+                                  };
+                                }
+                                return t;
+                              });
+                              setTables(updatedTables);
+
+                              // Auto-apply to this table only
+                              if (product) {
+                                autoApplyProductToTable(
+                                  table.id,
+                                  "extension",
+                                  product,
+                                );
+                              }
+                            }}
                           />
                         </div>
                       </TableHead>
@@ -2279,8 +2285,6 @@ function StepTwo({
                           />
                         </TableCell>
 
-
-
                         {/* Casings - Always editable */}
                         <TableCell className="align-top p-2">
                           <div className="space-y-1">
@@ -2547,114 +2551,114 @@ function StepTwo({
                         <TableCell className="align-top p-2">
                           <div className="space-y-1">
                             {door.extensions?.map(
-                                (extension: any, extIndex: number) => (
-                                    <div
-                                        key={extIndex}
-                                        className="bg-blue-50 p-2 rounded border space-y-1"
-                                    >
-                                      <div className="grid grid-cols-3 gap-1">
-                                        <div>
-                                          {extIndex === 0 && (
-                                              <label className="text-xs text-gray-600">
-                                                Высота
-                                              </label>
-                                          )}
-                                          <Input
-                                              type="text"
-                                              inputMode="decimal"
-                                              value={
-                                                  extension.height?.toString() || ""
-                                              }
-                                              onChange={(e) => {
-                                                const updatedExtensions = [
-                                                  ...door.extensions,
-                                                ];
-                                                updatedExtensions[extIndex] = {
-                                                  ...updatedExtensions[extIndex],
-                                                  height: e.target.value,
-                                                };
-                                                handleFieldChange(
-                                                    index,
-                                                    table.id,
-                                                    "extensions",
-                                                    updatedExtensions,
-                                                );
-                                              }}
-                                              className="h-8"
-                                              placeholder="Высота"
-                                          />
-                                        </div>
-                                        <div>
-                                          {extIndex === 0 && (
-                                              <label className="text-xs text-gray-600">
-                                                Ширина
-                                              </label>
-                                          )}
-                                          <Input
-                                              type="text"
-                                              inputMode="decimal"
-                                              value={
-                                                  extension.width?.toString() || ""
-                                              }
-                                              onChange={(e) => {
-                                                const updatedExtensions = [
-                                                  ...door.extensions,
-                                                ];
-                                                updatedExtensions[extIndex] = {
-                                                  ...updatedExtensions[extIndex],
-                                                  width: e.target.value,
-                                                };
-                                                handleFieldChange(
-                                                    index,
-                                                    table.id,
-                                                    "extensions",
-                                                    updatedExtensions,
-                                                );
-                                              }}
-                                              className="h-8"
-                                              placeholder="Ширина"
-                                          />
-                                        </div>
-                                        <div>
-                                          {extIndex === 0 && (
-                                              <label className="text-xs text-gray-600">
-                                                Кол-во
-                                              </label>
-                                          )}
-                                          <Input
-                                              type="text"
-                                              inputMode="decimal"
-                                              value={
-                                                  extension.quantity?.toString() || ""
-                                              }
-                                              onChange={(e) => {
-                                                const updatedExtensions = [
-                                                  ...door.extensions,
-                                                ];
-                                                updatedExtensions[extIndex] = {
-                                                  ...updatedExtensions[extIndex],
-                                                  model:
-                                                      table.selectedExtensionProduct
-                                                          ? table.selectedExtensionProduct
-                                                              .id
-                                                          : updatedExtensions[extIndex]
-                                                          ?.model || "",
-                                                  quantity: e.target.value,
-                                                };
-                                                handleFieldChange(
-                                                    index,
-                                                    table.id,
-                                                    "extensions",
-                                                    updatedExtensions,
-                                                );
-                                              }}
-                                              className="h-8"
-                                              placeholder="Кол-во"
-                                          />
-                                        </div>
-                                      </div>
+                              (extension: any, extIndex: number) => (
+                                <div
+                                  key={extIndex}
+                                  className="bg-blue-50 p-2 rounded border space-y-1"
+                                >
+                                  <div className="grid grid-cols-3 gap-1">
+                                    <div>
+                                      {extIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
+                                          Высота
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.height?.toString() || ""
+                                        }
+                                        onChange={(e) => {
+                                          const updatedExtensions = [
+                                            ...door.extensions,
+                                          ];
+                                          updatedExtensions[extIndex] = {
+                                            ...updatedExtensions[extIndex],
+                                            height: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "extensions",
+                                            updatedExtensions,
+                                          );
+                                        }}
+                                        className="h-8"
+                                        placeholder="Высота"
+                                      />
                                     </div>
-                                ),
+                                    <div>
+                                      {extIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
+                                          Ширина
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.width?.toString() || ""
+                                        }
+                                        onChange={(e) => {
+                                          const updatedExtensions = [
+                                            ...door.extensions,
+                                          ];
+                                          updatedExtensions[extIndex] = {
+                                            ...updatedExtensions[extIndex],
+                                            width: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "extensions",
+                                            updatedExtensions,
+                                          );
+                                        }}
+                                        className="h-8"
+                                        placeholder="Ширина"
+                                      />
+                                    </div>
+                                    <div>
+                                      {extIndex === 0 && (
+                                        <label className="text-xs text-gray-600">
+                                          Кол-во
+                                        </label>
+                                      )}
+                                      <Input
+                                        type="text"
+                                        inputMode="decimal"
+                                        value={
+                                          extension.quantity?.toString() || ""
+                                        }
+                                        onChange={(e) => {
+                                          const updatedExtensions = [
+                                            ...door.extensions,
+                                          ];
+                                          updatedExtensions[extIndex] = {
+                                            ...updatedExtensions[extIndex],
+                                            model:
+                                              table.selectedExtensionProduct
+                                                ? table.selectedExtensionProduct
+                                                    .id
+                                                : updatedExtensions[extIndex]
+                                                    ?.model || "",
+                                            quantity: e.target.value,
+                                          };
+                                          handleFieldChange(
+                                            index,
+                                            table.id,
+                                            "extensions",
+                                            updatedExtensions,
+                                          );
+                                        }}
+                                        className="h-8"
+                                        placeholder="Кол-во"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              ),
                             )}
                           </div>
                         </TableCell>
@@ -3368,37 +3372,39 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold text-black">
-                      {(totals.door_price || 0).toFixed(0)} сум
+                      {formatNumber((totals.door_price || 0).toFixed(0))} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
                     <span className="text-black">
-                      {(totals.extension_price || 0).toFixed(0)} сум
+                      {formatNumber((totals.extension_price || 0).toFixed(0))}{" "}
+                      сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
                     <span className="text-black">
-                      {(totals.casing_price || 0).toFixed(0)} сум
+                      {formatNumber((totals.casing_price || 0).toFixed(0))} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
                     <span className="text-black">
-                      {(totals.crown_price || 0).toFixed(0)} сум
+                      {formatNumber((totals.crown_price || 0).toFixed(0))} сум
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
                     <span className="text-black">
-                      {(totals.accessory_price || 0).toFixed(0)} сум
+                      {formatNumber((totals.accessory_price || 0).toFixed(0))}{" "}
+                      сум
                     </span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold text-black">
-                      {totals.total_sum.toFixed(0)} сум
+                      {formatNumber(totals.total_sum.toFixed(0))} сум
                     </span>
                   </div>
                 </div>
@@ -3428,7 +3434,7 @@ function StepThree({
                         </p>
                         <p>
                           {t("forms.price")}:{" "}
-                          {parseFloat(door.price || 0).toFixed(0)} сум
+                          {formatNumber(parseFloat(door.price || 0).toFixed(0))} сум
                         </p>
                       </div>
                     </div>
@@ -3469,7 +3475,7 @@ function StepThree({
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold text-black">
-                    {totals.total_sum.toFixed(0)} сум
+                    {formatNumber(totals.total_sum.toFixed(0))} сум
                   </span>
                 </div>
 
@@ -3524,11 +3530,13 @@ function StepThree({
                             {t("forms.discount")} ({discountPercentage}%)
                           </span>
                           <span className="text-black">
-                            {(
-                              (totals.total_sum *
-                                (parseFloat(discountPercentage) || 0)) /
-                              100
-                            ).toFixed(0)}{" "}
+                            {formatNumber(
+                              (
+                                (totals.total_sum *
+                                  (parseFloat(discountPercentage) || 0)) /
+                                100
+                              ).toFixed(0),
+                            )}{" "}
                             сум
                           </span>
                         </div>
@@ -3539,7 +3547,7 @@ function StepThree({
                         <div className="flex justify-between text-purple-600 font-medium">
                           <span>{t("forms.agreement")}</span>
                           <span className="text-black">
-                            {agreementAmountInput.toFixed(0)} сум
+                            {formatNumber(agreementAmountInput.toFixed(0))} сум
                           </span>
                         </div>
                       )}
@@ -3559,7 +3567,7 @@ function StepThree({
                             %)
                           </span>
                           <span className="text-black">
-                            {totals.discountAmount.toFixed(0)} сум
+                            {formatNumber(totals.discountAmount.toFixed(0))} сум
                           </span>
                         </div>
                       )}
@@ -3592,7 +3600,7 @@ function StepThree({
                     <div className="flex justify-between text-orange-600 font-medium pt-2 border-t border-orange-200">
                       <span>{t("forms.advance_payment")}</span>
                       <span className="text-black">
-                        {advancePayment.toFixed(0)} сум
+                        {formatNumber(advancePayment.toFixed(0))} сум
                       </span>
                     </div>
                   )}
@@ -3654,7 +3662,7 @@ function StepThree({
                       <div className="flex justify-between text-purple-600 font-medium pt-2 border-t border-purple-200">
                         <span>{t("forms.agreement_amount")}</span>
                         <span className="text-black">
-                          {agreementAmountInput.toFixed(0)} сум
+                          {formatNumber(agreementAmountInput.toFixed(0))} сум
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">
@@ -3671,7 +3679,7 @@ function StepThree({
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t("forms.subtotal")}</span>
                     <span className="font-semibold text-black">
-                      {totals.total_sum.toFixed(0)} сум
+                      {formatNumber(totals.total_sum.toFixed(0))} сум
                     </span>
                   </div>
                   {/* Base Discount */}
@@ -3681,11 +3689,13 @@ function StepThree({
                         {t("forms.discount")} ({discountPercentage || 0}%)
                       </span>
                       <span className="text-black">
-                        {(
-                          (totals.total_sum *
-                            (parseFloat(discountPercentage) || 0)) /
-                          100
-                        ).toFixed(0)}{" "}
+                        {formatNumber(
+                          (
+                            (totals.total_sum *
+                              (parseFloat(discountPercentage) || 0)) /
+                            100
+                          ).toFixed(0),
+                        )}{" "}
                         сум
                       </span>
                     </div>
@@ -3696,7 +3706,7 @@ function StepThree({
                     <div className="flex justify-between text-purple-600">
                       <span>{t("forms.agreement")}</span>
                       <span className="text-black">
-                        {agreementAmountInput.toFixed(0)} сум
+                        {formatNumber(agreementAmountInput.toFixed(0))} сум
                       </span>
                     </div>
                   )}
@@ -3716,7 +3726,7 @@ function StepThree({
                         %)
                       </span>
                       <span className="text-black">
-                        {totals.discountAmount.toFixed(0)} сум
+                        {formatNumber(totals.discountAmount.toFixed(0))} сум
                       </span>
                     </div>
                   )}
@@ -3724,7 +3734,10 @@ function StepThree({
                   <div className="flex justify-between text-red-600">
                     <span>{t("forms.advance_payment")}</span>
                     <span className="text-black">
-                      {parseFloat(advancePayment || "0").toFixed(0)} сум
+                      {formatNumber(
+                        parseFloat(advancePayment || "0").toFixed(0),
+                      )}{" "}
+                      сум
                     </span>
                   </div>
                 </div>
@@ -3735,7 +3748,7 @@ function StepThree({
                 <div className="flex justify-between text-xl font-bold text-purple-600 bg-purple-50 p-4 rounded-lg">
                   <span>{t("forms.remaining_balance")}</span>
                   <span className="text-black">
-                    {totals.remainingBalance.toFixed(0)} сум
+                    {formatNumber(totals.remainingBalance.toFixed(0))} сум
                   </span>
                 </div>
               </div>

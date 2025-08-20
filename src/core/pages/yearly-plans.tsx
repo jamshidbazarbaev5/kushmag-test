@@ -41,6 +41,7 @@ import {
   BarChart3,
   Filter,
   Activity,
+  Trophy,
   // Sparkles,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -110,6 +111,38 @@ export default function YearlyPlansPage() {
       return false;
     return true;
   });
+
+  // Sort daily plans by overall performance for trophy display
+  const sortedDailyPlans = [...filteredDailyPlans].sort((a, b) => {
+    const detailA = a.details[0];
+    const detailB = b.details[0];
+
+    // Calculate overall performance score (average of all percentages)
+    const performanceA =
+      ((detailA?.sales_percentage || 0) +
+        (detailA?.clients_percentage || 0) +
+        (detailA?.sales_count_percentage || 0)) /
+      3;
+
+    const performanceB =
+      ((detailB?.sales_percentage || 0) +
+        (detailB?.clients_percentage || 0) +
+        (detailB?.sales_count_percentage || 0)) /
+      3;
+
+    return performanceB - performanceA; // Descending order
+  });
+
+  // Function to get trophy icon for top performers
+  const getTrophyIcon = (index: number) => {
+    if (index === 0)
+      return <Trophy className="w-4 h-4 text-yellow-500 fill-current" />;
+    if (index === 1)
+      return <Trophy className="w-4 h-4 text-gray-400 fill-current" />;
+    if (index === 2)
+      return <Trophy className="w-4 h-4 text-amber-600 fill-current" />;
+    return null;
+  };
 
   const formatPercentage = (percentage: number) => {
     return `${percentage.toFixed(1)}%`;
@@ -878,7 +911,7 @@ export default function YearlyPlansPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredDailyPlans.map((plan, index) => {
+                      {sortedDailyPlans.map((plan, index) => {
                         const detail = plan.details[0]; // Since we're getting data for a single day
                         const isEvenRow = index % 2 === 0;
                         return (
@@ -893,7 +926,10 @@ export default function YearlyPlansPage() {
                                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                                   {plan.user.full_name.charAt(0)}
                                 </div>
-                                {plan.user.full_name}
+                                <div className="flex items-center gap-2">
+                                  {plan.user.full_name}
+                                  {getTrophyIcon(index)}
+                                </div>
                               </div>
                             </TableCell>
 

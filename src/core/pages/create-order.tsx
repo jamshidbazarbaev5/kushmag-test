@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { formatNumber, formatCurrency } from "../../utils/numberFormat";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
@@ -445,7 +446,7 @@ export default function CreateOrderPage() {
       type: "text",
       placeholder: t("placeholders.enter_description"),
     },
-      {
+    {
       name: "extra_comment",
       label: t("forms.extra_comment"),
       type: "textarea",
@@ -508,7 +509,6 @@ export default function CreateOrderPage() {
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
     },
-  
   ];
 
   // --- API-based Calculation Function ---
@@ -2441,65 +2441,65 @@ function StepTwo({
                               <div className="flex items-center justify-between gap-2">
                                 <span>{t("forms.extensions")}</span>
                                 <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 hover:bg-blue-100"
-                                    onClick={() => {
-                                      // Add new extension to all doors in this table
-                                      tableCurrentDoors.forEach((_, index) => {
-                                        addNewExtension(index, table.id);
-                                      });
-                                    }}
-                                    title="Добавить новое расширение"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0 hover:bg-blue-100"
+                                  onClick={() => {
+                                    // Add new extension to all doors in this table
+                                    tableCurrentDoors.forEach((_, index) => {
+                                      addNewExtension(index, table.id);
+                                    });
+                                  }}
+                                  title="Добавить новое расширение"
                                 >
                                   <Plus className="h-3 w-3 text-blue-600" />
                                 </Button>
                               </div>
                               <HeaderSearch
-                                  value={table.extensionSearch}
-                                  onChange={(value) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return { ...t, extensionSearch: value };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
-                                  placeholder={t("forms.search_extensions")}
-                                  selectedProduct={table.selectedExtensionProduct}
-                                  onProductSelect={(product) => {
-                                    const updatedTables = tables.map((t) => {
-                                      if (t.id === table.id) {
-                                        return {
-                                          ...t,
-                                          selectedExtensionProduct: product,
-                                          extensionSearch: product?.name || "",
-                                          doors: t.doors.map((door: any) => ({
-                                            ...door,
-                                            extensions:
-                                                door.extensions?.map(
-                                                    (ext: any) => ({
-                                                      ...ext,
-                                                      model: product
-                                                          ? product.id
-                                                          : "",
-                                                      price: product
-                                                          ? (product.salePrices?.find(
-                                                          (p: any) =>
-                                                              p.priceType.name ===
-                                                              "Цена продажи",
-                                                      )?.value || 0) / 100
-                                                          : 0,
-                                                    }),
-                                                ) || [],
-                                          })),
-                                        };
-                                      }
-                                      return t;
-                                    });
-                                    setTables(updatedTables);
-                                  }}
+                                value={table.extensionSearch}
+                                onChange={(value) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return { ...t, extensionSearch: value };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
+                                placeholder={t("forms.search_extensions")}
+                                selectedProduct={table.selectedExtensionProduct}
+                                onProductSelect={(product) => {
+                                  const updatedTables = tables.map((t) => {
+                                    if (t.id === table.id) {
+                                      return {
+                                        ...t,
+                                        selectedExtensionProduct: product,
+                                        extensionSearch: product?.name || "",
+                                        doors: t.doors.map((door: any) => ({
+                                          ...door,
+                                          extensions:
+                                            door.extensions?.map(
+                                              (ext: any) => ({
+                                                ...ext,
+                                                model: product
+                                                  ? product.id
+                                                  : "",
+                                                price: product
+                                                  ? (product.salePrices?.find(
+                                                      (p: any) =>
+                                                        p.priceType.name ===
+                                                        "Цена продажи",
+                                                    )?.value || 0) / 100
+                                                  : 0,
+                                              }),
+                                            ) || [],
+                                        })),
+                                      };
+                                    }
+                                    return t;
+                                  });
+                                  setTables(updatedTables);
+                                }}
                               />
                             </div>
                           </TableHead>
@@ -3257,82 +3257,82 @@ function StepTwo({
                             <TableCell className="align-top p-2">
                               <div className="space-y-1">
                                 {door.crowns?.map(
-                                    (crown: any, crownIndex: number) => (
-                                        <div
-                                            key={crownIndex}
-                                            className="bg-purple-50 p-2 rounded border space-y-1"
-                                        >
-                                          <div className="grid grid-cols-2 gap-1">
-                                            <div>
-                                              {crownIndex === 0 && (
-                                                  <label className="text-xs text-gray-600">
-                                                    Кол-во
-                                                  </label>
-                                              )}
-                                              <Input
-                                                  type="text"
-                                                  inputMode="decimal"
-                                                  value={
-                                                      crown.quantity?.toString() || ""
-                                                  }
-                                                  onChange={(e) => {
-                                                    const updatedCrowns = [
-                                                      ...door.crowns,
-                                                    ];
-                                                    updatedCrowns[crownIndex] = {
-                                                      ...updatedCrowns[crownIndex],
-                                                      model:
-                                                          table.selectedCrownProduct
-                                                              ? table.selectedCrownProduct
-                                                                  .id
-                                                              : "",
-                                                      quantity: e.target.value,
-                                                    };
-                                                    handleFieldChange(
-                                                        index,
-                                                        table.id,
-                                                        "crowns",
-                                                        updatedCrowns,
-                                                    );
-                                                  }}
-                                                  placeholder="Кол-во"
-                                                  className="h-8"
-                                              />
-                                            </div>
-                                            <div>
-                                              {crownIndex === 0 && (
-                                                  <label className="text-xs text-gray-600">
-                                                    Ширина
-                                                  </label>
-                                              )}
-                                              <Input
-                                                  type="text"
-                                                  inputMode="decimal"
-                                                  value={
-                                                      crown.width?.toString() || ""
-                                                  }
-                                                  onChange={(e) => {
-                                                    const updatedCrowns = [
-                                                      ...door.crowns,
-                                                    ];
-                                                    updatedCrowns[crownIndex] = {
-                                                      ...updatedCrowns[crownIndex],
-                                                      width: e.target.value,
-                                                    };
-                                                    handleFieldChange(
-                                                        index,
-                                                        table.id,
-                                                        "crowns",
-                                                        updatedCrowns,
-                                                    );
-                                                  }}
-                                                  placeholder="Ширина"
-                                                  className="h-8"
-                                              />
-                                            </div>
-                                          </div>
+                                  (crown: any, crownIndex: number) => (
+                                    <div
+                                      key={crownIndex}
+                                      className="bg-purple-50 p-2 rounded border space-y-1"
+                                    >
+                                      <div className="grid grid-cols-2 gap-1">
+                                        <div>
+                                          {crownIndex === 0 && (
+                                            <label className="text-xs text-gray-600">
+                                              Кол-во
+                                            </label>
+                                          )}
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={
+                                              crown.quantity?.toString() || ""
+                                            }
+                                            onChange={(e) => {
+                                              const updatedCrowns = [
+                                                ...door.crowns,
+                                              ];
+                                              updatedCrowns[crownIndex] = {
+                                                ...updatedCrowns[crownIndex],
+                                                model:
+                                                  table.selectedCrownProduct
+                                                    ? table.selectedCrownProduct
+                                                        .id
+                                                    : "",
+                                                quantity: e.target.value,
+                                              };
+                                              handleFieldChange(
+                                                index,
+                                                table.id,
+                                                "crowns",
+                                                updatedCrowns,
+                                              );
+                                            }}
+                                            placeholder="Кол-во"
+                                            className="h-8"
+                                          />
                                         </div>
-                                    ),
+                                        <div>
+                                          {crownIndex === 0 && (
+                                            <label className="text-xs text-gray-600">
+                                              Ширина
+                                            </label>
+                                          )}
+                                          <Input
+                                            type="text"
+                                            inputMode="decimal"
+                                            value={
+                                              crown.width?.toString() || ""
+                                            }
+                                            onChange={(e) => {
+                                              const updatedCrowns = [
+                                                ...door.crowns,
+                                              ];
+                                              updatedCrowns[crownIndex] = {
+                                                ...updatedCrowns[crownIndex],
+                                                width: e.target.value,
+                                              };
+                                              handleFieldChange(
+                                                index,
+                                                table.id,
+                                                "crowns",
+                                                updatedCrowns,
+                                              );
+                                            }}
+                                            placeholder="Ширина"
+                                            className="h-8"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ),
                                 )}
                               </div>
                             </TableCell>
@@ -3453,8 +3453,6 @@ function StepTwo({
                                 )}
                               </div>
                             </TableCell>
-
-
 
                             {/* Кубик - Always editable */}
                             <TableCell className="align-midlle">
@@ -4144,37 +4142,37 @@ function StepThree({
                   <div className="flex justify-between">
                     <span>{t("forms.doors_subtotal")}</span>
                     <span className="font-semibold text-black">
-                      {priceBreakdown.doors.toFixed(0)} сум
+                      {formatCurrency(priceBreakdown.doors)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.extensions_subtotal")}</span>
                     <span className="text-black">
-                      {priceBreakdown.extensions.toFixed(0)} сум
+                      {formatCurrency(priceBreakdown.extensions)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.casings_subtotal")}</span>
                     <span className="text-black">
-                      {priceBreakdown.casings.toFixed(0)} сум
+                      {formatCurrency(priceBreakdown.casings)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.crowns_subtotal")}</span>
                     <span className="text-black">
-                      {priceBreakdown.crowns.toFixed(0)} сум
+                      {formatCurrency(priceBreakdown.crowns)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>{t("forms.accessories_subtotal")}</span>
                     <span className="text-black">
-                      {priceBreakdown.accessories.toFixed(0)} сум
+                      {formatCurrency(priceBreakdown.accessories)}
                     </span>
                   </div>
                   <div className="flex justify-between border-t pt-2 mt-2">
                     <span className="font-bold">{t("forms.subtotal")}</span>
                     <span className="font-bold text-black">
-                      {totals.total_sum.toFixed(0)} сум
+                      {formatCurrency(totals.total_sum)}
                     </span>
                   </div>
                 </div>
@@ -4204,7 +4202,7 @@ function StepThree({
                         </p>
                         <p>
                           {t("forms.price")}:{" "}
-                          {parseFloat(door.price || 0).toFixed(0)} сум
+                          {formatCurrency(parseFloat(door.price || 0))}
                         </p>
                       </div>
                     </div>
@@ -4329,12 +4327,10 @@ function StepThree({
                       <p className="text-sm text-black">
                         {t("forms.discount_amount")}:{" "}
                         {discountAmountInput > 0
-                          ? discountAmountInput.toFixed(0)
-                          : (
-                              totals.total_sum *
-                              (discount_percentage / 100)
-                            ).toFixed(0)}{" "}
-                        сум
+                          ? formatCurrency(discountAmountInput)
+                          : formatCurrency(
+                              totals.total_sum * (discount_percentage / 100),
+                            )}
                         {discount_percentage > 0 &&
                           ` (${discount_percentage}%)`}
                       </p>
@@ -4425,7 +4421,7 @@ function StepThree({
                     {agreementAmountInput > 0 && (
                       <p className="text-sm text-black">
                         {t("forms.agreement_amount")}:{" "}
-                        {agreementAmountInput.toFixed(0)} сум
+                        {formatCurrency(agreementAmountInput)}
                         <br />
                         <span className="text-xs text-gray-500">
                           {t("forms.agreement_amount_description")}
@@ -4440,7 +4436,7 @@ function StepThree({
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t("forms.subtotal")}</span>
                   <span className="font-semibold text-black">
-                    {totals.total_sum.toFixed(0)} сум
+                    {formatCurrency(totals.total_sum)}
                   </span>
                 </div>
                 {/* Base Discount */}
@@ -4450,11 +4446,9 @@ function StepThree({
                       {t("forms.discount")} ({discount_percentage || 0}%)
                     </span>
                     <span className="text-black">
-                      {(
-                        (totals.total_sum * (discount_percentage || 0)) /
-                        100
-                      ).toFixed(0)}{" "}
-                      сум
+                      {formatCurrency(
+                        (totals.total_sum * (discount_percentage || 0)) / 100,
+                      )}
                     </span>
                   </div>
                 )}
@@ -4464,7 +4458,7 @@ function StepThree({
                   <div className="flex justify-between text-purple-600">
                     <span>{t("forms.agreement")}</span>
                     <span className="text-black">
-                      {agreementAmountInput.toFixed(0)} сум
+                      {formatCurrency(agreementAmountInput)}
                     </span>
                   </div>
                 )}
@@ -4483,20 +4477,20 @@ function StepThree({
                       %)
                     </span>
                     <span className="text-black">
-                      {totals.discountAmount.toFixed(0)} сум
+                      {formatCurrency(totals.discountAmount)}
                     </span>
                   </div>
                 )}
 
                 <div className="flex justify-between text-red-600">
                   <span>{t("forms.advance_payment")}</span>
-                  <span className="text-black">{advance.toFixed(0)} сум</span>
+                  <span className="text-black">{formatCurrency(advance)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold text-blue-600">
                   <span>{t("forms.remaining_balance")}</span>
                   <span className="text-black">
-                    {totals.remainingBalance.toFixed(0)} сум
+                    {formatCurrency(totals.remainingBalance)}
                   </span>
                 </div>
               </div>

@@ -67,7 +67,21 @@ export default function MonthlySalariesPage() {
       //   ...(searchTerm && { search: searchTerm }),
       ...(selectedMonth && { month: selectedMonth }),
     },
-  }) as { data: MonthlySalary[] | undefined; isLoading: boolean };
+  }) as {
+    data:
+      | {
+          results: MonthlySalary[];
+          totals: {
+            total_fixed_salary: number;
+            total_order_percentage_salary: number;
+            total_penalties: number;
+            total_bonuses: number;
+            total_total_salary: number;
+          };
+        }
+      | undefined;
+    isLoading: boolean;
+  };
 
   const { data: usersData } = useGetAllUsers();
 
@@ -78,8 +92,17 @@ export default function MonthlySalariesPage() {
   const { mutate: deleteMonthlySalary } = useDeleteMonthlySalary();
   const { mutate: createUser } = useCreateUser();
 
-  const monthlySalaries = monthlySalariesData || [];
+  const monthlySalaries = monthlySalariesData?.results || [];
+  const totals = monthlySalariesData?.totals;
   const users = usersData || [];
+
+  // Number formatting function
+  const formatNumber = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   // Chart colors
 
@@ -438,7 +461,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.fixed_salary || null,
+                        editingData.fixed_salary || 0,
                         "fixed_salary",
                         "number",
                         undefined,
@@ -447,7 +470,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.order_percentage || null,
+                        editingData.order_percentage || 0,
                         "order_percentage",
                         "number",
                         undefined,
@@ -456,7 +479,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.order_percentage_salary || null,
+                        editingData.order_percentage_salary || 0,
                         "order_percentage_salary",
                         "number",
                         undefined,
@@ -465,7 +488,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.penalties || null,
+                        editingData.penalties || 0,
                         "penalties",
                         "number",
                         undefined,
@@ -474,7 +497,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.bonuses || null,
+                        editingData.bonuses || 0,
                         "bonuses",
                         "number",
                         undefined,
@@ -483,7 +506,7 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                     <TableCell>
                       {renderEditableCell(
-                        editingData.total_salary || null,
+                        editingData.total_salary || 0,
                         "total_salary",
                         "number",
                         undefined,
@@ -540,58 +563,70 @@ export default function MonthlySalariesPage() {
                               ?.username || `User ${salary.user}`}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.fixed_salary,
-                        "fixed_salary",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.fixed_salary,
+                            "fixed_salary",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : formatNumber(salary.fixed_salary || 0)}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.order_percentage,
-                        "order_percentage",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.order_percentage,
+                            "order_percentage",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : `${salary.order_percentage || 0}%`}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.order_percentage_salary,
-                        "order_percentage_salary",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.order_percentage_salary,
+                            "order_percentage_salary",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : formatNumber(salary.order_percentage_salary || 0)}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.penalties,
-                        "penalties",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.penalties,
+                            "penalties",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : formatNumber(salary.penalties || 0)}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.bonuses,
-                        "bonuses",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.bonuses,
+                            "bonuses",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : formatNumber(salary.bonuses || 0)}
                     </TableCell>
                     <TableCell>
-                      {renderEditableCell(
-                        salary.total_salary,
-                        "total_salary",
-                        "number",
-                        undefined,
-                        salary.id,
-                      )}
+                      {editingRowId === salary.id
+                        ? renderEditableCell(
+                            salary.total_salary,
+                            "total_salary",
+                            "number",
+                            undefined,
+                            salary.id,
+                          )
+                        : formatNumber(salary.total_salary || 0)}
                     </TableCell>
                     <TableCell>
                       {editingRowId === salary.id ? (
@@ -634,6 +669,29 @@ export default function MonthlySalariesPage() {
                     </TableCell>
                   </TableRow>
                 ))}
+
+                {/* Totals Row */}
+                {totals && (
+                  <TableRow className="bg-gray-50 font-semibold border-t-2">
+                    <TableCell>{t("common.total")}</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>
+                      {formatNumber(totals.total_fixed_salary)}
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>
+                      {formatNumber(totals.total_order_percentage_salary)}
+                    </TableCell>
+                    <TableCell>
+                      {formatNumber(totals.total_penalties)}
+                    </TableCell>
+                    <TableCell>{formatNumber(totals.total_bonuses)}</TableCell>
+                    <TableCell>
+                      {formatNumber(totals.total_total_salary)}
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
