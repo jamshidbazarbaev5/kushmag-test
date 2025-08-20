@@ -2372,73 +2372,7 @@ function StepTwo({
                               />
                             </div>
                           </TableHead>
-                          <TableHead className="min-w-[200px]">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <span>{t("forms.extensions")}</span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    // Add new extension to all doors in this table
-                                    tableCurrentDoors.forEach((_, index) => {
-                                      addNewExtension(index, table.id);
-                                    });
-                                  }}
-                                  title="Добавить новое расширение"
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              </div>
-                              <HeaderSearch
-                                value={table.extensionSearch}
-                                onChange={(value) => {
-                                  const updatedTables = tables.map((t) => {
-                                    if (t.id === table.id) {
-                                      return { ...t, extensionSearch: value };
-                                    }
-                                    return t;
-                                  });
-                                  setTables(updatedTables);
-                                }}
-                                placeholder={t("forms.search_extensions")}
-                                selectedProduct={table.selectedExtensionProduct}
-                                onProductSelect={(product) => {
-                                  const updatedTables = tables.map((t) => {
-                                    if (t.id === table.id) {
-                                      return {
-                                        ...t,
-                                        selectedExtensionProduct: product,
-                                        extensionSearch: product?.name || "",
-                                        doors: t.doors.map((door: any) => ({
-                                          ...door,
-                                          extensions:
-                                            door.extensions?.map(
-                                              (ext: any) => ({
-                                                ...ext,
-                                                model: product
-                                                  ? product.id
-                                                  : "",
-                                                price: product
-                                                  ? (product.salePrices?.find(
-                                                      (p: any) =>
-                                                        p.priceType.name ===
-                                                        "Цена продажи",
-                                                    )?.value || 0) / 100
-                                                  : 0,
-                                              }),
-                                            ) || [],
-                                        })),
-                                      };
-                                    }
-                                    return t;
-                                  });
-                                  setTables(updatedTables);
-                                }}
-                              />
-                            </div>
-                          </TableHead>
+
                           <TableHead className="min-w-[200px]">
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-2">
@@ -2499,6 +2433,73 @@ function StepTwo({
                                   });
                                   setTables(updatedTables);
                                 }}
+                              />
+                            </div>
+                          </TableHead>
+                          <TableHead className="min-w-[200px]">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span>{t("forms.extensions")}</span>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 hover:bg-blue-100"
+                                    onClick={() => {
+                                      // Add new extension to all doors in this table
+                                      tableCurrentDoors.forEach((_, index) => {
+                                        addNewExtension(index, table.id);
+                                      });
+                                    }}
+                                    title="Добавить новое расширение"
+                                >
+                                  <Plus className="h-3 w-3 text-blue-600" />
+                                </Button>
+                              </div>
+                              <HeaderSearch
+                                  value={table.extensionSearch}
+                                  onChange={(value) => {
+                                    const updatedTables = tables.map((t) => {
+                                      if (t.id === table.id) {
+                                        return { ...t, extensionSearch: value };
+                                      }
+                                      return t;
+                                    });
+                                    setTables(updatedTables);
+                                  }}
+                                  placeholder={t("forms.search_extensions")}
+                                  selectedProduct={table.selectedExtensionProduct}
+                                  onProductSelect={(product) => {
+                                    const updatedTables = tables.map((t) => {
+                                      if (t.id === table.id) {
+                                        return {
+                                          ...t,
+                                          selectedExtensionProduct: product,
+                                          extensionSearch: product?.name || "",
+                                          doors: t.doors.map((door: any) => ({
+                                            ...door,
+                                            extensions:
+                                                door.extensions?.map(
+                                                    (ext: any) => ({
+                                                      ...ext,
+                                                      model: product
+                                                          ? product.id
+                                                          : "",
+                                                      price: product
+                                                          ? (product.salePrices?.find(
+                                                          (p: any) =>
+                                                              p.priceType.name ===
+                                                              "Цена продажи",
+                                                      )?.value || 0) / 100
+                                                          : 0,
+                                                    }),
+                                                ) || [],
+                                          })),
+                                        };
+                                      }
+                                      return t;
+                                    });
+                                    setTables(updatedTables);
+                                  }}
                               />
                             </div>
                           </TableHead>
@@ -3252,6 +3253,89 @@ function StepTwo({
                                 )}
                               </div>
                             </TableCell>
+                            {/* Crowns - Always editable */}
+                            <TableCell className="align-top p-2">
+                              <div className="space-y-1">
+                                {door.crowns?.map(
+                                    (crown: any, crownIndex: number) => (
+                                        <div
+                                            key={crownIndex}
+                                            className="bg-purple-50 p-2 rounded border space-y-1"
+                                        >
+                                          <div className="grid grid-cols-2 gap-1">
+                                            <div>
+                                              {crownIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Кол-во
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      crown.quantity?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedCrowns = [
+                                                      ...door.crowns,
+                                                    ];
+                                                    updatedCrowns[crownIndex] = {
+                                                      ...updatedCrowns[crownIndex],
+                                                      model:
+                                                          table.selectedCrownProduct
+                                                              ? table.selectedCrownProduct
+                                                                  .id
+                                                              : "",
+                                                      quantity: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "crowns",
+                                                        updatedCrowns,
+                                                    );
+                                                  }}
+                                                  placeholder="Кол-во"
+                                                  className="h-8"
+                                              />
+                                            </div>
+                                            <div>
+                                              {crownIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Ширина
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      crown.width?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedCrowns = [
+                                                      ...door.crowns,
+                                                    ];
+                                                    updatedCrowns[crownIndex] = {
+                                                      ...updatedCrowns[crownIndex],
+                                                      width: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "crowns",
+                                                        updatedCrowns,
+                                                    );
+                                                  }}
+                                                  placeholder="Ширина"
+                                                  className="h-8"
+                                              />
+                                            </div>
+                                          </div>
+                                        </div>
+                                    ),
+                                )}
+                              </div>
+                            </TableCell>
 
                             {/* Extensions - Always editable */}
                             <TableCell className="align-top p-2">
@@ -3370,89 +3454,7 @@ function StepTwo({
                               </div>
                             </TableCell>
 
-                            {/* Crowns - Always editable */}
-                            <TableCell className="align-top p-2">
-                              <div className="space-y-1">
-                                {door.crowns?.map(
-                                  (crown: any, crownIndex: number) => (
-                                    <div
-                                      key={crownIndex}
-                                      className="bg-purple-50 p-2 rounded border space-y-1"
-                                    >
-                                      <div className="grid grid-cols-2 gap-1">
-                                        <div>
-                                          {crownIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Кол-во
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              crown.quantity?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCrowns = [
-                                                ...door.crowns,
-                                              ];
-                                              updatedCrowns[crownIndex] = {
-                                                ...updatedCrowns[crownIndex],
-                                                model:
-                                                  table.selectedCrownProduct
-                                                    ? table.selectedCrownProduct
-                                                        .id
-                                                    : "",
-                                                quantity: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "crowns",
-                                                updatedCrowns,
-                                              );
-                                            }}
-                                            placeholder="Кол-во"
-                                            className="h-8"
-                                          />
-                                        </div>
-                                        <div>
-                                          {crownIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Ширина
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              crown.width?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCrowns = [
-                                                ...door.crowns,
-                                              ];
-                                              updatedCrowns[crownIndex] = {
-                                                ...updatedCrowns[crownIndex],
-                                                width: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "crowns",
-                                                updatedCrowns,
-                                              );
-                                            }}
-                                            placeholder="Ширина"
-                                            className="h-8"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            </TableCell>
+
 
                             {/* Кубик - Always editable */}
                             <TableCell className="align-midlle">

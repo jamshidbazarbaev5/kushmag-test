@@ -1782,50 +1782,7 @@ function StepTwo({
                         {t("forms.threshold")}
                       </TableHead>
                       <TableHead className="w-28">Паска орыны</TableHead>
-                      <TableHead className="min-w-[200px]">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span>{t("forms.extensions")}</span>
-                            {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
-                          </div>
-                          <HeaderSearch
-                            value={table.extensionSearch}
-                            onChange={(value) => {
-                              const updatedTables = tables.map((t) => {
-                                if (t.id === table.id) {
-                                  return { ...t, extensionSearch: value };
-                                }
-                                return t;
-                              });
-                              setTables(updatedTables);
-                            }}
-                            placeholder={t("forms.search_extensions")}
-                            selectedProduct={table.selectedExtensionProduct}
-                            onProductSelect={(product) => {
-                              const updatedTables = tables.map((t) => {
-                                if (t.id === table.id) {
-                                  return {
-                                    ...t,
-                                    selectedExtensionProduct: product,
-                                    extensionSearch: product?.name || "",
-                                  };
-                                }
-                                return t;
-                              });
-                              setTables(updatedTables);
 
-                              // Auto-apply to this table only
-                              if (product) {
-                                autoApplyProductToTable(
-                                  table.id,
-                                  "extension",
-                                  product,
-                                );
-                              }
-                            }}
-                          />
-                        </div>
-                      </TableHead>
                       <TableHead className="min-w-[250px]">
                         <div className="space-y-2">
                           <div className="flex items-center gap-1">
@@ -1911,6 +1868,50 @@ function StepTwo({
                                 );
                               }
                             }}
+                          />
+                        </div>
+                      </TableHead>
+                      <TableHead className="min-w-[200px]">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span>{t("forms.extensions")}</span>
+                            {/* <span className="text-xs text-gray-500">(Search & select first)</span> */}
+                          </div>
+                          <HeaderSearch
+                              value={table.extensionSearch}
+                              onChange={(value) => {
+                                const updatedTables = tables.map((t) => {
+                                  if (t.id === table.id) {
+                                    return { ...t, extensionSearch: value };
+                                  }
+                                  return t;
+                                });
+                                setTables(updatedTables);
+                              }}
+                              placeholder={t("forms.search_extensions")}
+                              selectedProduct={table.selectedExtensionProduct}
+                              onProductSelect={(product) => {
+                                const updatedTables = tables.map((t) => {
+                                  if (t.id === table.id) {
+                                    return {
+                                      ...t,
+                                      selectedExtensionProduct: product,
+                                      extensionSearch: product?.name || "",
+                                    };
+                                  }
+                                  return t;
+                                });
+                                setTables(updatedTables);
+
+                                // Auto-apply to this table only
+                                if (product) {
+                                  autoApplyProductToTable(
+                                      table.id,
+                                      "extension",
+                                      product,
+                                  );
+                                }
+                              }}
                           />
                         </div>
                       </TableHead>
@@ -2278,121 +2279,7 @@ function StepTwo({
                           />
                         </TableCell>
 
-                        {/* Extensions - Always editable */}
-                        <TableCell className="align-top p-2">
-                          <div className="space-y-1">
-                            {door.extensions?.map(
-                              (extension: any, extIndex: number) => (
-                                <div
-                                  key={extIndex}
-                                  className="bg-blue-50 p-2 rounded border space-y-1"
-                                >
-                                  <div className="grid grid-cols-3 gap-1">
-                                    <div>
-                                      {extIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Высота
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={
-                                          extension.height?.toString() || ""
-                                        }
-                                        onChange={(e) => {
-                                          const updatedExtensions = [
-                                            ...door.extensions,
-                                          ];
-                                          updatedExtensions[extIndex] = {
-                                            ...updatedExtensions[extIndex],
-                                            height: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "extensions",
-                                            updatedExtensions,
-                                          );
-                                        }}
-                                        className="h-8"
-                                        placeholder="Высота"
-                                      />
-                                    </div>
-                                    <div>
-                                      {extIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Ширина
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={
-                                          extension.width?.toString() || ""
-                                        }
-                                        onChange={(e) => {
-                                          const updatedExtensions = [
-                                            ...door.extensions,
-                                          ];
-                                          updatedExtensions[extIndex] = {
-                                            ...updatedExtensions[extIndex],
-                                            width: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "extensions",
-                                            updatedExtensions,
-                                          );
-                                        }}
-                                        className="h-8"
-                                        placeholder="Ширина"
-                                      />
-                                    </div>
-                                    <div>
-                                      {extIndex === 0 && (
-                                        <label className="text-xs text-gray-600">
-                                          Кол-во
-                                        </label>
-                                      )}
-                                      <Input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={
-                                          extension.quantity?.toString() || ""
-                                        }
-                                        onChange={(e) => {
-                                          const updatedExtensions = [
-                                            ...door.extensions,
-                                          ];
-                                          updatedExtensions[extIndex] = {
-                                            ...updatedExtensions[extIndex],
-                                            model:
-                                              table.selectedExtensionProduct
-                                                ? table.selectedExtensionProduct
-                                                    .id
-                                                : updatedExtensions[extIndex]
-                                                    ?.model || "",
-                                            quantity: e.target.value,
-                                          };
-                                          handleFieldChange(
-                                            index,
-                                            table.id,
-                                            "extensions",
-                                            updatedExtensions,
-                                          );
-                                        }}
-                                        className="h-8"
-                                        placeholder="Кол-во"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </TableCell>
+
 
                         {/* Casings - Always editable */}
                         <TableCell className="align-top p-2">
@@ -2656,7 +2543,121 @@ function StepTwo({
                             )}
                           </div>
                         </TableCell>
-
+                        {/* Extensions - Always editable */}
+                        <TableCell className="align-top p-2">
+                          <div className="space-y-1">
+                            {door.extensions?.map(
+                                (extension: any, extIndex: number) => (
+                                    <div
+                                        key={extIndex}
+                                        className="bg-blue-50 p-2 rounded border space-y-1"
+                                    >
+                                      <div className="grid grid-cols-3 gap-1">
+                                        <div>
+                                          {extIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Высота
+                                              </label>
+                                          )}
+                                          <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                  extension.height?.toString() || ""
+                                              }
+                                              onChange={(e) => {
+                                                const updatedExtensions = [
+                                                  ...door.extensions,
+                                                ];
+                                                updatedExtensions[extIndex] = {
+                                                  ...updatedExtensions[extIndex],
+                                                  height: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "extensions",
+                                                    updatedExtensions,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Высота"
+                                          />
+                                        </div>
+                                        <div>
+                                          {extIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Ширина
+                                              </label>
+                                          )}
+                                          <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                  extension.width?.toString() || ""
+                                              }
+                                              onChange={(e) => {
+                                                const updatedExtensions = [
+                                                  ...door.extensions,
+                                                ];
+                                                updatedExtensions[extIndex] = {
+                                                  ...updatedExtensions[extIndex],
+                                                  width: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "extensions",
+                                                    updatedExtensions,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Ширина"
+                                          />
+                                        </div>
+                                        <div>
+                                          {extIndex === 0 && (
+                                              <label className="text-xs text-gray-600">
+                                                Кол-во
+                                              </label>
+                                          )}
+                                          <Input
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                  extension.quantity?.toString() || ""
+                                              }
+                                              onChange={(e) => {
+                                                const updatedExtensions = [
+                                                  ...door.extensions,
+                                                ];
+                                                updatedExtensions[extIndex] = {
+                                                  ...updatedExtensions[extIndex],
+                                                  model:
+                                                      table.selectedExtensionProduct
+                                                          ? table.selectedExtensionProduct
+                                                              .id
+                                                          : updatedExtensions[extIndex]
+                                                          ?.model || "",
+                                                  quantity: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "extensions",
+                                                    updatedExtensions,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Кол-во"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                ),
+                            )}
+                          </div>
+                        </TableCell>
                         {/* Кубик - Always editable */}
                         <TableCell className="align-top">
                           <Input
