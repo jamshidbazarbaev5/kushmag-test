@@ -98,6 +98,8 @@ interface ResourceFormProps<T extends Record<string, any>> {
   children?: React.ReactNode;
   form?: ReturnType<typeof useForm<T>>;
   gridClassName?: string; // New prop for custom grid layout
+  validationErrors?: { [key: string]: boolean }; // New prop for validation errors
+  clearFieldError?: (fieldName: string) => void; // Function to clear field errors
 }
 
 export function ResourceForm<T extends Record<string, any>>({
@@ -110,6 +112,8 @@ export function ResourceForm<T extends Record<string, any>>({
   children,
   form: providedForm,
   gridClassName,
+  validationErrors = {},
+  clearFieldError,
 }: ResourceFormProps<T>) {
   // Transform defaultValues to handle nested fields
   const transformedDefaultValues = fields.reduce(
@@ -199,6 +203,9 @@ export function ResourceForm<T extends Record<string, any>>({
                                   <Select
                                     onValueChange={(value) => {
                                       formField.onChange(value);
+                                      if (clearFieldError && value) {
+                                        clearFieldError(field.name);
+                                      }
                                       if (field.onChange) {
                                         field.onChange(
                                           value,
@@ -225,9 +232,13 @@ export function ResourceForm<T extends Record<string, any>>({
                                     }
                                   >
                                     <SelectTrigger
-                                      className={
+                                      className={`${
                                         field.readOnly ? "bg-gray-100" : ""
-                                      }
+                                      } ${
+                                        validationErrors[field.name]
+                                          ? "border-red-500 border-2"
+                                          : ""
+                                      }`}
                                     >
                                       <SelectValue
                                         placeholder={
@@ -266,6 +277,9 @@ export function ResourceForm<T extends Record<string, any>>({
                                 <Select
                                   onValueChange={(value) => {
                                     formField.onChange(value);
+                                    if (clearFieldError && value) {
+                                      clearFieldError(field.name);
+                                    }
                                     if (field.onChange) {
                                       field.onChange(value);
                                     }
@@ -283,7 +297,13 @@ export function ResourceForm<T extends Record<string, any>>({
                                       : undefined
                                   }
                                 >
-                                  <SelectTrigger className="w-full">
+                                  <SelectTrigger
+                                    className={`w-full ${
+                                      validationErrors[field.name]
+                                        ? "border-red-500 border-2"
+                                        : ""
+                                    }`}
+                                  >
                                     <SelectValue
                                       placeholder={field.placeholder}
                                     />
@@ -317,6 +337,9 @@ export function ResourceForm<T extends Record<string, any>>({
                                       { fieldName: field.name, selectedValue },
                                     );
                                     formField.onChange(selectedValue);
+                                    if (clearFieldError && selectedValue) {
+                                      clearFieldError(field.name);
+                                    }
                                     console.log(
                                       "ResourceForm - formField.onChange completed for:",
                                       field.name,
@@ -328,6 +351,11 @@ export function ResourceForm<T extends Record<string, any>>({
                                   }
                                   disabled={field.disabled}
                                   allowReset={field.allowReset}
+                                  className={
+                                    validationErrors[field.name]
+                                      ? "border-red-500 border-2"
+                                      : ""
+                                  }
                                 />
                               ) : field.type === "multi-select" ? (
                                 <MultiSelect
@@ -360,20 +388,46 @@ export function ResourceForm<T extends Record<string, any>>({
                                   type="number"
                                   placeholder={field.placeholder}
                                   {...formField}
+                                  onChange={(e) => {
+                                    formField.onChange(e);
+                                    if (
+                                      clearFieldError &&
+                                      e.target.value.trim()
+                                    ) {
+                                      clearFieldError(field.name);
+                                    }
+                                  }}
                                   readOnly={field.readOnly}
-                                  className={
+                                  className={`${
                                     field.readOnly ? "bg-gray-100" : ""
-                                  }
+                                  } ${
+                                    validationErrors[field.name]
+                                      ? "border-red-500 border-2"
+                                      : ""
+                                  }`}
                                 />
                               ) : (
                                 <Input
                                   type={field.type}
                                   placeholder={field.placeholder}
                                   {...formField}
+                                  onChange={(e) => {
+                                    formField.onChange(e);
+                                    if (
+                                      clearFieldError &&
+                                      e.target.value.trim()
+                                    ) {
+                                      clearFieldError(field.name);
+                                    }
+                                  }}
                                   readOnly={field.readOnly}
-                                  className={
+                                  className={`${
                                     field.readOnly ? "bg-gray-100" : ""
-                                  }
+                                  } ${
+                                    validationErrors[field.name]
+                                      ? "border-red-500 border-2"
+                                      : ""
+                                  }`}
                                 />
                               )}
                             </FormControl>

@@ -59,11 +59,14 @@ export default function SalaryOverviewPage() {
     params: {
       ...(selectedMonth && { month: selectedMonth }),
     },
-  }) as { data: SalaryData[] | undefined; isLoading: boolean };
+  }) as {
+    data: { results: SalaryData[]; totals?: any } | undefined;
+    isLoading: boolean;
+  };
 
   const { data: usersData } = useGetUsersData();
 
-  const monthlySalaries = monthlySalariesData || [];
+  const monthlySalaries = monthlySalariesData?.results || [];
   const users = usersData || [];
 
   // Filter data based on search and role
@@ -197,64 +200,72 @@ export default function SalaryOverviewPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("forms.user")}</TableHead>
-                    <TableHead>{t("forms.date")}</TableHead>
+              {filteredSalaries.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                НЕТ ДАННЫХ
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("forms.user")}</TableHead>
+                      <TableHead>{t("forms.date")}</TableHead>
 
-                    {/* <TableHead>{t('forms.role')}</TableHead> */}
-                    <TableHead>{t("forms.fixed_salary")}</TableHead>
-                    <TableHead>{t("forms.order_percentage")} (%)</TableHead>
-                    <TableHead>{t("forms.order_percentage_salary")}</TableHead>
-                    <TableHead>{t("forms.penalties")}</TableHead>
-                    <TableHead>{t("forms.bonuses")}</TableHead>
-                    <TableHead>{t("forms.total_salary")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSalaries.map((salary) => {
-                    const userName =
-                      salary.user_details?.full_name ||
-                      users.find((user) => user.id === salary.user)
-                        ?.full_name ||
-                      `User ${salary.user}`;
+                      {/* <TableHead>{t('forms.role')}</TableHead> */}
+                      <TableHead>{t("forms.fixed_salary")}</TableHead>
+                      <TableHead>{t("forms.order_percentage")} (%)</TableHead>
+                      <TableHead>
+                        {t("forms.order_percentage_salary")}
+                      </TableHead>
+                      <TableHead>{t("forms.penalties")}</TableHead>
+                      <TableHead>{t("forms.bonuses")}</TableHead>
+                      <TableHead>{t("forms.total_salary")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSalaries.map((salary) => {
+                      const userName =
+                        salary.user_details?.full_name ||
+                        users.find((user) => user.id === salary.user)
+                          ?.full_name ||
+                        `User ${salary.user}`;
 
-                    return (
-                      <TableRow key={salary.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <UserCheck className="h-4 w-4 text-muted-foreground" />
-                            {userName}
-                          </div>
-                        </TableCell>
-                        {/* <TableCell>
+                      return (
+                        <TableRow key={salary.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              <UserCheck className="h-4 w-4 text-muted-foreground" />
+                              {userName}
+                            </div>
+                          </TableCell>
+                          {/* <TableCell>
                           <Badge variant="secondary">
                             {getUserRoleLabel(userRole)}
                           </Badge>
                         </TableCell> */}
-                        <TableCell>{salary.month || 0}</TableCell>
-                        <TableCell>
-                          {formatNumber(salary.fixed_salary || 0)}
-                        </TableCell>
-                        <TableCell>{salary.order_percentage || 0}%</TableCell>
-                        <TableCell>
-                          {formatNumber(salary.order_percentage_salary || 0)}
-                        </TableCell>
-                        <TableCell className="text-red-600">
-                          -{formatNumber(salary.penalties || 0)}
-                        </TableCell>
-                        <TableCell className="text-green-600">
-                          +{formatNumber(salary.bonuses || 0)}
-                        </TableCell>
-                        <TableCell className="font-bold">
-                          {formatNumber(salary.total_salary || 0)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                          <TableCell>{salary.month || 0}</TableCell>
+                          <TableCell>
+                            {formatNumber(salary.fixed_salary || 0)}
+                          </TableCell>
+                          <TableCell>{salary.order_percentage || 0}%</TableCell>
+                          <TableCell>
+                            {formatNumber(salary.order_percentage_salary || 0)}
+                          </TableCell>
+                          <TableCell className="text-red-600">
+                            -{formatNumber(salary.penalties || 0)}
+                          </TableCell>
+                          <TableCell className="text-green-600">
+                            +{formatNumber(salary.bonuses || 0)}
+                          </TableCell>
+                          <TableCell className="font-bold">
+                            {formatNumber(salary.total_salary || 0)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

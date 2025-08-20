@@ -279,6 +279,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* Orders - for ADMIN, MANUFACTURE, PRODAVEC and OPERATOR */}
             {(currentUser?.role === "ADMIN" ||
               currentUser?.role === "MANUFACTURE" ||
+                currentUser?.role === "OPERATOR" ||
               currentUser?.role === "PRODAVEC")
               && (
               <a

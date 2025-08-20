@@ -1,6 +1,6 @@
 // Edit-order page with create-order pattern
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { formatNumber, formatCurrency } from "../../utils/numberFormat";
+import { useNavigate, useParams } from "react-router-dom";
+import {formatCurrency } from "../../utils/numberFormat";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";

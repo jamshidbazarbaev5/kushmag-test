@@ -103,6 +103,8 @@ export default function OrdersPage() {
   const [_deadlineDayValue, setDeadlineDayValue] = useState<number | null>(
     null,
   );
+  const [activeDeadlineFilter, setActiveDeadlineFilter] =
+    useState<string>("all");
   const [showSMSDialog, setShowSMSDialog] = useState<string | null>(null);
   const [selectedNewDeadline, setSelectedNewDeadline] = useState<string>("");
 
@@ -287,12 +289,11 @@ export default function OrdersPage() {
   const handleSendSMS = async (orderId: string, newDeadline: string) => {
     try {
       await api.post(`orders/${orderId}/sms/`, {
-        new_deadline: newDeadline
+        new_deadline: newDeadline,
       });
 
       toast.success(
-        t("messages.sms_sent_successfully") ||
-          "SMS sent successfully",
+        t("messages.sms_sent_successfully") || "SMS sent successfully",
       );
       setShowSMSDialog(null);
       setSelectedNewDeadline("");
@@ -315,7 +316,7 @@ export default function OrdersPage() {
     // Set default deadline to current order's deadline or tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    setSelectedNewDeadline(tomorrow.toISOString().split('T')[0]);
+    setSelectedNewDeadline(tomorrow.toISOString().split("T")[0]);
   };
 
   const handleColumnVisibilityChange = (column: string, checked: boolean) => {
@@ -417,6 +418,19 @@ export default function OrdersPage() {
     // For MANUFACTURE role, always filter to moy_sklad status only
     if (currentUser?.role === "MANUFACTURE") {
       params.order_status = "moy_sklad";
+
+      // Add deadline filter for manufacturers
+      if (activeDeadlineFilter !== "all") {
+        if (activeDeadlineFilter === "deadline_7") {
+          params.days_left__lte = 7;
+        } else if (activeDeadlineFilter === "deadline_3") {
+          params.days_left__lte = 3;
+        } else if (activeDeadlineFilter === "deadline_1") {
+          params.days_left__lte = 1;
+        } else if (activeDeadlineFilter === "deadline_custom") {
+          params.days_left__lte = currentDeadlineDay;
+        }
+      }
     } else {
       // Add status filter based on active tab for other roles
       if (activeStatusTab !== "all") {
@@ -520,12 +534,10 @@ export default function OrdersPage() {
     }
   };
 
-
-
-  const handleProductionStatusFilterChange = (status: string) => {
-    setActiveProductionStatusFilter(status);
-    setCurrentPage(1);
-  };
+  // const handleProductionStatusFilterChange = (status: string) => {
+  //   setActiveProductionStatusFilter(status);
+  //   setCurrentPage(1);
+  // };
 
   const handleProductionDoorTypeFilterChange = (doorType: string) => {
     setActiveProductionDoorTypeFilter(doorType);
@@ -539,6 +551,11 @@ export default function OrdersPage() {
 
   const handleCounterpartSelect = (value: string | number) => {
     setFilters((prev) => ({ ...prev, agent: String(value) }));
+    setCurrentPage(1);
+  };
+
+  const handleDeadlineFilterChange = (filter: string) => {
+    setActiveDeadlineFilter(filter);
     setCurrentPage(1);
   };
 
@@ -567,6 +584,7 @@ export default function OrdersPage() {
     setActiveProductionStatusFilter("all");
     setActiveProductionDoorTypeFilter("all");
     setDeadlineDayValue(null);
+    setActiveDeadlineFilter("all");
     setCounterpartSearchQuery("");
     setProjectSearchQuery("");
     setStoreSearchQuery("");
@@ -709,31 +727,6 @@ export default function OrdersPage() {
               }}
               className="h-8 w-48"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setDescriptionFilter("");
-                setCurrentPage(1);
-              }}
-              className="h-8 px-3"
-            >
-              Очистить
-            </Button>
-          </div>
-
-          {/* Production Status Filter */}
-          <div className="flex gap-1 border rounded-md">
-            <Button
-              variant={
-                activeProductionStatusFilter === "all" ? "default" : "ghost"
-              }
-              size="sm"
-              onClick={() => handleProductionStatusFilterChange("all")}
-              className="px-3 py-1 h-8 text-xs"
-            >
-              Все
-            </Button>
           </div>
 
           {/* Production Door Type Filter */}
@@ -814,12 +807,13 @@ export default function OrdersPage() {
             )}
           </div>
 
-          {currentUser?.role !== "MANUFACTURE" && (
-            <Button onClick={() => setShowDoorTypeDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t("common.create")}
-            </Button>
-          )}
+          {currentUser?.role !== "MANUFACTURE" &&
+            currentUser?.role !== "OPERATOR" && (
+              <Button onClick={() => setShowDoorTypeDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                {t("common.create")}
+              </Button>
+            )}
         </div>
       </div>
 
@@ -866,6 +860,38 @@ export default function OrdersPage() {
             <span className="text-sm font-medium text-blue-800">
               {t("order_status.moy_sklad")} {t("common.orders") || "Orders"}
             </span>
+          </div>
+        )}
+
+        {/* Deadline Filter for MANUFACTURE role */}
+        {currentUser?.role === "MANUFACTURE" && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">
+              {t("navigation.deadline_day")}:
+            </span>
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+              <button
+                onClick={() => handleDeadlineFilterChange("all")}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  activeDeadlineFilter === "all"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {t("common.all")}
+              </button>
+              <button
+                onClick={() => handleDeadlineFilterChange("deadline_7")}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  activeDeadlineFilter === "deadline_7"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                ≤7 {t("daily_plans.days") || "дней"}
+              </button>
+             
+            </div>
           </div>
         )}
 
@@ -2186,7 +2212,10 @@ export default function OrdersPage() {
       </Dialog>
 
       {/* SMS Dialog */}
-      <Dialog open={!!showSMSDialog} onOpenChange={() => setShowSMSDialog(null)}>
+      <Dialog
+        open={!!showSMSDialog}
+        onOpenChange={() => setShowSMSDialog(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col space-y-6 py-6">
             <div className="text-center">
@@ -2194,7 +2223,8 @@ export default function OrdersPage() {
                 {t("common.send_sms") || "Send SMS"}
               </h2>
               <p className="text-sm text-gray-600">
-                {t("messages.select_new_deadline") || "Select new deadline date"}
+                {t("messages.select_new_deadline") ||
+                  "Select new deadline date"}
               </p>
             </div>
 
@@ -2208,7 +2238,7 @@ export default function OrdersPage() {
                   value={selectedNewDeadline}
                   onChange={(e) => setSelectedNewDeadline(e.target.value)}
                   className="w-full"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date().toISOString().split("T")[0]}
                 />
               </div>
             </div>

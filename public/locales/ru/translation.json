@@ -9,8 +9,8 @@
   },
   "common": {
     "language": "Язык",
-    "wood":"Агаш капы",
-    "door_type":"Тип двери",
+    "wood": "Агаш капы",
+    "door_type": "Тип двери",
     "steel": "Темир капы",
     "orders": "Заказы",
     "view_pdf": "Распечатать",
@@ -40,6 +40,7 @@
     "save": "Сохранить",
     "cancel": "Отмена",
     "saving": "Сохранение...",
+    "checking": "Проверка...",
     "information": "Информация",
 
     "search": "Поиск",
@@ -141,12 +142,12 @@
     "december": "Декабрь"
   },
   "navigation": {
-    "deadline_day":"День крайнего срока",
+    "deadline_day": "День крайнего срока",
 
     "orders": "Заказы",
     "daily_plans": "Ежедневные планы",
     "steel_colors": "Цвета стали",
-    "frames":"Коробка",
+    "frames": "Коробка",
     "claddings": "Общибка",
     "sales_overview": "Зарплата",
     "attribute_settings": "Настройки атрибутов",
@@ -258,10 +259,10 @@
   },
 
   "forms": {
-    "add_component_row":"Добавить новую модель",
-    "deadline_day":"День крайнего срока",
-    "new_deadline":"Новый дедлайн",
-    "extra_comment":"Коментария",
+    "add_component_row": "Добавить новую модель",
+    "deadline_day": "День крайнего срока",
+    "new_deadline": "Новый дедлайн",
+    "extra_comment": "Коментария",
     "steel_color_name": "Название цвета стали",
     "cladding_name": "Название обшивки",
     "frame_name": "Название коробки",
@@ -519,6 +520,7 @@
     "bonuses": "Бонусы",
     "total_salary": "Общая зарплата",
     "staff_member": "Сотрудник",
+    "check_api_connection": "Проверить API подключение",
     "zamershik": "Замерщик",
     "door": "Дверь",
     "dimensions": "Размеры",
@@ -581,13 +583,18 @@
     "success": {
       "created": "{{item}} успешно создан",
       "updated": "{{item}} успешно обновлен",
-      "deleted": "{{item}} успешно удален"
+      "deleted": "{{item}} успешно удален",
+      "api_connection": "API подключение успешно",
+      "api_connected": "API подключено"
     },
     "error": {
       "create": "Произошла ошибка при создании {{item}}",
       "update": "Произошла ошибка при обновлении {{item}}",
       "delete": "Произошла ошибка при удалении {{item}}",
-      "required_fields": "Заполните все обязательные поля"
+      "required_fields": "Заполните все обязательные поля",
+      "api_connection": "Ошибка подключения к API",
+      "api_connection_failed": "Не удалось подключиться к API",
+      "api_credentials_required": "Требуются API логин и пароль"
     },
     "confirm": {
       "delete": "Вы уверены, что хотите удалить этот элемент?"
@@ -621,7 +628,7 @@
     "select_new_deadline": "Выберите новую дату дедлайна"
   },
   "placeholders": {
-    "enter_extra_comment":"Пишите коментарий",
+    "enter_extra_comment": "Пишите коментарий",
     "search_frame": "Поиск коробки",
     "search_cladding": "Поиск общибки",
     "search_lock": "Поиск замоков",

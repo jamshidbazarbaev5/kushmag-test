@@ -193,6 +193,67 @@ export default function CreateOrderPage() {
   const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
   const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
 
+  // Validation functionality
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const validateRequiredFields = (
+    formData: any,
+    doors: any[],
+    doorType: "WOOD" | "STEEL",
+  ): boolean => {
+    const errors: { [key: string]: boolean } = {};
+    let isValid = true;
+
+    // Required fields for all orders
+    const requiredFields = [
+      { field: "agent", name: "Контрагент" },
+      { field: "organization", name: "Организация" },
+      { field: "seller", name: "Продавец" },
+      { field: "operator", name: "Оператор" },
+      { field: "deadline_date", name: "Срок исполнения" },
+    ];
+
+    // Check required form fields
+    requiredFields.forEach(({ field }) => {
+      const value = formData[field];
+      if (
+        !value ||
+        (typeof value === "string" && value.trim() === "") ||
+        (typeof value === "number" && value === 0) ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        errors[field] = true;
+        isValid = false;
+      }
+    });
+
+    // For steel doors, validate door_name is required
+    if (doorType === "STEEL" && doors && doors.length > 0) {
+      doors.forEach((door, index) => {
+        if (
+          !door.door_name ||
+          (typeof door.door_name === "string" && door.door_name.trim() === "")
+        ) {
+          errors[`door_name_${index}`] = true;
+          isValid = false;
+        }
+      });
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const clearFieldError = (fieldName: string) => {
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+  };
+
   // Auto-save functionality
   const { getOrderDraft, clearAllDrafts, hasDraftData, STORAGE_KEYS } =
     useOrderDraftRecovery();
@@ -703,6 +764,13 @@ export default function CreateOrderPage() {
   };
 
   const onSubmit = async (data: any) => {
+    // Validate required fields before submission
+    const isValid = validateRequiredFields(data, doors, doorType);
+    if (!isValid) {
+      toast.error("Пожалуйста, заполните все обязательные поля");
+      return;
+    }
+
     const { total_sum, discountAmount, remainingBalance } = totals;
 
     // Note: Extensions, casings, crowns, and accessories without models or with quantity 0 are automatically filtered out
@@ -900,6 +968,8 @@ export default function CreateOrderPage() {
             materialFields={materialFields}
             isLoading={isLoading}
             doorType={doorType}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -914,6 +984,8 @@ export default function CreateOrderPage() {
             casingFormula={casingFormula}
             doorType={doorType}
             setDoorType={setDoorType}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {/* Step 3: Summary and Submit */}
@@ -947,6 +1019,8 @@ function StepOne({
   materialFields,
   isLoading,
   doorType,
+  validationErrors,
+  clearFieldError,
 }: any) {
   const { t } = useTranslation();
 
@@ -975,10 +1049,21 @@ function StepOne({
                 </label>
                 <SearchableCounterpartySelect
                   value={orderForm.watch("agent")}
-                  onChange={(value) => orderForm.setValue("agent", value)}
+                  onChange={(value) => {
+                    orderForm.setValue("agent", value);
+                    if (value) clearFieldError("agent");
+                  }}
                   placeholder={t("placeholders.select_agent")}
                   required={true}
+                  className={
+                    validationErrors.agent ? "border-red-500 border-2" : ""
+                  }
                 />
+                {validationErrors.agent && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Это поле обязательно для заполнения
+                  </p>
+                )}
               </div>
               <ResourceForm
                 fields={orderFields}
@@ -987,6 +1072,8 @@ function StepOne({
                 hideSubmitButton={true}
                 form={orderForm}
                 gridClassName="md:grid-cols-2 gap-6"
+                validationErrors={validationErrors}
+                clearFieldError={clearFieldError}
               />
             </CardContent>
           </Card>
@@ -1036,6 +1123,8 @@ function StepTwo({
   crownSize,
   casingFormula,
   doorType,
+  validationErrors,
+  clearFieldError,
 }: any) {
   const { t } = useTranslation();
 
@@ -2784,17 +2873,25 @@ function StepTwo({
                               <Input
                                 type="text"
                                 value={door.door_name || ""}
-                                onChange={(e) =>
+                                onChange={(e) => {
                                   handleFieldChange(
                                     index,
                                     table.id,
                                     "door_name",
                                     e.target.value,
-                                  )
-                                }
+                                  );
+                                  if (e.target.value.trim()) {
+                                    clearFieldError(`door_name_${index}`);
+                                  }
+                                }}
                                 placeholder="Название двери"
-                                className="w-32"
+                                className={`w-full ${validationErrors[`door_name_${index}`] ? "border-red-500 border-2" : ""}`}
                               />
+                              {validationErrors[`door_name_${index}`] && (
+                                <p className="text-red-500 text-xs mt-1">
+                                  Название двери обязательно
+                                </p>
+                              )}
                             </TableCell>
 
                             {/* Steel Color */}

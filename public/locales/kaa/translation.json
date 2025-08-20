@@ -38,6 +38,7 @@
     "total": "jámi",
     "current_formula": "Házirgi formula",
     "saving": "Saqlap qoyılmaqta...",
+    "checking": "Tekseriw...",
     "information": "Maǵlıwmat"
   },
   "roles": {
@@ -285,6 +286,7 @@
     "fixed_salary": "Túraqli maash",
     "order_percentage": "Buyırtpa payızı",
     "staff_member": "Xızmetker",
+    "check_api_connection": "API baylanıstı tekserıw",
     "sales_plan": "Satıw planı",
     "clients_plan": "Klientler planı",
     "sales_count_plan": "Satıw sanı planı",
@@ -373,13 +375,18 @@
     "success": {
       "created": "{{item}} sátti jasaldı",
       "updated": "{{item}} sátti jańartıldı",
-      "deleted": "{{item}} sátti joyıldı"
+      "deleted": "{{item}} sátti óshirildi",
+      "api_connection": "API baylanıs sátti",
+      "api_connected": "API baylanıstı"
     },
     "error": {
       "create": "{{item}} jasaw kezinde qate payda boldı",
       "update": "{{item}} jańartw kezinde qate payda boldı",
       "delete": "{{item}} joyw kezinde qate payda boldı",
-      "required_fields": "Hámmesi qájetti maydan tolıqlarıń"
+      "required_fields": "Hámmesi qájetti maydan tolıqlarıń",
+      "api_connection": "API baylanıs qatesi",
+      "api_connection_failed": "API baylanıstırıw múmkin bolmadı",
+      "api_credentials_required": "API login hám parol qájetti"
     },
     "confirm": {
       "delete": "Bul elementdi joyıwǵa ishensiz be?"

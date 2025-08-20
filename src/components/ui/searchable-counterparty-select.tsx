@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Input } from './input';
-import { Button } from './button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from './form';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
-import api from '@/core/api/api';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Input } from "./input";
+import { Button } from "./button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./dialog";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "./form";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import api from "@/core/api/api";
 
 export interface Counterparty {
   id: string;
@@ -34,40 +41,44 @@ export function SearchableCounterpartySelect({
   className = "",
 }: SearchableCounterpartySelectProps) {
   const { t } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [counterparties, setCounterparties] = useState<Counterparty[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCounterparty, setSelectedCounterparty] = useState<Counterparty | null>(null);
+  const [selectedCounterparty, setSelectedCounterparty] =
+    useState<Counterparty | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const createForm = useForm({
     defaultValues: {
-      name: '',
-      phone: ''
-    }
+      name: "",
+      phone: "",
+    },
   });
 
   // Effect 1: Sync component with the initial value from the parent form
   useEffect(() => {
-    if (value && typeof value === 'object' && value.name) {
+    if (value && typeof value === "object" && value.name) {
       setSelectedCounterparty(value);
       setSearchQuery(value.name);
-    } else if (value && typeof value === 'string') {
+    } else if (value && typeof value === "string") {
       // If we have just an ID, we might need to fetch the full object
       // For now, we'll just clear the display
       setSelectedCounterparty(null);
-      setSearchQuery('');
+      setSearchQuery("");
     } else if (!value) {
       setSelectedCounterparty(null);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   }, [value]);
 
   // Effect 2: Perform search when the user types
   useEffect(() => {
     // Don't search if the dropdown is not open or if the query matches the selected counterparty name
-    if (!isOpen || (selectedCounterparty && searchQuery === selectedCounterparty.name)) {
+    if (
+      !isOpen ||
+      (selectedCounterparty && searchQuery === selectedCounterparty.name)
+    ) {
       return;
     }
 
@@ -79,11 +90,15 @@ export function SearchableCounterpartySelect({
 
       setIsLoading(true);
       try {
-        const res = await api.get(`counterparty/?search=${encodeURIComponent(searchQuery)}`);
-        const results = Array.isArray(res.data) ? res.data : res.data?.results || [];
+        const res = await api.get(
+          `counterparty/?search=${encodeURIComponent(searchQuery)}`,
+        );
+        const results = Array.isArray(res.data)
+          ? res.data
+          : res.data?.results || [];
         setCounterparties(results);
       } catch (error) {
-        console.error('Error searching counterparties:', error);
+        console.error("Error searching counterparties:", error);
         setCounterparties([]);
       } finally {
         setIsLoading(false);
@@ -97,9 +112,9 @@ export function SearchableCounterpartySelect({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setSearchQuery(newQuery);
-    
+
     // If user clears input, reset everything
-    if (newQuery === '') {
+    if (newQuery === "") {
       setSelectedCounterparty(null);
       onChange(null);
       setIsOpen(true);
@@ -108,7 +123,7 @@ export function SearchableCounterpartySelect({
 
   const handleCounterpartySelect = (counterparty: Counterparty) => {
     setSelectedCounterparty(counterparty);
-    setSearchQuery(counterparty.name || '');
+    setSearchQuery(counterparty.name || "");
     onChange(counterparty);
     setIsOpen(false);
   };
@@ -121,43 +136,46 @@ export function SearchableCounterpartySelect({
       if (selectedCounterparty) {
         setSearchQuery(selectedCounterparty.name);
       } else if (!selectedCounterparty && searchQuery) {
-        setSearchQuery('');
+        setSearchQuery("");
       }
     }, 200);
   };
 
-  const handleCreateCounterparty = async (data: { name: string; phone: string }) => {
+  const handleCreateCounterparty = async (data: {
+    name: string;
+    phone: string;
+  }) => {
     try {
-      const response = await api.post('counterparty/', {
+      const response = await api.post("counterparty/", {
         name: data.name,
-        phone: data.phone
+        phone: data.phone,
       });
-      
+
       const newCounterparty = response.data;
-      
+
       // Auto-select the newly created counterparty
       setSelectedCounterparty(newCounterparty);
       setSearchQuery(newCounterparty.name);
       onChange(newCounterparty);
-      
+
       // Close modal and reset form
       setShowCreateModal(false);
       createForm.reset();
       setIsOpen(false);
-      
+
       toast.success(t("messages.counterparty_created_successfully"));
     } catch (error: any) {
-      console.error('Error creating counterparty:', error);
+      console.error("Error creating counterparty:", error);
       toast.error(t("messages.error_creating_counterparty"));
     }
   };
 
   const handleShowCreateModal = () => {
     // Pre-fill the name field with the current search query
-    createForm.setValue('name', searchQuery);
+    createForm.setValue("name", searchQuery);
     setShowCreateModal(true);
   };
-  
+
   return (
     <>
       <div className={`relative ${className}`}>
@@ -186,13 +204,17 @@ export function SearchableCounterpartySelect({
                   <div
                     key={counterparty.id}
                     className={`p-3 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100 last:border-b-0 ${
-                      selectedCounterparty?.id === counterparty.id ? 'bg-blue-50 font-medium' : ''
+                      selectedCounterparty?.id === counterparty.id
+                        ? "bg-blue-50 font-medium"
+                        : ""
                     }`}
                     onMouseDown={() => handleCounterpartySelect(counterparty)}
                   >
                     <div className="font-medium">{counterparty.name}</div>
                     {counterparty.phone && (
-                      <div className="text-xs text-gray-500 mt-1">{counterparty.phone}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {counterparty.phone}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -241,9 +263,12 @@ export function SearchableCounterpartySelect({
               {t("forms.create_new_counterparty")}
             </DialogTitle>
           </DialogHeader>
-          
+
           <Form {...createForm}>
-            <form onSubmit={createForm.handleSubmit(handleCreateCounterparty)} className="space-y-4">
+            <form
+              onSubmit={createForm.handleSubmit(handleCreateCounterparty)}
+              className="space-y-4"
+            >
               <FormField
                 control={createForm.control}
                 name="name"
@@ -261,7 +286,7 @@ export function SearchableCounterpartySelect({
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={createForm.control}
                 name="phone"
@@ -279,7 +304,7 @@ export function SearchableCounterpartySelect({
                   </FormItem>
                 )}
               />
-              
+
               <div className="flex gap-2 pt-4">
                 <Button
                   type="button"
@@ -294,10 +319,9 @@ export function SearchableCounterpartySelect({
                   className="flex-1"
                   disabled={createForm.formState.isSubmitting}
                 >
-                  {createForm.formState.isSubmitting 
-                    ? t("common.creating") + "..." 
-                    : t("common.create")
-                  }
+                  {createForm.formState.isSubmitting
+                    ? t("common.creating") + "..."
+                    : t("common.create")}
                 </Button>
               </div>
             </form>

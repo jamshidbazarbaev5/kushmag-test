@@ -25,9 +25,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Save, X, Edit2, User as UserIcon, Calendar } from "lucide-react";
+import {
+  Save,
+  X,
+  Edit2,
+  User as UserIcon,
+  Calendar,
+  Wifi,
+  WifiOff,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 import type { User } from "@/core/api/user";
 import {
   useGetSellers,
@@ -99,6 +109,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   const [formData, setFormData] = useState<Partial<User>>({});
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(CURRENT_YEAR);
+  const [apiStatus, setApiStatus] = useState<
+    "idle" | "checking" | "success" | "error"
+  >("idle");
+  const [_apiMessage, setApiMessage] = useState<string>("");
 
   // API hooks
   const { data: sellers } = useGetSellers();
@@ -132,7 +146,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               ? operators
               : zamershiks;
         const staffMember = staffList?.find(
-          (staff:any) => staff.meta.href === userData.moy_sklad_staff?.meta.href,
+          (staff: any) =>
+            staff.meta.href === userData.moy_sklad_staff?.meta.href,
         );
         if (staffMember) {
           userData.staff_member = JSON.stringify(staffMember);
@@ -187,7 +202,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : [];
 
     return (
-      staffList?.map((staff:any) => ({
+      staffList?.map((staff: any) => ({
         label: staff.name,
         value: JSON.stringify(staff),
       })) || []
@@ -196,6 +211,49 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const shouldShowStaffField = () => {
     return ["PRODAVEC", "OPERATOR", "ZAMERSHIK"].includes(formData.role || "");
+  };
+
+  const checkApiConnection = async () => {
+    if (!formData.api_login || !formData.api_password) {
+      toast.error(t("messages.error.api_credentials_required"));
+      return;
+    }
+
+    setApiStatus("checking");
+    setApiMessage("");
+
+    try {
+      const response = await axios.post(
+        "https://kushmag.uz/api/api-check/",
+        {
+          api_login: formData.api_login,
+          api_password: formData.api_password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          timeout: 10000, // 10 second timeout
+        },
+      );
+
+      if (response.status === 200) {
+        setApiStatus("success");
+        setApiMessage('Есть соеденение');
+        toast.success('Есть соеденение');
+      } else {
+        setApiStatus("error");
+        setApiMessage('Пароль или логин неверно');
+        toast.error('Пароль или логин неверно');
+      }
+    } catch (error: any) {
+      setApiStatus("error");
+      const errorMessage =
+    
+       'Пароль или логин неверно'
+      setApiMessage(errorMessage);
+      toast.error(errorMessage);
+    }
   };
 
   // Yearly plan functions
@@ -437,7 +495,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {getStaffOptions().map((option:any) => (
+                        {getStaffOptions().map((option: any) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -472,6 +530,52 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     }
                     placeholder={t("placeholders.enter_api_password")}
                   />
+                </div>
+
+                <div className="md:col-span-2">
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={checkApiConnection}
+                      disabled={
+                        apiStatus === "checking" ||
+                        !formData.api_login ||
+                        !formData.api_password
+                      }
+                      className="flex items-center space-x-2"
+                    >
+                      {apiStatus === "checking" && (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      )}
+                      {apiStatus === "success" && (
+                        <Wifi className="w-4 h-4 text-green-600" />
+                      )}
+                      {apiStatus === "error" && (
+                        <WifiOff className="w-4 h-4 text-red-600" />
+                      )}
+                      {apiStatus === "idle" && <Wifi className="w-4 h-4" />}
+                      <span>
+                        {apiStatus === "checking"
+                          ? t("common.checking")
+                          : t("forms.check_api_connection")}
+                      </span>
+                    </Button>
+
+                    {apiStatus === "success" && (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      
+                      </div>
+                    )}
+
+                    {apiStatus === "error" && (
+                      <div className="flex items-center space-x-1">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                       
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div>
