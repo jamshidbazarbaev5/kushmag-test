@@ -24,6 +24,7 @@
     "add": "Добавить",
     "delete_warning": "Вы не можете восстановить удаленные данные",
     "export": "Экспорт",
+    "send_sms": "Отправить SMS",
     "close": "Закрыть",
     "legend": "Легенда",
     "or": "или",
@@ -257,7 +258,9 @@
   },
 
   "forms": {
+    "add_component_row":"Добавить новую модель",
     "deadline_day":"День крайнего срока",
+    "new_deadline":"Новый дедлайн",
     "extra_comment":"Коментария",
     "steel_color_name": "Название цвета стали",
     "cladding_name": "Название обшивки",
@@ -612,7 +615,10 @@
     "error_creating_order": "Ошибка при создании заказа",
     "error_updating_order": "Ошибка при обновлении заказа",
     "order_sent_to_moy_sklad": "Заказ успешно отправлен в Мой Склад",
-    "error_sending_to_moy_sklad": "Ошибка при отправке заказа в Мой Склад"
+    "error_sending_to_moy_sklad": "Ошибка при отправке заказа в Мой Склад",
+    "sms_sent_successfully": "SMS успешно отправлено",
+    "error_send_sms": "Ошибка при отправке SMS",
+    "select_new_deadline": "Выберите новую дату дедлайна"
   },
   "placeholders": {
     "enter_extra_comment":"Пишите коментарий",

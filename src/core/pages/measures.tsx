@@ -53,6 +53,12 @@ export default function MeasuresPage() {
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN" || currentUser?.is_superuser;
 
+  // Check if current user can create orders (admin, operator, or prodavec)
+  const canCreateOrder =
+    isAdmin ||
+    currentUser?.role === "OPERATOR" ||
+    currentUser?.role === "PRODAVEC";
+
   // Debounced filter update
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
@@ -89,7 +95,9 @@ export default function MeasuresPage() {
     : (measuresData as { count: number })?.count || 0;
 
   // Get filtered users based on role
-  const zamershikUsers = (users || []).filter((user: any) => user.role === "ZAMERSHIK");
+  const zamershikUsers = (users || []).filter(
+    (user: any) => user.role === "ZAMERSHIK",
+  );
 
   const handleFilterChange = (key: string, value: string) => {
     // Convert "all" back to empty string for API
@@ -234,7 +242,7 @@ export default function MeasuresPage() {
       let dropdownHeight = 16; // base padding (py-1 = 4px top + 4px bottom = 8px, plus some buffer)
       dropdownHeight += 40; // Edit button
       dropdownHeight += 40; // Export button
-      if (!row?.order_status && isAdmin) dropdownHeight += 40; // Create Order
+      if (!row?.order_status && canCreateOrder) dropdownHeight += 40; // Create Order
       if (isAdmin) dropdownHeight += 50; // Delete button + separator
 
       const spaceBelow = viewportHeight - rect.bottom - 10; // 10px buffer
@@ -358,8 +366,8 @@ export default function MeasuresPage() {
                 {t("actions.export")}
               </button>
 
-              {/* Show Create Order button only if order status is null and user is admin */}
-              {!row?.order_status && isAdmin && (
+              {/* Show Create Order button if order status is null and user can create orders */}
+              {!row?.order_status && canCreateOrder && (
                 <button
                   className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={(e) => {

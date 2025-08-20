@@ -767,6 +767,12 @@ export default function EditOrderPage() {
       type: "text",
       placeholder: t("placeholders.enter_description"),
     },
+    {
+      name: "extra_comment",
+      label: t("forms.extra_comment"),
+      type: "textarea",
+      placeholder: t("placeholders.enter_extra_comment"),
+    },
   ];
 
   // Material attributes fields - set once for all doors
@@ -823,12 +829,6 @@ export default function EditOrderPage() {
       type: "searchable-resource-select",
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
-    },
-    {
-      name: "extra_comment",
-      label: t("forms.extra_comment"),
-      type: "textarea",
-      placeholder: t("placeholders.enter_extra_comment"),
     },
   ];
 
@@ -936,6 +936,9 @@ export default function EditOrderPage() {
       zamershiksList: zamershiks,
       zamershikFound: getMetaById(zamershiks, data.zamershik),
     });
+
+    // Debug doors data being sent
+    console.log("Form submission - doors data being sent:", doors);
 
     const orderUpdateData = {
       ...data,
@@ -1128,6 +1131,7 @@ export default function EditOrderPage() {
             materialFields={materialFields}
             isLoading={isUpdating}
             order={orderData}
+            doorType={doorType}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -1179,6 +1183,7 @@ function StepOne({
   materialFields,
   isLoading,
   order,
+  doorType,
 }: any) {
   const { t } = useTranslation();
 
@@ -1221,29 +1226,31 @@ function StepOne({
           </Card>
         </div>
 
-        {/* Right side - Material Settings (50%) */}
-        <div className="flex-1">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Package className="h-6 w-6 text-green-600" />
-                </div>
-                {t("forms.material_attributes")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ResourceForm
-                fields={materialFields}
-                onSubmit={() => {}}
-                isSubmitting={isLoading}
-                hideSubmitButton={true}
-                form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
-              />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Right side - Material Settings (50%) - Only show for non-steel doors */}
+        {doorType !== "STEEL" && (
+          <div className="flex-1">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Package className="h-6 w-6 text-green-600" />
+                  </div>
+                  {t("forms.material_attributes")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <ResourceForm
+                  fields={materialFields}
+                  onSubmit={() => {}}
+                  isSubmitting={isLoading}
+                  hideSubmitButton={true}
+                  form={orderForm}
+                  gridClassName="md:grid-cols-3 gap-6"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1341,7 +1348,7 @@ function StepTwo({
         .map((c: any) => c.model)
         .filter((m: any) => m)
         .sort()
-        .join(',');
+        .join(",");
       if (casingModels) componentKeys.push(`casings_${casingModels}`);
     }
 
@@ -1351,7 +1358,7 @@ function StepTwo({
         .map((c: any) => c.model)
         .filter((m: any) => m)
         .sort()
-        .join(',');
+        .join(",");
       if (crownModels) componentKeys.push(`crowns_${crownModels}`);
     }
 
@@ -1361,7 +1368,7 @@ function StepTwo({
         .map((e: any) => e.model)
         .filter((m: any) => m)
         .sort()
-        .join(',');
+        .join(",");
       if (extensionModels) componentKeys.push(`extensions_${extensionModels}`);
     }
 
@@ -1369,19 +1376,19 @@ function StepTwo({
     if (door.accessories && door.accessories.length > 0) {
       const accessoryModels = door.accessories
         .map((a: any) => `${a.accessory_type}_${a.model}`)
-        .filter((m: any) => m && !m.endsWith('_'))
+        .filter((m: any) => m && !m.endsWith("_"))
         .sort()
-        .join(',');
+        .join(",");
       if (accessoryModels) componentKeys.push(`accessories_${accessoryModels}`);
     }
 
     // If no components found, use a default key
     if (componentKeys.length === 0) {
-      return 'no_model_no_components';
+      return "no_model_no_components";
     }
 
     // Combine all component keys to create unique grouping
-    return `components_${componentKeys.join('|')}`;
+    return `components_${componentKeys.join("|")}`;
   };
 
   // Initialize tables with existing doors - use useMemo to prevent infinite loops
@@ -1442,7 +1449,7 @@ function StepTwo({
       let isComponentOnlyTable = false;
 
       // Check if this is a door model-based table or component-based table
-      if (key.startsWith('door_') && firstDoor && firstDoor.model) {
+      if (key.startsWith("door_") && firstDoor && firstDoor.model) {
         // Door model-based table
         const product = productsList.find((p: any) => p.id === firstDoor.model);
         if (product) {
@@ -1602,15 +1609,49 @@ function StepTwo({
     }
 
     return newTables;
-  }, [doors, productsList]);
+  }, [
+    doors?.length,
+    productsList?.length,
+    doors?.map((d: any) => d.id || d.model)?.join(","),
+    productsList?.map((p: any) => p.id)?.join(","),
+  ]);
 
   // Update tables when initializedTables changes
+  // Use a ref to track if we're in the middle of updating to prevent circular dependencies
+  const isUpdatingTablesRef = useRef(false);
+
   useEffect(() => {
+    // Prevent circular updates
+    if (isUpdatingTablesRef.current) {
+      return;
+    }
+
     setTables((prevTables) => {
       // Only update if the structure actually changed
-      if (JSON.stringify(prevTables) === JSON.stringify(initializedTables)) {
-        return prevTables;
+      // Compare table count and basic structure instead of deep JSON comparison
+      if (prevTables.length === initializedTables.length) {
+        let hasChanges = false;
+        for (let i = 0; i < prevTables.length; i++) {
+          if (
+            prevTables[i].doors.length !== initializedTables[i].doors.length ||
+            prevTables[i].doorModel?.id !== initializedTables[i].doorModel?.id
+          ) {
+            hasChanges = true;
+            break;
+          }
+        }
+        if (!hasChanges) {
+          return prevTables;
+        }
       }
+
+      // Set flag to prevent circular updates
+      isUpdatingTablesRef.current = true;
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isUpdatingTablesRef.current = false;
+      }, 0);
+
       return initializedTables;
     });
   }, [initializedTables]);
@@ -2120,7 +2161,15 @@ function StepTwo({
   };
 
   // Auto-sync tables data to main doors state whenever tables change
+  // Use a ref to track if we're in the middle of updating to prevent circular dependencies
+  const isUpdatingDoorsRef = useRef(false);
+
   useEffect(() => {
+    // Prevent circular updates
+    if (isUpdatingDoorsRef.current) {
+      return;
+    }
+
     const allDoors = tables.flatMap((table) =>
       table.doors.map((door: any) => ({
         ...door,
@@ -2128,26 +2177,79 @@ function StepTwo({
       })),
     );
 
+    console.log("Syncing tables to doors state - allDoors:", allDoors);
+
     // Only update doors if the data actually changed
     setDoors((prevDoors: any) => {
-      if (JSON.stringify(prevDoors) === JSON.stringify(allDoors)) {
-        return prevDoors;
+      // Comprehensive comparison: check length and all relevant properties
+      if (prevDoors.length === allDoors.length) {
+        let hasChanges = false;
+        for (let i = 0; i < prevDoors.length; i++) {
+          const prevDoor = prevDoors[i];
+          const newDoor = allDoors[i];
+
+          // Check all door properties that can be changed
+          if (
+            prevDoor.model !== newDoor.model ||
+            prevDoor.quantity !== newDoor.quantity ||
+            prevDoor.width !== newDoor.width ||
+            prevDoor.height !== newDoor.height ||
+            prevDoor.door_name !== newDoor.door_name ||
+            prevDoor.price !== newDoor.price ||
+            prevDoor.steel_color !== newDoor.steel_color ||
+            prevDoor.frame !== newDoor.frame ||
+            prevDoor.cladding !== newDoor.cladding ||
+            prevDoor.lock !== newDoor.lock ||
+            prevDoor.peephole !== newDoor.peephole ||
+            prevDoor.opening_side !== newDoor.opening_side ||
+            prevDoor.promog !== newDoor.promog ||
+            prevDoor.price_type !== newDoor.price_type ||
+            prevDoor.material !== newDoor.material ||
+            prevDoor.material_type !== newDoor.material_type ||
+            prevDoor.massif !== newDoor.massif ||
+            prevDoor.color !== newDoor.color ||
+            prevDoor.patina_color !== newDoor.patina_color ||
+            prevDoor.beading_main !== newDoor.beading_main ||
+            prevDoor.beading_additional !== newDoor.beading_additional ||
+            JSON.stringify(prevDoor.crown_casing) !== JSON.stringify(newDoor.crown_casing) ||
+            JSON.stringify(prevDoor.extensions) !== JSON.stringify(newDoor.extensions) ||
+            JSON.stringify(prevDoor.casings) !== JSON.stringify(newDoor.casings) ||
+            JSON.stringify(prevDoor.crowns) !== JSON.stringify(newDoor.crowns) ||
+            JSON.stringify(prevDoor.accessories) !== JSON.stringify(newDoor.accessories)
+          ) {
+            hasChanges = true;
+            break;
+          }
+        }
+        if (!hasChanges) {
+          return prevDoors;
+        }
       }
+
+      // Set flag to prevent circular updates
+      isUpdatingDoorsRef.current = true;
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isUpdatingDoorsRef.current = false;
+      }, 0);
+
       return allDoors;
     });
-  }, [tables, setDoors]);
+  }, [tables]);
 
   // Effect to update door type when doorType changes
   useEffect(() => {
     if (tables.length > 0) {
-      const updatedTables = tables.map((table) => ({
-        ...table,
-        doors: table.doors.map((door: any) => ({
-          ...door,
-          // Remove door_type from individual doors since it's now at order level
-        })),
-      }));
-      setTables(updatedTables);
+      setTables((prevTables) => {
+        const updatedTables = prevTables.map((table) => ({
+          ...table,
+          doors: table.doors.map((door: any) => ({
+            ...door,
+            // Remove door_type from individual doors since it's now at order level
+          })),
+        }));
+        return updatedTables;
+      });
     }
   }, [doorType]);
 
@@ -2644,7 +2746,7 @@ function StepTwo({
                       // Component-only table header
                       <div className="flex flex-col">
                         <span className="text-lg font-semibold text-gray-700">
-                             #{table.id}
+                          #{table.id}
                         </span>
                         {/* <div className="flex gap-2 mt-1">
                           {table.selectedCasingProduct && (
@@ -4348,7 +4450,8 @@ function StepTwo({
                                             price: table.selectedCasingProduct
                                               ? (table.selectedCasingProduct.salePrices?.find(
                                                   (p: any) =>
-                                                    p.priceType.name === "Цена продажи",
+                                                    p.priceType.name ===
+                                                    "Цена продажи",
                                                 )?.value || 0) / 100
                                               : 0,
                                             quantity: 0,
@@ -4368,7 +4471,8 @@ function StepTwo({
                                             price: table.selectedCasingProduct
                                               ? (table.selectedCasingProduct.salePrices?.find(
                                                   (p: any) =>
-                                                    p.priceType.name === "Цена продажи",
+                                                    p.priceType.name ===
+                                                    "Цена продажи",
                                                 )?.value || 0) / 100
                                               : 0,
                                             quantity: 0,
@@ -4485,7 +4589,8 @@ function StepTwo({
                                                     ...updatedCasings[casIndex],
                                                     casing_range: value,
                                                   };
-                                                  const originalModel = updatedCasing.model; // Preserve the original model
+                                                  const originalModel =
+                                                    updatedCasing.model; // Preserve the original model
                                                   const recalculatedCasing =
                                                     calculateCasingDimensions(
                                                       updatedCasing,
@@ -4975,7 +5080,9 @@ function StepTwo({
                   disabled={!table.doorModel && !table.isComponentOnlyTable}
                 >
                   <Plus className="h-5 w-5" />
-                  {table.isComponentOnlyTable ? (t("forms.add_component_row") || "Add Component Row") : t("forms.add_row")}
+                  {table.isComponentOnlyTable
+                    ? t("forms.add_component_row") || "Add Component Row"
+                    : t("forms.add_row")}
                 </Button>
                 {tables.length > 1 && (
                   <Button

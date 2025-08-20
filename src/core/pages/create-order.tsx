@@ -445,6 +445,12 @@ export default function CreateOrderPage() {
       type: "text",
       placeholder: t("placeholders.enter_description"),
     },
+      {
+      name: "extra_comment",
+      label: t("forms.extra_comment"),
+      type: "textarea",
+      placeholder: t("placeholders.enter_extra_comment"),
+    },
   ];
 
   // Material attributes fields - set once for all doors
@@ -502,12 +508,7 @@ export default function CreateOrderPage() {
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
     },
-    {
-      name: "extra_comment",
-      label: t("forms.extra_comment"),
-      type: "textarea",
-      placeholder: t("placeholders.enter_extra_comment"),
-    },
+  
   ];
 
   // --- API-based Calculation Function ---
@@ -898,6 +899,7 @@ export default function CreateOrderPage() {
             orderFields={orderFields}
             materialFields={materialFields}
             isLoading={isLoading}
+            doorType={doorType}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -939,7 +941,13 @@ export default function CreateOrderPage() {
 }
 
 // Step Components
-function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
+function StepOne({
+  orderForm,
+  orderFields,
+  materialFields,
+  isLoading,
+  doorType,
+}: any) {
   const { t } = useTranslation();
 
   return (
@@ -985,32 +993,34 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
         </div>
 
         {/* Right side - Material Attributes (50%) */}
-        <div className="flex-1">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full overflow-visible">
-            <CardHeader className="pb-6">
-              <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Package className="h-6 w-6 text-green-600" />
-                </div>
-                {t("forms.material_attributes")}
-              </CardTitle>
-              {/* <p className="text-gray-600 mt-2">
-                {t("forms.material_attributes_description")} -{" "}
-                {t("forms.applies_to_all_doors")}
-              </p> */}
-            </CardHeader>
-            <CardContent className="space-y-6 overflow-visible">
-              <ResourceForm
-                fields={materialFields}
-                onSubmit={() => {}}
-                isSubmitting={isLoading}
-                hideSubmitButton={true}
-                form={orderForm}
-                gridClassName="md:grid-cols-3 gap-6"
-              />
-            </CardContent>
-          </Card>
-        </div>
+        {doorType !== "STEEL" && (
+          <div className="flex-1">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur h-full overflow-visible">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Package className="h-6 w-6 text-green-600" />
+                  </div>
+                  {t("forms.material_attributes")}
+                </CardTitle>
+                {/* <p className="text-gray-600 mt-2">
+                  {t("forms.material_attributes_description")} -{" "}
+                  {t("forms.applies_to_all_doors")}
+                </p> */}
+              </CardHeader>
+              <CardContent className="space-y-6 overflow-visible">
+                <ResourceForm
+                  fields={materialFields}
+                  onSubmit={() => {}}
+                  isSubmitting={isLoading}
+                  hideSubmitButton={true}
+                  form={orderForm}
+                  gridClassName="md:grid-cols-3 gap-6"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1026,7 +1036,6 @@ function StepTwo({
   crownSize,
   casingFormula,
   doorType,
-  
 }: any) {
   const { t } = useTranslation();
 
@@ -1922,8 +1931,6 @@ function StepTwo({
     <div className="space-y-6">
       {/* Door Type Selector */}
       <div className="flex items-center justify-end">
-    
-
         {/* Add New Table Button */}
         <Button
           // variant="outline"
@@ -2185,9 +2192,9 @@ function StepTwo({
                                         model: product.id,
                                         price_type: "",
                                         price: doorPrice,
-                                        quantity: 1,
-                                        height: 2.1,
-                                        width: 0.9,
+                                        quantity: 0,
+                                        height: 0,
+                                        width: 0,
                                         door_name: "",
                                         steel_color: "",
                                         crown_casing: [],
@@ -2826,7 +2833,7 @@ function StepTwo({
                                 options={[
                                   { value: "Корона", label: "Корона" },
                                   { value: "Наличник", label: "Наличник" },
-                                  { value: "Жак", label: "Жак" },
+                                  { value: "Жак", label: "Жок" },
                                 ]}
                                 value={door.crown_casing || []}
                                 onChange={(value) =>

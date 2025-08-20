@@ -221,6 +221,7 @@
     "order_code": "Buyırtpa kodı",
     "order_date": "Buyırtpa sánesi",
     "deadline_date": "Tamamlaw sánesi",
+    "new_deadline": "Jańa deadline",
     "measure_date_after": "Ólshem sánesinin baslanıwı",
     "measure_date_before": "Ólshem sánesinin tamamlanıwı",
     "created_at_after": "Dúziliw waqtının baslanıwı",
@@ -406,7 +407,10 @@
     "error_creating_order": "Buyırtpa jasawda qate",
     "error_updating_order": "Buyırtpanı jańalaw qátesi",
     "order_sent_to_moy_sklad": "Buyırtpa sátti Moy Skladqa jiberildi",
-    "error_sending_to_moy_sklad": "Buyırtpanı Moy Skladqa jiberiw qátesi"
+    "error_sending_to_moy_sklad": "Buyırtpanı Moy Skladqa jiberiw qátesi",
+    "sms_sent_successfully": "SMS sátti jiberildi",
+    "error_send_sms": "SMS jiberiw qátesi",
+    "select_new_deadline": "Jańa deadline sánesin salıń"
   },
   "titles": {
     "create_measure": "Ólshem jasaw",
@@ -423,7 +427,8 @@
     "create": "Jasaw",
     "create_order": "Buyırtpa jasaw",
     "export_excel": "Excel-ke eksport",
-    "export": "Eksport"
+    "export": "Eksport",
+    "send_sms": "SMS jiberiw"
   },
 
   "placeholders": {

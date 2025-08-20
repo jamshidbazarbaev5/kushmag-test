@@ -34,6 +34,7 @@ import {
   Eye,
   Plus,
   Info,
+  MessageSquare,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -99,7 +100,11 @@ export default function OrdersPage() {
     string | null
   >(null);
   const statusChangeDropdownRef = useRef<HTMLDivElement>(null);
-  const [_deadlineDayValue, setDeadlineDayValue] = useState<number | null>(null);
+  const [_deadlineDayValue, setDeadlineDayValue] = useState<number | null>(
+    null,
+  );
+  const [showSMSDialog, setShowSMSDialog] = useState<string | null>(null);
+  const [selectedNewDeadline, setSelectedNewDeadline] = useState<string>("");
 
   // Search states for all selects
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
@@ -278,6 +283,41 @@ export default function OrdersPage() {
     }
   };
 
+  // Function to handle SMS sending
+  const handleSendSMS = async (orderId: string, newDeadline: string) => {
+    try {
+      await api.post(`orders/${orderId}/sms/`, {
+        new_deadline: newDeadline
+      });
+
+      toast.success(
+        t("messages.sms_sent_successfully") ||
+          "SMS sent successfully",
+      );
+      setShowSMSDialog(null);
+      setSelectedNewDeadline("");
+      setOpenActionMenu(null);
+    } catch (error: any) {
+      console.error("Error sending SMS:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        t("messages.error.send_sms") ||
+        "Error sending SMS";
+      toast.error(errorMessage);
+    }
+  };
+
+  // Function to open SMS dialog
+  const handleOpenSMSDialog = (orderId: string) => {
+    setShowSMSDialog(orderId);
+    setOpenActionMenu(null);
+    // Set default deadline to current order's deadline or tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedNewDeadline(tomorrow.toISOString().split('T')[0]);
+  };
+
   const handleColumnVisibilityChange = (column: string, checked: boolean) => {
     // Prevent MANUFACTURE role from showing price columns
     if (
@@ -362,7 +402,8 @@ export default function OrdersPage() {
   const deadlineDaysData = Array.isArray(deadlineDaysResponse)
     ? deadlineDaysResponse
     : deadlineDaysResponse?.results || [];
-  const currentDeadlineDay = deadlineDaysData.length > 0 ? deadlineDaysData[0].deadline_day : 7;
+  const currentDeadlineDay =
+    deadlineDaysData.length > 0 ? deadlineDaysData[0].deadline_day : 7;
 
   // Build query params for API call
   const buildQueryParams = () => {
@@ -479,14 +520,7 @@ export default function OrdersPage() {
     }
   };
 
-  const handleDoorTypeFilterChange = (doorType: string) => {
-    setActiveDoorTypeFilter(doorType);
-    setCurrentPage(1);
-    setFilters((prev) => ({
-      ...prev,
-      door_type: doorType === "all" ? "" : doorType,
-    }));
-  };
+
 
   const handleProductionStatusFilterChange = (status: string) => {
     setActiveProductionStatusFilter(status);
@@ -837,39 +871,6 @@ export default function OrdersPage() {
 
         {/* Door Type Filter */}
         <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg">
-          <span className="px-2 py-2 text-sm font-medium text-gray-600">
-            {t("common.door_type")}:
-          </span>
-          <button
-            onClick={() => handleDoorTypeFilterChange("all")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeDoorTypeFilter === "all"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {t("common.all")}
-          </button>
-          <button
-            onClick={() => handleDoorTypeFilterChange("STEEL")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeDoorTypeFilter === "STEEL"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {t("common.steel")}
-          </button>
-          <button
-            onClick={() => handleDoorTypeFilterChange("WOOD")}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeDoorTypeFilter === "WOOD"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {t("common.wood")}
-          </button>
           <div className="flex gap-1 border rounded-md">
             <Button
               variant={
@@ -1780,6 +1781,19 @@ export default function OrdersPage() {
                             className="absolute top-8 right-0 z-50 bg-white border border-gray-200 rounded-md shadow-lg min-w-36"
                           >
                             <div className="py-1">
+                              {/* SMS Button - Only show for "Производство" status (id: 2) */}
+                              {order.status?.id === 2 && (
+                                <button
+                                  className="flex items-center justify-start w-full px-3 py-2 text-sm text-blue-600 hover:bg-blue-50"
+                                  onClick={() => {
+                                    handleOpenSMSDialog(order.id);
+                                  }}
+                                >
+                                  <MessageSquare className="h-4 w-4 mr-2" />
+                                  {t("common.send_sms") || "Send SMS"}
+                                </button>
+                              )}
+
                               <button
                                 className="flex items-center justify-start w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                 onClick={() => {
@@ -2167,6 +2181,59 @@ export default function OrdersPage() {
             >
               Отмена
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SMS Dialog */}
+      <Dialog open={!!showSMSDialog} onOpenChange={() => setShowSMSDialog(null)}>
+        <DialogContent className="sm:max-w-md">
+          <div className="flex flex-col space-y-6 py-6">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                {t("common.send_sms") || "Send SMS"}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {t("messages.select_new_deadline") || "Select new deadline date"}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  {t("forms.new_deadline") || "New Deadline"}
+                </label>
+                <Input
+                  type="date"
+                  value={selectedNewDeadline}
+                  onChange={(e) => setSelectedNewDeadline(e.target.value)}
+                  className="w-full"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowSMSDialog(null)}
+                className="flex-1"
+              >
+                {t("common.cancel") || "Cancel"}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedNewDeadline && showSMSDialog) {
+                    handleSendSMS(showSMSDialog, selectedNewDeadline);
+                  }
+                }}
+                disabled={!selectedNewDeadline}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {t("common.send_sms") || "Send SMS"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
