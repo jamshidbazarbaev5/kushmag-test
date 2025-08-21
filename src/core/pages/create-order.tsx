@@ -264,8 +264,8 @@ export default function CreateOrderPage() {
   const attributeSettingsArray = Array.isArray(attributeSettings)
     ? attributeSettings
     : attributeSettings?.results || [];
-  const casingSize = attributeSettingsArray[0]?.casing_size || 6; // Default fallback
-  const crownSize = attributeSettingsArray[0]?.crown_size || 10; // Default fallback
+  const casingSize = attributeSettingsArray[0]?.casing_size; // Default fallback
+  const crownSize = attributeSettingsArray[0]?.crown_size; // Default fallback
   const casingFormula = attributeSettingsArray[0]?.casing_formula ?? true; // Default to true (Formula 1)
 
   // Auto-save order form data and doors (will be filtered in the hook based on hasCheckedForDraft)
@@ -3220,74 +3220,75 @@ function StepTwo({
                                       <div className="flex items-center justify-between gap-1">
                                         <div>
                                           {casIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Кол-во
-                                            </label>
+                                              <label className="text-xs text-gray-600">
+                                                Высота
+                                              </label>
                                           )}
                                           <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              casing.quantity?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCasings = [
-                                                ...door.casings,
-                                              ];
-                                              updatedCasings[casIndex] = {
-                                                ...updatedCasings[casIndex],
-                                                model:
-                                                  table.selectedCasingProduct
-                                                    ? table
-                                                        .selectedCasingProduct
-                                                        .id
-                                                    : "",
-                                                quantity: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "casings",
-                                                updatedCasings,
-                                              );
-                                            }}
-                                            className="h-8"
-                                            placeholder="Кол-во"
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                  casing.height?.toString() || ""
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCasings = [
+                                                  ...door.casings,
+                                                ];
+                                                updatedCasings[casIndex] = {
+                                                  ...updatedCasings[casIndex],
+                                                  height: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "casings",
+                                                    updatedCasings,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Auto-calc"
+                                              title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
+                                              disabled={!casingFormula}
                                           />
                                         </div>
                                         <div>
                                           {casIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Высота
-                                            </label>
+                                              <label className="text-xs text-gray-600">
+                                                Кол-во
+                                              </label>
                                           )}
                                           <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              casing.height?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCasings = [
-                                                ...door.casings,
-                                              ];
-                                              updatedCasings[casIndex] = {
-                                                ...updatedCasings[casIndex],
-                                                height: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "casings",
-                                                updatedCasings,
-                                              );
-                                            }}
-                                            className="h-8"
-                                            placeholder="Auto-calc"
-                                            title={`Calculated based on type: боковой = door height + ${casingSize}, прямой = door width + ${2 * casingSize}`}
-                                            disabled={!casingFormula}
+                                              type="text"
+                                              inputMode="decimal"
+                                              value={
+                                                  casing.quantity?.toString() || ""
+                                              }
+                                              onChange={(e) => {
+                                                const updatedCasings = [
+                                                  ...door.casings,
+                                                ];
+                                                updatedCasings[casIndex] = {
+                                                  ...updatedCasings[casIndex],
+                                                  model:
+                                                      table.selectedCasingProduct
+                                                          ? table
+                                                              .selectedCasingProduct
+                                                              .id
+                                                          : "",
+                                                  quantity: e.target.value,
+                                                };
+                                                handleFieldChange(
+                                                    index,
+                                                    table.id,
+                                                    "casings",
+                                                    updatedCasings,
+                                                );
+                                              }}
+                                              className="h-8"
+                                              placeholder="Кол-во"
                                           />
                                         </div>
+
                                         {/* Show formula info for reference */}
                                         {/* {casIndex === 0 && (
                                       <div className="text-xs text-gray-600 mb-1">
@@ -3295,54 +3296,54 @@ function StepTwo({
                                       </div>
                                     )} */}
                                         {!casingFormula && (
-                                          <div>
-                                            <label className="text-xs text-gray-600">
-                                              Диапазон
-                                            </label>
-                                            <Select
-                                              value={casing.casing_range || ""}
-                                              onValueChange={(value) => {
-                                                const updatedCasings = [
-                                                  ...door.casings,
-                                                ];
-                                                const updatedCasing = {
-                                                  ...updatedCasings[casIndex],
-                                                  casing_range: value,
-                                                };
-                                                const recalculatedCasing =
-                                                  calculateCasingDimensions(
-                                                    updatedCasing,
-                                                    door,
-                                                    fieldOptions,
-                                                    casingSize,
-                                                  );
-                                                updatedCasings[casIndex] =
-                                                  recalculatedCasing;
-                                                handleFieldChange(
-                                                  index,
-                                                  table.id,
-                                                  "casings",
-                                                  updatedCasings,
-                                                );
-                                              }}
-                                            >
-                                              <SelectTrigger className="h-8">
-                                                <SelectValue placeholder="Диапазон" />
-                                              </SelectTrigger>
-                                              <SelectContent className="z-[9999]">
-                                                {fieldOptions.casingRangeOptions?.map(
-                                                  (option: any) => (
-                                                    <SelectItem
-                                                      key={option.value}
-                                                      value={option.value}
-                                                    >
-                                                      {option.casing_size}
-                                                    </SelectItem>
-                                                  ),
-                                                )}
-                                              </SelectContent>
-                                            </Select>
-                                          </div>
+                                            <div>
+                                              <label className="text-xs text-gray-600">
+                                                Диапазон
+                                              </label>
+                                              <Select
+                                                  value={casing.casing_range || ""}
+                                                  onValueChange={(value) => {
+                                                    const updatedCasings = [
+                                                      ...door.casings,
+                                                    ];
+                                                    const updatedCasing = {
+                                                      ...updatedCasings[casIndex],
+                                                      casing_range: value,
+                                                    };
+                                                    const recalculatedCasing =
+                                                        calculateCasingDimensions(
+                                                            updatedCasing,
+                                                            door,
+                                                            fieldOptions,
+                                                            casingSize,
+                                                        );
+                                                    updatedCasings[casIndex] =
+                                                        recalculatedCasing;
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "casings",
+                                                        updatedCasings,
+                                                    );
+                                                  }}
+                                              >
+                                                <SelectTrigger className="h-8">
+                                                  <SelectValue placeholder="Диапазон"/>
+                                                </SelectTrigger>
+                                                <SelectContent className="z-[9999]">
+                                                  {fieldOptions.casingRangeOptions?.map(
+                                                      (option: any) => (
+                                                          <SelectItem
+                                                              key={option.value}
+                                                              value={option.value}
+                                                          >
+                                                            {option.casing_size}
+                                                          </SelectItem>
+                                                      ),
+                                                  )}
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
                                         )}
                                       </div>
                                     </div>
@@ -3354,82 +3355,84 @@ function StepTwo({
                             <TableCell className="align-top p-2">
                               <div className="space-y-1">
                                 {door.crowns?.map(
-                                  (crown: any, crownIndex: number) => (
-                                    <div
-                                      key={crownIndex}
-                                      className="bg-purple-50 p-2 rounded border space-y-1"
-                                    >
-                                      <div className="grid grid-cols-2 gap-1">
-                                        <div>
-                                          {crownIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Кол-во
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              crown.quantity?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCrowns = [
-                                                ...door.crowns,
-                                              ];
-                                              updatedCrowns[crownIndex] = {
-                                                ...updatedCrowns[crownIndex],
-                                                model:
-                                                  table.selectedCrownProduct
-                                                    ? table.selectedCrownProduct
-                                                        .id
-                                                    : "",
-                                                quantity: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "crowns",
-                                                updatedCrowns,
-                                              );
-                                            }}
-                                            placeholder="Кол-во"
-                                            className="h-8"
-                                          />
+                                    (crown: any, crownIndex: number) => (
+                                        <div
+                                            key={crownIndex}
+                                            className="bg-purple-50 p-2 rounded border space-y-1"
+                                        >
+                                          <div className="grid grid-cols-2 gap-1">
+                                            <div>
+                                              {crownIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Ширина
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      crown.width?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedCrowns = [
+                                                      ...door.crowns,
+                                                    ];
+                                                    updatedCrowns[crownIndex] = {
+                                                      ...updatedCrowns[crownIndex],
+                                                      width: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "crowns",
+                                                        updatedCrowns,
+                                                    );
+                                                  }}
+                                                  placeholder="Ширина"
+                                                  className="h-8"
+                                              />
+                                            </div>
+                                            <div>
+                                              {crownIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Кол-во
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      crown.quantity?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedCrowns = [
+                                                      ...door.crowns,
+                                                    ];
+                                                    updatedCrowns[crownIndex] = {
+                                                      ...updatedCrowns[crownIndex],
+                                                      model:
+                                                          table.selectedCrownProduct
+                                                              ? table.selectedCrownProduct
+                                                                  .id
+                                                              : "",
+                                                      quantity: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "crowns",
+                                                        updatedCrowns,
+                                                    );
+                                                  }}
+                                                  placeholder="Кол-во"
+                                                  className="h-8"
+                                              />
+                                            </div>
+
+
+                                          </div>
                                         </div>
-                                        <div>
-                                          {crownIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Ширина
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              crown.width?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedCrowns = [
-                                                ...door.crowns,
-                                              ];
-                                              updatedCrowns[crownIndex] = {
-                                                ...updatedCrowns[crownIndex],
-                                                width: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "crowns",
-                                                updatedCrowns,
-                                              );
-                                            }}
-                                            placeholder="Ширина"
-                                            className="h-8"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ),
+                                    ),
                                 )}
                               </div>
                             </TableCell>
@@ -3438,115 +3441,116 @@ function StepTwo({
                             <TableCell className="align-top p-2">
                               <div className="space-y-1">
                                 {door.extensions?.map(
-                                  (extension: any, extIndex: number) => (
-                                    <div
-                                      key={extIndex}
-                                      className="bg-blue-50 p-2 rounded border space-y-1"
-                                    >
-                                      <div className="grid grid-cols-3 gap-1">
-                                        <div>
-                                          {extIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Кол-во
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              extension.quantity?.toString() ||
-                                              ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedExtensions = [
-                                                ...door.extensions,
-                                              ];
-                                              updatedExtensions[extIndex] = {
-                                                ...updatedExtensions[extIndex],
-                                                model:
-                                                  table.selectedExtensionProduct
-                                                    ? table
-                                                        .selectedExtensionProduct
-                                                        .id
-                                                    : "",
-                                                quantity: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "extensions",
-                                                updatedExtensions,
-                                              );
-                                            }}
-                                            className="h-8"
-                                            placeholder="Кол-во"
-                                          />
+                                    (extension: any, extIndex: number) => (
+                                        <div
+                                            key={extIndex}
+                                            className="bg-blue-50 p-2 rounded border space-y-1"
+                                        >
+                                          <div className="grid grid-cols-3 gap-1">
+
+                                            <div>
+                                              {extIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Высота
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      extension.height?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedExtensions = [
+                                                      ...door.extensions,
+                                                    ];
+                                                    updatedExtensions[extIndex] = {
+                                                      ...updatedExtensions[extIndex],
+                                                      height: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "extensions",
+                                                        updatedExtensions,
+                                                    );
+                                                  }}
+                                                  className="h-8"
+                                                  placeholder="Высота"
+                                              />
+                                            </div>
+                                            <div>
+                                              {extIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Ширина
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      extension.width?.toString() || ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedExtensions = [
+                                                      ...door.extensions,
+                                                    ];
+                                                    updatedExtensions[extIndex] = {
+                                                      ...updatedExtensions[extIndex],
+                                                      width: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "extensions",
+                                                        updatedExtensions,
+                                                    );
+                                                  }}
+                                                  className="h-8"
+                                                  placeholder="Ширина"
+                                              />
+                                            </div>
+                                            <div>
+                                              {extIndex === 0 && (
+                                                  <label className="text-xs text-gray-600">
+                                                    Кол-во
+                                                  </label>
+                                              )}
+                                              <Input
+                                                  type="text"
+                                                  inputMode="decimal"
+                                                  value={
+                                                      extension.quantity?.toString() ||
+                                                      ""
+                                                  }
+                                                  onChange={(e) => {
+                                                    const updatedExtensions = [
+                                                      ...door.extensions,
+                                                    ];
+                                                    updatedExtensions[extIndex] = {
+                                                      ...updatedExtensions[extIndex],
+                                                      model:
+                                                          table.selectedExtensionProduct
+                                                              ? table
+                                                                  .selectedExtensionProduct
+                                                                  .id
+                                                              : "",
+                                                      quantity: e.target.value,
+                                                    };
+                                                    handleFieldChange(
+                                                        index,
+                                                        table.id,
+                                                        "extensions",
+                                                        updatedExtensions,
+                                                    );
+                                                  }}
+                                                  className="h-8"
+                                                  placeholder="Кол-во"
+                                              />
+                                            </div>
+                                          </div>
                                         </div>
-                                        <div>
-                                          {extIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Высота
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              extension.height?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedExtensions = [
-                                                ...door.extensions,
-                                              ];
-                                              updatedExtensions[extIndex] = {
-                                                ...updatedExtensions[extIndex],
-                                                height: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "extensions",
-                                                updatedExtensions,
-                                              );
-                                            }}
-                                            className="h-8"
-                                            placeholder="Высота"
-                                          />
-                                        </div>
-                                        <div>
-                                          {extIndex === 0 && (
-                                            <label className="text-xs text-gray-600">
-                                              Ширина
-                                            </label>
-                                          )}
-                                          <Input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={
-                                              extension.width?.toString() || ""
-                                            }
-                                            onChange={(e) => {
-                                              const updatedExtensions = [
-                                                ...door.extensions,
-                                              ];
-                                              updatedExtensions[extIndex] = {
-                                                ...updatedExtensions[extIndex],
-                                                width: e.target.value,
-                                              };
-                                              handleFieldChange(
-                                                index,
-                                                table.id,
-                                                "extensions",
-                                                updatedExtensions,
-                                              );
-                                            }}
-                                            className="h-8"
-                                            placeholder="Ширина"
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ),
+                                    ),
                                 )}
                               </div>
                             </TableCell>
@@ -3554,40 +3558,40 @@ function StepTwo({
                             {/* Кубик - Always editable */}
                             <TableCell className="align-midlle">
                               <Input
-                                type="text"
-                                inputMode="decimal"
-                                value={
-                                  door.accessories?.[0]?.quantity?.toString() ||
-                                  ""
-                                }
-                                onChange={(e) => {
-                                  const updatedAccessories = [
-                                    ...(door.accessories || []),
-                                  ];
-                                  // Ensure array has enough elements
-                                  while (updatedAccessories.length < 6) {
-                                    updatedAccessories.push({
-                                      model: "",
-                                      price_type: "",
-                                      price: 0,
-                                      quantity: 0,
-                                      accessory_type: "",
-                                      name: "",
-                                    });
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={
+                                      door.accessories?.[0]?.quantity?.toString() ||
+                                      ""
                                   }
-                                  updatedAccessories[0] = {
-                                    model: table.selectedCubeProduct
-                                      ? table.selectedCubeProduct.id
-                                      : updatedAccessories[0]?.model || "",
-                                    price_type:
-                                      updatedAccessories[0]?.price_type || "",
-                                    price: table.selectedCubeProduct
-                                      ? (table.selectedCubeProduct.salePrices?.find(
+                                  onChange={(e) => {
+                                    const updatedAccessories = [
+                                      ...(door.accessories || []),
+                                    ];
+                                    // Ensure array has enough elements
+                                    while (updatedAccessories.length < 6) {
+                                      updatedAccessories.push({
+                                        model: "",
+                                        price_type: "",
+                                        price: 0,
+                                        quantity: 0,
+                                        accessory_type: "",
+                                        name: "",
+                                      });
+                                    }
+                                    updatedAccessories[0] = {
+                                      model: table.selectedCubeProduct
+                                          ? table.selectedCubeProduct.id
+                                          : updatedAccessories[0]?.model || "",
+                                      price_type:
+                                          updatedAccessories[0]?.price_type || "",
+                                      price: table.selectedCubeProduct
+                                          ? (table.selectedCubeProduct.salePrices?.find(
                                           (p: any) =>
-                                            p.priceType.name === "Цена продажи",
-                                        )?.value || 0) / 100
-                                      : updatedAccessories[0]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                              p.priceType.name === "Цена продажи",
+                                      )?.value || 0) / 100
+                                          : updatedAccessories[0]?.price || 0,
+                                      quantity: parseInt(e.target.value) || 0,
                                     accessory_type: "cube",
                                     name: "Кубик",
                                   };
