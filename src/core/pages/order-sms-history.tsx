@@ -122,9 +122,7 @@ export default function OrderSMSHistoryPage() {
               <h3 className="text-lg font-medium mb-2">
                 {t("pages.no_sms_history")}
               </h3>
-              <p className="text-muted-foreground">
-                {t("pages.no_sms_history_description")}
-              </p>
+             
             </CardContent>
           </Card>
         ) : (

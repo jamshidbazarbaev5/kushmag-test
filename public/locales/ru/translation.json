@@ -768,6 +768,7 @@
   },
 
   "pages": {
+    "no_sms_history":"Нет данных",
     "sms_history":"История смс",
     "orders": "Заказы",
     "sms_statistics":"Статистика смс",
