@@ -64,6 +64,9 @@ interface InlineEditableTableProps<T extends { id?: number }> {
   pagination?: PaginationInfo | null;
   onPageChange?: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
+  showCreateButton?: boolean;
+  showDeleteButton?: boolean;
+  showSearchBar?: boolean;
 }
 
 export function InlineEditableTable<T extends { id?: number }>({
@@ -80,6 +83,9 @@ export function InlineEditableTable<T extends { id?: number }>({
   pagination,
   onPageChange,
   onPageSizeChange,
+  showCreateButton = true,
+  showDeleteButton = true,
+  showSearchBar = true,
 }: InlineEditableTableProps<T>) {
   const { t } = useTranslation();
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -220,35 +226,39 @@ export function InlineEditableTable<T extends { id?: number }>({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">{title}</h3>
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="flex items-center gap-2"
-          size="sm"
-        >
-          <PlusIcon className="h-4 w-4" />
-          {t("common.create")}
-        </Button>
+        {showCreateButton && (
+          <Button
+            onClick={() => setIsCreating(true)}
+            className="flex items-center gap-2"
+            size="sm"
+          >
+            <PlusIcon className="h-4 w-4" />
+            {t("common.create")}
+          </Button>
+        )}
       </div>
 
       {/* Search */}
-      <form onSubmit={(e) => e.preventDefault()}>
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder={searchPlaceholder}
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-              }
-            }}
-            className="pl-10"
-            autoComplete="off"
-          />
-        </div>
-      </form>
+      {showSearchBar && (
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
+              className="pl-10"
+              autoComplete="off"
+            />
+          </div>
+        </form>
+      )}
 
       {/* Table */}
       <div className="rounded-lg border">
@@ -264,7 +274,7 @@ export function InlineEditableTable<T extends { id?: number }>({
           </TableHeader>
           <TableBody>
             {/* Create new item row */}
-            {isCreating && (
+            {showCreateButton && isCreating && (
               <TableRow className="bg-blue-50">
                 <TableCell>-</TableCell>
                 {fields.map((field) => (
@@ -308,7 +318,7 @@ export function InlineEditableTable<T extends { id?: number }>({
             {data.map((item, index) => {
               const isEditing = editingId === item.id;
               const rowNumber = pagination
-                ? ((pagination.currentPage - 1) * pagination.pageSize) + index + 1
+                ? (pagination.currentPage - 1) * pagination.pageSize + index + 1
                 : index + 1;
               return (
                 <TableRow
@@ -363,7 +373,7 @@ export function InlineEditableTable<T extends { id?: number }>({
                           >
                             <EditIcon className="h-4 w-4" />
                           </Button>
-                          {item.id && (
+                          {showDeleteButton && item.id && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -384,7 +394,7 @@ export function InlineEditableTable<T extends { id?: number }>({
               );
             })}
 
-            {data.length === 0 && !isCreating && (
+            {data.length === 0 && (!showCreateButton || !isCreating) && (
               <TableRow>
                 <TableCell
                   colSpan={fields.length + 2}
@@ -403,15 +413,22 @@ export function InlineEditableTable<T extends { id?: number }>({
         <div className="flex items-center justify-between px-2 py-4">
           <div className="flex items-center space-x-2">
             <p className="text-sm text-gray-700">
-              {t("pagination.showing")} {((pagination.currentPage - 1) * pagination.pageSize) + 1} {t("pagination.to")}{" "}
-              {Math.min(pagination.currentPage * pagination.pageSize, pagination.count)} {t("pagination.of")}{" "}
-              {pagination.count} {t("pagination.results")}
+              {t("pagination.showing")}{" "}
+              {(pagination.currentPage - 1) * pagination.pageSize + 1}{" "}
+              {t("pagination.to")}{" "}
+              {Math.min(
+                pagination.currentPage * pagination.pageSize,
+                pagination.count,
+              )}{" "}
+              {t("pagination.of")} {pagination.count} {t("pagination.results")}
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <p className="text-sm text-gray-700">{t("pagination.rows_per_page")}:</p>
+              <p className="text-sm text-gray-700">
+                {t("pagination.rows_per_page")}:
+              </p>
               <Select
                 value={pagination.pageSize.toString()}
                 onValueChange={(value) => onPageSizeChange?.(Number(value))}
@@ -442,7 +459,8 @@ export function InlineEditableTable<T extends { id?: number }>({
 
               <div className="flex items-center space-x-1">
                 <p className="text-sm text-gray-700">
-                  {t("pagination.page")} {pagination.currentPage} {t("pagination.of")} {pagination.totalPages}
+                  {t("pagination.page")} {pagination.currentPage}{" "}
+                  {t("pagination.of")} {pagination.totalPages}
                 </p>
               </div>
 

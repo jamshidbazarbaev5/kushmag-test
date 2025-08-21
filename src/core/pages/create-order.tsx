@@ -3,7 +3,11 @@ import { formatCurrency } from "../../utils/numberFormat";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useCreateOrder, useCalculateOrder } from "../api/order";
+import {
+  useCreateOrder,
+  useCalculateOrder,
+  useSendToMoySklad,
+} from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -71,6 +75,7 @@ import {
   DoorOpen,
   Package,
   Calculator,
+  Send,
   // Edit,
   // X,
 } from "lucide-react";
@@ -168,6 +173,8 @@ export default function CreateOrderPage() {
   const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
   const { mutate: calculateOrder, isPending: isCalculating } =
     useCalculateOrder();
+  const { mutate: sendToMoySklad, isPending: isSendingToMoySklad } =
+    useSendToMoySklad();
   const [doors, setDoors] = useState<any[]>([]);
   const [searchParams] = useSearchParams();
   const doorTypeFromUrl = searchParams.get("door_type") as
@@ -192,6 +199,10 @@ export default function CreateOrderPage() {
   const orderForm = useForm();
   const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
   const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [createdOrderStatus, setCreatedOrderStatus] = useState<string | null>(
+    null,
+  );
 
   // Validation functionality
   const [validationErrors, setValidationErrors] = useState<{
@@ -923,14 +934,31 @@ export default function CreateOrderPage() {
     };
 
     createOrder(orderData, {
-      onSuccess: () => {
+      onSuccess: (response: any) => {
         clearAllDrafts(); // Clear saved draft data on successful submission
+        setCreatedOrderId(response.id);
+        setCreatedOrderStatus(response.order_status);
         toast.success(t("messages.order_created_successfully"));
         // navigate("/orders");
       },
       onError: (e: any) => {
         console.error("Error creating order:", e.response?.data);
         toast.error(t("messages.error_creating_order"));
+      },
+    });
+  };
+
+  const handleSendToMoySklad = () => {
+    if (!createdOrderId) return;
+
+    sendToMoySklad(createdOrderId, {
+      onSuccess: () => {
+        setCreatedOrderStatus("moy_sklad");
+        toast.success(t("messages.order_sent_to_moy_sklad"));
+      },
+      onError: (error: any) => {
+        console.error("Error sending order to Moy Sklad:", error);
+        toast.error(t("messages.error_sending_to_moy_sklad"));
       },
     });
   };
@@ -1004,6 +1032,10 @@ export default function CreateOrderPage() {
               setDiscountAmountInput={setDiscountAmountInput}
               agreementAmountInput={agreementAmountInput}
               setAgreementAmountInput={setAgreementAmountInput}
+              createdOrderId={createdOrderId}
+              createdOrderStatus={createdOrderStatus}
+              onSendToMoySklad={handleSendToMoySklad}
+              isSendingToMoySklad={isSendingToMoySklad}
             />
           )}
         </div>
@@ -4184,6 +4216,10 @@ function StepThree({
   setDiscountAmountInput,
   agreementAmountInput,
   setAgreementAmountInput,
+  createdOrderId,
+  createdOrderStatus,
+  onSendToMoySklad,
+  isSendingToMoySklad,
 }: any) {
   const { t } = useTranslation();
 
@@ -4608,10 +4644,10 @@ function StepThree({
                 </div>
               </div>
 
-              <div className="pt-4 flex items-center gap-4">
+              <div className="pt-4 space-y-3">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
-                  disabled={isLoading}
+                  disabled={isLoading || createdOrderStatus === "moy_sklad"}
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
@@ -4619,6 +4655,34 @@ function StepThree({
                     ? `${t("common.creating")}...`
                     : t("common.create_order")}
                 </Button>
+
+                {createdOrderId && (
+                  <Button
+                    onClick={onSendToMoySklad}
+                    disabled={
+                      isSendingToMoySklad || createdOrderStatus === "moy_sklad"
+                    }
+                    className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {isSendingToMoySklad ? (
+                      <>
+                        <Send className="h-5 w-5 mr-2 animate-spin" />
+                        {t("common.sending")}...
+                      </>
+                    ) : createdOrderStatus === "moy_sklad" ? (
+                      <>
+                        <Send className="h-5 w-5 mr-2" />
+                        {t("common.sent_to_moy_sklad")}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5 mr-2" />
+                        {t("common.send_to_moy_sklad")}
+                      </>
+                    )}
+                  </Button>
+                )}
+
                 <Button
                   variant="outline"
                   onClick={() => {}}

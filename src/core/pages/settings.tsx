@@ -182,7 +182,7 @@ export default function SettingsPage() {
   const [debouncedBeadingSearch, setDebouncedBeadingSearch] = useState("");
   const [debouncedGlassTypeSearch, setDebouncedGlassTypeSearch] = useState("");
   const [debouncedThresholdSearch, setDebouncedThresholdSearch] = useState("");
-  const [_debouncedCasingRangeSearch, setDebouncedCasingRangeSearch] =
+  const [debouncedCasingRangeSearch, setDebouncedCasingRangeSearch] =
     useState("");
   const [debouncedPriceSettingSearch, setDebouncedPriceSettingSearch] =
     useState("");
@@ -331,7 +331,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setCasingRangePage(1);
-  }, [_debouncedCasingRangeSearch]);
+  }, [debouncedCasingRangeSearch]);
 
   useEffect(() => {
     setPriceSettingPage(1);
@@ -424,7 +424,7 @@ export default function SettingsPage() {
   const { data: casingRangesResponse, isLoading: casingRangesLoading } =
     useGetCasingRanges({
       params: {
-        search: _debouncedCasingRangeSearch,
+        search: debouncedCasingRangeSearch,
         page: casingRangePage,
         page_size: casingRangePageSize,
       },
@@ -1258,7 +1258,10 @@ export default function SettingsPage() {
           onCreate={async () => {}} // Attribute settings typically don't support create
           onUpdate={handleAttributeSettingsUpdate}
           onDelete={async () => {}} // Attribute settings typically don't support delete
-          searchPlaceholder={t("placeholders.search_attribute_settings")}
+          searchPlaceholder=""
+          showCreateButton={false}
+          showDeleteButton={false}
+          showSearchBar={false}
         />
 
         {/* Formula Display Section */}
@@ -1451,6 +1454,9 @@ export default function SettingsPage() {
             pagination={null}
             onPageChange={() => {}}
             onPageSizeChange={() => {}}
+            showCreateButton={false}
+            showDeleteButton={false}
+            showSearchBar={false}
           />
         )}
       </div>

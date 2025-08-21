@@ -94,7 +94,7 @@
     "manufacture": "Пройздводство"
   },
   "daily_plans": {
-    "daily_breakdown": "Ежедневный разбив",
+    "daily_breakdown": "Дневной отчет",
     "date": "Дата",
     "plan": "План",
     "total_sales": "Общая сумма продаж",
@@ -278,7 +278,7 @@
     "remove_table": "Удалить таблицу",
     "achievment": "Достижение",
     "top_performer": "Лучший исполнитель",
-    "high_performers": "Высокий исполнители",
+    "high_performers": "Лидеры",
     "planned_sales": "Планируемые продажи",
     "actual_sales": "Фактические продажи",
     "performance": "Выполнение",

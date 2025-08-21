@@ -2,7 +2,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
-import { useCreateOrder, useCalculateOrder } from "../api/order";
+import {
+  useCreateOrder,
+  useCalculateOrder,
+  useSendToMoySklad,
+} from "../api/order";
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -58,7 +62,14 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 // import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
-import { Plus, Trash2, DoorOpen, Package, Calculator } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  DoorOpen,
+  Package,
+  Calculator,
+  Send,
+} from "lucide-react";
 import api from "../api/api";
 import { useGetMeasure } from "../api/measure";
 import React from "react";
@@ -110,6 +121,8 @@ export default function CreateOrderPage() {
   const { mutate: createOrder, isPending: isLoading } = useCreateOrder();
   const { mutate: calculateOrder, isPending: isCalculating } =
     useCalculateOrder();
+  const { mutate: sendToMoySklad, isPending: isSendingToMoySklad } =
+    useSendToMoySklad();
 
   // Global door attributes state
   const [globalDoorSettings, setGlobalDoorSettings] = useState({
@@ -159,6 +172,10 @@ export default function CreateOrderPage() {
   const [advancePayment, setAdvancePayment] = useState<string>("");
   const [discountAmountInput, setDiscountAmountInput] = useState<number>(0);
   const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [createdOrderStatus, setCreatedOrderStatus] = useState<string | null>(
+    null,
+  );
   const orderForm = useForm();
 
   // const { discount_percentage, advance_payment } = orderForm.watch();
@@ -797,7 +814,9 @@ export default function CreateOrderPage() {
     // If measureId is available, make a request to the specific endpoint
     if (measureId) {
       try {
-        await api.put(`orders/${measureId}/`, orderData);
+        const response = await api.put(`orders/${measureId}/`, orderData);
+        setCreatedOrderId(response.data.id);
+        setCreatedOrderStatus(response.data.order_status);
         toast.success(t("messages.order_from_measure_created"));
         // navigate("/orders");
       } catch (error: any) {
@@ -810,7 +829,9 @@ export default function CreateOrderPage() {
     } else {
       // Use the default createOrder mutation for regular order creation
       createOrder(orderData, {
-        onSuccess: () => {
+        onSuccess: (response: any) => {
+          setCreatedOrderId(response.id);
+          setCreatedOrderStatus(response.order_status);
           toast.success(t("messages.order_created_successfully"));
           navigate("/orders");
         },
@@ -820,6 +841,22 @@ export default function CreateOrderPage() {
         },
       });
     }
+  };
+
+  const handleSendToMoySklad = () => {
+    if (!createdOrderId) return;
+
+    // @ts-ignore
+    sendToMoySklad(createdOrderId, {
+      onSuccess: () => {
+        setCreatedOrderStatus("moy_sklad");
+        toast.success(t("messages.order_sent_to_moy_sklad"));
+      },
+      onError: (error: any) => {
+        console.error("Error sending order to Moy Sklad:", error);
+        toast.error(t("messages.error_sending_to_moy_sklad"));
+      },
+    });
   };
 
   return (
@@ -888,6 +925,10 @@ export default function CreateOrderPage() {
               setAdvancePayment={setAdvancePayment}
               discountAmountInput={discountAmountInput}
               setDiscountAmountInput={setDiscountAmountInput}
+              createdOrderId={createdOrderId}
+              createdOrderStatus={createdOrderStatus}
+              onSendToMoySklad={handleSendToMoySklad}
+              isSendingToMoySklad={isSendingToMoySklad}
               agreementAmountInput={agreementAmountInput}
               setAgreementAmountInput={setAgreementAmountInput}
             />
@@ -1272,7 +1313,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0,
       },
@@ -1286,7 +1327,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0,
       },
@@ -1302,7 +1343,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         casing_type: "боковой",
         casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
@@ -1317,7 +1358,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         casing_type: "прямой",
         casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
@@ -1336,7 +1377,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0 + crownSize, // Will be recalculated when door width is set
       },
@@ -1424,7 +1465,7 @@ function StepTwo({
       model: defaultDoorModel,
       price_type: "",
       price: defaultDoorPrice,
-      quantity: 1,
+      quantity: 0,
       height: 0,
       width: 0,
       material: orderData.material || "",
@@ -3258,6 +3299,10 @@ function StepThree({
   setDiscountAmountInput,
   agreementAmountInput,
   setAgreementAmountInput,
+  createdOrderId,
+  createdOrderStatus,
+  onSendToMoySklad,
+  isSendingToMoySklad,
 }: any) {
   const { t } = useTranslation();
 
@@ -3756,7 +3801,7 @@ function StepThree({
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
-                  disabled={isLoading}
+                  disabled={isLoading || createdOrderStatus === "moy_sklad"}
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
@@ -3764,6 +3809,33 @@ function StepThree({
                     ? `${t("common.creating")}...`
                     : t("common.create_order")}
                 </Button>
+
+                {createdOrderId && (
+                  <Button
+                    onClick={onSendToMoySklad}
+                    disabled={
+                      isSendingToMoySklad || createdOrderStatus === "moy_sklad"
+                    }
+                    className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {isSendingToMoySklad ? (
+                      <>
+                        <Send className="h-5 w-5 mr-2 animate-spin" />
+                        {t("common.sending")}...
+                      </>
+                    ) : createdOrderStatus === "moy_sklad" ? (
+                      <>
+                        <Send className="h-5 w-5 mr-2" />
+                        {t("common.sent_to_moy_sklad")}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-5 w-5 mr-2" />
+                        {t("common.send_to_moy_sklad")}
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
