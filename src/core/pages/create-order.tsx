@@ -951,6 +951,7 @@ export default function CreateOrderPage() {
   const handleSendToMoySklad = () => {
     if (!createdOrderId) return;
 
+    // @ts-ignore
     sendToMoySklad(createdOrderId, {
       onSuccess: () => {
         setCreatedOrderStatus("moy_sklad");
