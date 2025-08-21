@@ -51,6 +51,20 @@ import {
   type YearlyPlan,
 } from "@/core/api/yearlyPlan";
 
+interface StaffMember {
+  name: string;
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+  };
+}
+
+interface StaffOption {
+  label: string;
+  value: string;
+}
+
 interface SalesPlanDetail {
   month: number;
   sales_plan: string | number;
@@ -112,7 +126,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
   const [apiStatus, setApiStatus] = useState<
     "idle" | "checking" | "success" | "error"
   >("idle");
-  const [_apiMessage, setApiMessage] = useState<string>("");
+  const [, setApiMessage] = useState<string>("");
 
   // API hooks
   const { data: sellers } = useGetSellers();
@@ -146,7 +160,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               ? operators
               : zamershiks;
         const staffMember = staffList?.find(
-          (staff: any) =>
+          (staff: StaffMember) =>
             staff.meta.href === userData.moy_sklad_staff?.meta.href,
         );
         if (staffMember) {
@@ -174,7 +188,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     const dataToSave = { ...formData };
 
     // Handle staff member data
-    if (dataToSave.staff_member) {
+    if (
+      dataToSave.staff_member &&
+      typeof dataToSave.staff_member === "string"
+    ) {
       try {
         const staffMember = JSON.parse(dataToSave.staff_member);
         dataToSave.moy_sklad_staff = {
@@ -202,10 +219,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : [];
 
     return (
-      staffList?.map((staff: any) => ({
-        label: staff.name,
-        value: JSON.stringify(staff),
-      })) || []
+      staffList?.map(
+        (staff: StaffMember): StaffOption => ({
+          label: staff.name,
+          value: JSON.stringify(staff),
+        }),
+      ) || []
     );
   };
 
@@ -239,18 +258,16 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
       if (response.status === 200) {
         setApiStatus("success");
-        setApiMessage('Есть соеденение');
-        toast.success('Есть соеденение');
+        setApiMessage("Есть соеденение");
+        toast.success("Есть соеденение");
       } else {
         setApiStatus("error");
-        setApiMessage('Пароль или логин неверно');
-        toast.error('Пароль или логин неверно');
+        setApiMessage("Пароль или логин неверно");
+        toast.error("Пароль или логин неверно");
       }
-    } catch (error: any) {
+    } catch {
       setApiStatus("error");
-      const errorMessage =
-    
-       'Пароль или логин неверно'
+      const errorMessage = "Пароль или логин неверно";
       setApiMessage(errorMessage);
       toast.error(errorMessage);
     }
@@ -484,7 +501,11 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                       {t("forms.staff_member")}
                     </Label>
                     <Select
-                      value={formData.staff_member || ""}
+                      value={
+                        typeof formData.staff_member === "string"
+                          ? formData.staff_member
+                          : ""
+                      }
                       onValueChange={(value) =>
                         handleInputChange("staff_member", value)
                       }
@@ -495,7 +516,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {getStaffOptions().map((option: any) => (
+                        {getStaffOptions().map((option: StaffOption) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -565,14 +586,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     {apiStatus === "success" && (
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      
                       </div>
                     )}
 
                     {apiStatus === "error" && (
                       <div className="flex items-center space-x-1">
                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                       
                       </div>
                     )}
                   </div>

@@ -38,6 +38,9 @@
     "total": "jámi",
     "current_formula": "Házirgi formula",
     "saving": "Saqlap qoyılmaqta...",
+    "loading": "Júklenmekte...",
+    "change_password_for_user": "{{username}} úshin paroldi ózgertiw",
+    "change_password_description": "Paydalanıwshı úshin jańa paroldi kiritiń",
     "checking": "Tekseriw...",
     "information": "Maǵlıwmat"
   },
@@ -211,6 +214,8 @@
     "g_shaped": "G tárizli"
   },
   "forms": {
+    "new_password": "Jańa parol",
+    "confirm_password": "Paroldi tastıyıqlań",
     "currency": "Valyuta",
     "sales_channel": "Satıw kanalı",
     "organization": "Shólkem",
@@ -374,8 +379,9 @@
   "messages": {
     "success": {
       "created": "{{item}} sátti jasaldı",
-      "updated": "{{item}} sátti jańartıldı",
+      "updated": "{{item}} sátti jańalandı",
       "deleted": "{{item}} sátti óshirildi",
+      "password_changed": "{{username}} úshin parol sátti ózgertirildi",
       "api_connection": "API baylanıs sátti",
       "api_connected": "API baylanıstı"
     },
@@ -386,7 +392,13 @@
       "required_fields": "Hámmesi qájetti maydan tolıqlarıń",
       "api_connection": "API baylanıs qatesi",
       "api_connection_failed": "API baylanıstırıw múmkin bolmadı",
-      "api_credentials_required": "API login hám parol qájetti"
+      "api_credentials_required": "API login hám parol qájetti",
+      "password_change": "{{username}} úshin paroldi ózgertiw qátesi"
+    },
+    "validation": {
+      "password_required": "Parol qájetti",
+      "password_min_length": "Parol keminde 6 táńba bolıwı kerek",
+      "passwords_not_match": "Parollar sáykes kelmeydi"
     },
     "confirm": {
       "delete": "Bul elementdi joyıwǵa ishensiz be?"
@@ -435,7 +447,8 @@
     "create_order": "Buyırtpa jasaw",
     "export_excel": "Excel-ke eksport",
     "export": "Eksport",
-    "send_sms": "SMS jiberiw"
+    "send_sms": "SMS jiberiw",
+    "change_password": "Paroldi ózgertiw"
   },
 
   "placeholders": {
@@ -448,6 +461,8 @@
     "select_sales_channel": "Satıw kanalın tańlań",
     "enter_order_code": "Buyırtpa kodın jazıń",
     "enter_order_date": "Buyırtpa sánesin jazıń",
+    "enter_new_password": "Jańa paroldi kiritiń",
+    "confirm_new_password": "Jańa paroldi tastıyıqlań",
     "enter_deadline_date": "Tamamlaw sánesin jazıń",
     "select_seller": "Satıwshını tańlań",
     "select_operator": "Operatordı tańlań",

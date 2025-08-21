@@ -3,12 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ResourceTable } from "../helpers/ResourceTable";
 import { toast } from "sonner";
-import { useGetUsers, useUpdateUser, useDeleteUser } from "../api/user";
+import {
+  useGetUsers,
+  useUpdateUser,
+  useDeleteUser,
+  useChangeUserPassword,
+} from "../api/user";
 import type { User } from "../api/user";
 import EditUserModal from "@/components/modals/EditUserModal";
+import { ChangePasswordModal } from "@/components/modals/ChangePasswordModal";
+import { Button } from "@/components/ui/button";
+import { KeyIcon } from "lucide-react";
 import { formatNumber } from "../helpers/formatters";
 
-const columns = (t: (key: string, options?: Record<string, any>) => string) => [
+const columns = (
+  t: (key: string, options?: Record<string, unknown>) => string,
+) => [
   {
     header: t("forms.username"),
     accessorKey: "username",
@@ -24,7 +34,7 @@ const columns = (t: (key: string, options?: Record<string, any>) => string) => [
   {
     header: t("forms.role"),
     accessorKey: "role",
-    // cell: (info: any) => {
+    // cell: (info: { row: { original: User } }) => {
     //   const role = info.row?.original.role as string;
     //   return t(`roles.${role?.toLowerCase()}`);
     // }
@@ -32,7 +42,7 @@ const columns = (t: (key: string, options?: Record<string, any>) => string) => [
   {
     header: t("forms.fixed_salary"),
     accessorKey: "fixed_salary",
-    cell: (row: any) => {
+    cell: (row: User) => {
       console.log("Fixed salary cell - row:", row);
       const value = row.fixed_salary;
       console.log("Fixed salary value:", value);
@@ -42,7 +52,7 @@ const columns = (t: (key: string, options?: Record<string, any>) => string) => [
   {
     header: t("forms.order_percentage"),
     accessorKey: "order_percentage",
-    cell: (row: any) => {
+    cell: (row: User) => {
       console.log("Order percentage cell - row:", row);
       const value = row.order_percentage;
       console.log("Order percentage value:", value);
@@ -57,6 +67,9 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] =
+    useState<User | null>(null);
   const { t } = useTranslation();
 
   const { data: usersData, isLoading } = useGetUsers({
@@ -73,6 +86,8 @@ export default function UsersPage() {
 
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const { mutate: deleteUser } = useDeleteUser();
+  const { mutate: changePassword, isPending: isChangingPassword } =
+    useChangeUserPassword();
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
@@ -95,6 +110,37 @@ export default function UsersPage() {
           t("messages.error.update", { item: t("navigation.users") }),
         ),
     });
+  };
+
+  const handlePasswordChange = (user: User) => {
+    setSelectedUserForPassword(user);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handlePasswordSubmit = (newPassword: string) => {
+    if (!selectedUserForPassword?.id) return;
+
+    changePassword(
+      { userId: selectedUserForPassword.id, new_password: newPassword },
+      {
+        onSuccess: () => {
+          toast.success(
+            t("messages.success.password_changed", {
+              username: selectedUserForPassword.username,
+            }),
+          );
+          setIsPasswordModalOpen(false);
+          setSelectedUserForPassword(null);
+        },
+        onError: () => {
+          toast.error(
+            t("messages.error.password_change", {
+              username: selectedUserForPassword.username,
+            }),
+          );
+        },
+      },
+    );
   };
 
   const handleDelete = (id: number) => {
@@ -139,6 +185,17 @@ export default function UsersPage() {
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         pageSize={10}
+        actions={(user) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handlePasswordChange(user)}
+            className="h-8 w-8 p-0 hover:bg-blue-50 text-blue-500"
+            title={t("actions.change_password")}
+          >
+            <KeyIcon className="h-4 w-4" />
+          </Button>
+        )}
       />
 
       <EditUserModal
@@ -150,6 +207,17 @@ export default function UsersPage() {
         user={editingUser}
         onSave={handleUpdateSubmit}
         isLoading={isUpdating}
+      />
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => {
+          setIsPasswordModalOpen(false);
+          setSelectedUserForPassword(null);
+        }}
+        onConfirm={handlePasswordSubmit}
+        userName={selectedUserForPassword?.username}
+        isLoading={isChangingPassword}
       />
     </div>
   );

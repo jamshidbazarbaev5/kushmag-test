@@ -1,4 +1,6 @@
 import { createResourceApiHooks } from "../helpers/createResourceApi";
+import { useQuery } from "@tanstack/react-query";
+import api from "./api";
 
 interface ModelMeta {
   href: string;
@@ -58,13 +60,13 @@ interface Door {
 
 export interface Order {
   id?: number;
-  extra_comment?:string;
+  extra_comment?: string;
   rate: ModelReference;
   store: ModelReference;
   project: ModelReference;
   agent: ModelReference;
   organization: ModelReference;
-  status:any;
+  status: any;
   salesChannel: ModelReference;
   address: string;
   order_code?: string;
@@ -102,6 +104,16 @@ export interface OrdersResponse {
   page_totals?: OrderTotals;
 }
 
+export interface SMSHistory {
+  id: number;
+  text: string;
+  admin: {
+    id: number;
+    full_name: string;
+  };
+  created_at: string;
+}
+
 const ORDER_URL = "orders/";
 
 export const {
@@ -112,9 +124,20 @@ export const {
   useDeleteResource: useDeleteOrder,
 } = createResourceApiHooks<Order, OrdersResponse>(ORDER_URL, "orders");
 
+// SMS History hook
+export const useGetOrderSMSHistory = (orderId: number) => {
+  return useQuery<SMSHistory[]>({
+    queryKey: ["order-sms-history", orderId],
+    queryFn: async () => {
+      const response = await api.get(`orders/${orderId}/sms-history/`);
+      return response.data;
+    },
+    enabled: !!orderId,
+  });
+};
+
 // Add calculate order functionality
 import { useMutation } from "@tanstack/react-query";
-import api from "./api";
 
 export interface CalculateOrderResponse {
   total_sum: number;

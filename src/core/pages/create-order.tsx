@@ -1464,7 +1464,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0,
       },
@@ -1478,7 +1478,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0,
       },
@@ -1496,7 +1496,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         casing_type: "боковой",
         casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
@@ -1513,7 +1513,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         casing_type: "прямой",
         casing_formula: casingFormula ? "formula1" : "formula2",
         casing_range: "",
@@ -1534,7 +1534,7 @@ function StepTwo({
               (p: any) => p.priceType.name === "Цена продажи",
             )?.value || 0) / 100
           : 0,
-        quantity: 1,
+        quantity: 0,
         height: 0,
         width: 0 + crownSize, // Will be recalculated when door width is set
       },
@@ -1632,7 +1632,7 @@ function StepTwo({
       model: defaultDoorModel,
       price_type: "",
       price: defaultDoorPrice,
-      quantity: 1,
+      quantity: 0,
       height: 0,
       width: 0,
       material: orderData.material || "",

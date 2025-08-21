@@ -8,6 +8,7 @@
     "actions": "Действия"
   },
   "common": {
+    "sms_history":"История смс",
     "language": "Язык",
     "wood": "Агаш капы",
     "update_order": "Обновить",
@@ -60,6 +61,8 @@
     "sent_to_moy_sklad": "Отправлено в Мой Склад",
     "actions": "Действия",
     "loading": "Загрузка...",
+    "change_password_for_user": "Изменить пароль для пользователя {{username}}",
+    "change_password_description": "Введите новый пароль для пользователя",
     "not_found": "{{item}} не найден",
     "width": "Ширина",
     "height": "Высота",
@@ -143,7 +146,7 @@
     "december": "Декабрь"
   },
   "navigation": {
-    "deadline_day":"Дедлайн",
+    "deadline_day": "Дедлайн",
 
     "orders": "Заказы",
     "daily_plans": "Ежедневные планы",
@@ -260,8 +263,11 @@
   },
 
   "forms": {
+    "order":"Заказ",
     "add_component_row": "Добавить новую модель",
     "deadline_day": "День крайнего срока",
+    "new_password": "Новый пароль",
+    "confirm_password": "Подтвердить пароль",
     "new_deadline": "Новый дедлайн",
     "extra_comment": "Коментария",
     "steel_color_name": "Название цвета стали",
@@ -580,10 +586,12 @@
     "beading": "Штапик"
   },
   "messages": {
+    "change_password_for_user":"Изменить пароль для пользователя {{username}}",
     "success": {
       "created": "{{item}} успешно создан",
       "updated": "{{item}} успешно обновлен",
       "deleted": "{{item}} успешно удален",
+      "password_changed": "Пароль для {{username}} успешно изменен",
       "api_connection": "API подключение успешно",
       "api_connected": "API подключено"
     },
@@ -594,7 +602,13 @@
       "required_fields": "Заполните все обязательные поля",
       "api_connection": "Ошибка подключения к API",
       "api_connection_failed": "Не удалось подключиться к API",
-      "api_credentials_required": "Требуются API логин и пароль"
+      "api_credentials_required": "Требуются API логин и пароль",
+      "password_change": "Ошибка при изменении пароля для {{username}}"
+    },
+    "validation": {
+      "password_required": "Пароль обязателен",
+      "password_min_length": "Пароль должен содержать минимум 6 символов",
+      "passwords_not_match": "Пароли не совпадают"
     },
     "confirm": {
       "delete": "Вы уверены, что хотите удалить этот элемент?"
@@ -655,6 +669,8 @@
     "enter_description": "Введите код заказа",
     "enter_order_information": "Введите информацию о заказе",
     "enter_create_order_description": "Введите описание создания заказа",
+    "enter_new_password": "Введите новый пароль",
+    "confirm_new_password": "Подтвердите новый пароль",
     "select_currency": "Выберите валюту",
     "select_store": "Выберите склад",
     "select_project": "Выберите проект",
@@ -747,11 +763,17 @@
     "add_extension": "Добавить добор",
     "add_crown": "Добавить корону",
     "export_excel": "Экспорт в Excel",
-    "export": "Экспорт"
+    "export": "Экспорт",
+    "change_password": "Изменить пароль"
   },
 
   "pages": {
+    "sms_history":"История смс",
     "orders": "Заказы",
+    "sms_statistics":"Статистика смс",
+    "total_sms_sent":"Общее количество смсов",
+    "unique_admins":"Уникальные админы",
+    "last_sms_date":"Дата последнего смс",
     "create_order": "Создать заказ",
     "create_order_from_measure": "Создать заказ из замера"
   },

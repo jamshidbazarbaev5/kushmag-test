@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { createResourceApiHooks } from "../helpers/createResourceApi";
 import api from "./api";
 
@@ -27,7 +27,7 @@ export interface User {
       mediaType: string;
     };
   };
-  staff_member?: any;
+  staff_member?: string | null;
 }
 
 interface PaginatedUsersResponse {
@@ -118,6 +118,19 @@ export const useGetOperatorsAndSellers = () => {
         operators: operatorsResponse.data.results || [],
         sellers: sellersResponse.data.results || [],
       };
+    },
+  });
+};
+
+// Hook to change user password
+export const useChangeUserPassword = () => {
+  return useMutation({
+    mutationFn: async (data: { userId: number; new_password: string }) => {
+      const response = await api.post(
+        `${USER_URL}${data.userId}/password-change/`,
+        { new_password: data.new_password },
+      );
+      return response.data;
     },
   });
 };

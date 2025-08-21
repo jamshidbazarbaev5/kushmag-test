@@ -44,6 +44,7 @@ import YearlyPlanDemo from "./components/YearlyPlanDemo";
 import YearlyPlanApiExample from "./components/YearlyPlanApiExample";
 import PriceSettingsPage from "./core/pages/price-settings";
 import CreatePriceSettingPage from "./core/pages/create-price-setting";
+import OrderSMSHistoryPage from "./core/pages/order-sms-history";
 // import EnhancedYearlyPlansPage from "./core/pages/yearly-plans-enhanced";
 
 const queryClient = new QueryClient();
@@ -81,6 +82,10 @@ function App() {
             <Route
               path="/orders/create-from-measure/:measureId"
               element={<EditOrderPage />}
+            />
+            <Route
+              path="/orders/:orderId/sms-history"
+              element={<OrderSMSHistoryPage />}
             />
 
             <Route path="/colors" element={<ColorsPage />} />
