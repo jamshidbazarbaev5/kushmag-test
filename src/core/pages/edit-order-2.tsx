@@ -5758,7 +5758,6 @@ function StepThree({
                     ? `${t("common.creating")}...`
                     : t("common.update_order")}
                 </Button>
-                onClick={onSendToMoySklad}
 
                 <Button
                   onClick={onSendToMoySklad}
