@@ -926,7 +926,7 @@ export default function CreateOrderPage() {
       onSuccess: () => {
         clearAllDrafts(); // Clear saved draft data on successful submission
         toast.success(t("messages.order_created_successfully"));
-        navigate("/orders");
+        // navigate("/orders");
       },
       onError: (e: any) => {
         console.error("Error creating order:", e.response?.data);

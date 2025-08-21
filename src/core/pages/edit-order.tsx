@@ -799,7 +799,7 @@ export default function CreateOrderPage() {
       try {
         await api.put(`orders/${measureId}/`, orderData);
         toast.success(t("messages.order_from_measure_created"));
-        navigate("/orders");
+        // navigate("/orders");
       } catch (error: any) {
         console.error(
           "Error creating order from measure:",

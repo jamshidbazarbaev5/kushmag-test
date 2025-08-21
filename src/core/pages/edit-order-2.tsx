@@ -1028,7 +1028,7 @@ export default function EditOrderPage() {
     updateOrder(orderUpdateData, {
       onSuccess: () => {
         toast.success(t("messages.order_updated_successfully"));
-        navigate("/orders");
+        // navigate("/orders");
       },
       onError: (e: any) => {
         console.error("Error updating order:", e.response?.data);
@@ -5407,23 +5407,7 @@ function StepThree({
                   </p>
                   <p className="font-semibold">{doors.length}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {t("forms.total_items")}
-                  </p>
-                  <p className="font-semibold">
-                    {doors.reduce(
-                      (total: number, door: any) =>
-                        total +
-                        1 +
-                        (door.extensions?.length || 0) +
-                        (door.casings?.length || 0) +
-                        (door.crowns?.length || 0) +
-                        (door.accessories?.length || 0),
-                      0,
-                    )}
-                  </p>
-                </div>
+
               </div>
 
               {/* Price Breakdown */}
@@ -5705,7 +5689,7 @@ function StepThree({
                 </div>
                 {/* Base Discount */}
                 {discountPercentage > 0 && (
-                  <div className="flex justify-between text-green-600">
+                  <div className="flex justify-between text-black-600">
                     <span>
                       {t("forms.discount")} ({discountPercentage || 0}%)
                     </span>
@@ -5719,7 +5703,7 @@ function StepThree({
 
                 {/* Agreement Amount */}
                 {agreementAmountInput > 0 && (
-                  <div className="flex justify-between text-purple-600">
+                  <div className="flex justify-between text-black-600">
                     <span>{t("forms.agreement")}</span>
                     <span className="text-black">
                       {formatCurrency(agreementAmountInput)}
@@ -5729,7 +5713,7 @@ function StepThree({
 
                 {/* Total Discount - only show if there's any discount */}
                 {(discountPercentage > 0 || agreementAmountInput > 0) && (
-                  <div className="flex justify-between text-green-700 font-semibold border-t pt-2">
+                  <div className="flex justify-between text-black-700 font-semibold border-t pt-2">
                     <span>
                       {t("forms.total_discount")} (
                       {totals.total_sum > 0
@@ -5746,14 +5730,14 @@ function StepThree({
                   </div>
                 )}
 
-                <div className="flex justify-between text-red-600">
+                <div className="flex justify-between text-black-600">
                   <span>{t("forms.advance_payment")}</span>
                   <span className="text-black">
                     {formatCurrency(advancePayment)}
                   </span>
                 </div>
                 <Separator />
-                <div className="flex justify-between text-xl font-bold text-blue-600">
+                <div className="flex justify-between text-xl font-bold text-black-600">
                   <span>{t("forms.remaining_balance")}</span>
                   <span className="text-black">
                     {formatCurrency(totals.remainingBalance)}
@@ -5772,8 +5756,9 @@ function StepThree({
                 >
                   {isLoading
                     ? `${t("common.creating")}...`
-                    : t("common.create_order")}
+                    : t("common.update_order")}
                 </Button>
+                onClick={onSendToMoySklad}
 
                 <Button
                   onClick={onSendToMoySklad}
