@@ -4214,23 +4214,7 @@ function StepThree({
                   </p>
                   <p className="font-semibold">{doors.length}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">
-                    {t("forms.total_items")}
-                  </p>
-                  <p className="font-semibold">
-                    {doors.reduce(
-                      (total: number, door: any) =>
-                        total +
-                        1 +
-                        (door.extensions?.length || 0) +
-                        (door.casings?.length || 0) +
-                        (door.crowns?.length || 0) +
-                        (door.accessories?.length || 0),
-                      0,
-                    )}
-                  </p>
-                </div>
+
               </div>
 
               {/* Price Breakdown */}
@@ -4320,7 +4304,17 @@ function StepThree({
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-xl">
                 <span>{t("forms.pricing_summary")}</span>
+                <Button
+                    onClick={onCalculate}
+                    disabled={isCalculating || doors.length === 0}
+                    className=" bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    // size="lg"
+                >
+                  <Calculator className="h-4 w-4" />
+                  {isCalculating ? t("forms.calculating") : "Рассчитать"}
+                </Button>
               </CardTitle>
+
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Discount and Payment Fields */}
@@ -4385,47 +4379,50 @@ function StepThree({
                           {t("forms.discount_amount")}
                         </span>
                       </div>
+
                       <div className="w-20">
+
                         <input
-                          type="text"
-                          inputMode="decimal"
-                          placeholder="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-                          {...orderForm.register("discount_percentage", {
-                            onChange: (e: any) => {
-                              let value = e.target.value;
-                              // Handle comma as decimal separator
-                              if (typeof value === "string") {
-                                let cleanedValue = value
-                                  .replace(/,/g, ".")
-                                  .replace(/[^\d.]/g, "");
-                                const parts = cleanedValue.split(".");
-                                if (parts.length > 2) {
-                                  cleanedValue =
-                                    parts[0] + "." + parts.slice(1).join("");
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                            {...orderForm.register("discount_percentage", {
+                              onChange: (e: any) => {
+                                let value = e.target.value;
+                                // Handle comma as decimal separator
+                                if (typeof value === "string") {
+                                  let cleanedValue = value
+                                      .replace(/,/g, ".")
+                                      .replace(/[^\d.]/g, "");
+                                  const parts = cleanedValue.split(".");
+                                  if (parts.length > 2) {
+                                    cleanedValue =
+                                        parts[0] + "." + parts.slice(1).join("");
+                                  }
+                                  value = cleanedValue;
                                 }
-                                value = cleanedValue;
-                              }
-                              const percentage = parseFloat(value) || 0;
-                              // Calculate base discount amount from percentage
-                              const baseDiscountAmount =
-                                totals.total_sum * (percentage / 100);
-                              // Add agreement amount to get total discount
-                              const currentAgreementAmount =
-                                agreementAmountInput || 0;
-                              const totalDiscountAmount =
-                                baseDiscountAmount + currentAgreementAmount;
-                              setDiscountAmountInput(totalDiscountAmount);
-                            },
-                          })}
+                                const percentage = parseFloat(value) || 0;
+                                // Calculate base discount amount from percentage
+                                const baseDiscountAmount =
+                                    totals.total_sum * (percentage / 100);
+                                // Add agreement amount to get total discount
+                                const currentAgreementAmount =
+                                    agreementAmountInput || 0;
+                                const totalDiscountAmount =
+                                    baseDiscountAmount + currentAgreementAmount;
+                                setDiscountAmountInput(totalDiscountAmount);
+                              },
+                            })}
                         />
                         <span className="text-xs text-gray-500 mt-1 block text-center">
                           %
                         </span>
+
                       </div>
                     </div>
                     {(discount_percentage > 0 || discountAmountInput > 0) && (
-                      <p className="text-sm text-black">
+                        <p className="text-sm text-black">
                         {t("forms.discount_amount")}:{" "}
                         {discountAmountInput > 0
                           ? formatCurrency(discountAmountInput)
@@ -4542,7 +4539,7 @@ function StepThree({
                 </div>
                 {/* Base Discount */}
                 {discount_percentage > 0 && (
-                  <div className="flex justify-between text-green-600">
+                  <div className="flex justify-between text-black-600">
                     <span>
                       {t("forms.discount")} ({discount_percentage || 0}%)
                     </span>
@@ -4556,7 +4553,7 @@ function StepThree({
 
                 {/* Agreement Amount */}
                 {agreementAmountInput > 0 && (
-                  <div className="flex justify-between text-purple-600">
+                  <div className="flex justify-between text-black-600">
                     <span>{t("forms.agreement")}</span>
                     <span className="text-black">
                       {formatCurrency(agreementAmountInput)}
@@ -4566,7 +4563,7 @@ function StepThree({
 
                 {/* Total Discount - only show if there's any discount */}
                 {(discount_percentage > 0 || agreementAmountInput > 0) && (
-                  <div className="flex justify-between text-green-700 font-semibold border-t pt-2">
+                  <div className="flex justify-between text-black-700 font-semibold border-t pt-2">
                     <span>
                       {t("forms.total_discount")} (
                       {totals.total_sum > 0
@@ -4583,12 +4580,12 @@ function StepThree({
                   </div>
                 )}
 
-                <div className="flex justify-between text-red-600">
+                <div className="flex justify-between text-black-600">
                   <span>{t("forms.advance_payment")}</span>
                   <span className="text-black">{formatCurrency(advance)}</span>
                 </div>
                 <Separator />
-                <div className="flex justify-between text-xl font-bold text-blue-600">
+                <div className="flex justify-between text-xl font-bold text-black-600">
                   <span>{t("forms.remaining_balance")}</span>
                   <span className="text-black">
                     {formatCurrency(totals.remainingBalance)}
@@ -4600,7 +4597,7 @@ function StepThree({
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
                   disabled={isLoading}
-                  className="w-80 h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
                   {isLoading
@@ -4614,15 +4611,7 @@ function StepThree({
                 >
                   {t("common.back_to_doors")}
                 </Button>
-                <Button
-                  onClick={onCalculate}
-                  disabled={isCalculating || doors.length === 0}
-                  className="flex items-center h-12 w-80 gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  // size="lg"
-                >
-                  <Calculator className="h-4 w-4" />
-                  {isCalculating ? t("forms.calculating") : "Рассчитать"}
-                </Button>
+
               </div>
             </CardContent>
           </Card>
