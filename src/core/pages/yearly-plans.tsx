@@ -54,7 +54,9 @@ export default function YearlyPlansPage() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [selectedUser] = useState<string>("");
-  const [selectedYear] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString(),
+  );
   const [selectedRole, setSelectedRole] = useState<string>("");
 
   // Check if current user is admin
@@ -67,7 +69,7 @@ export default function YearlyPlansPage() {
   const { data: users } = useGetAllUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
     params: {
-      year: 2025,
+      year: parseInt(selectedYear),
       ...(isAdmin && selectedRole && { role: selectedRole }),
     },
   });
@@ -285,7 +287,7 @@ export default function YearlyPlansPage() {
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="outline" className="text-sm px-3 py-1">
-              2025 {t("yearly_plans.year")}
+              {selectedYear} {t("yearly_plans.year")}
             </Badge>
           </div>
         </div>
@@ -487,6 +489,31 @@ export default function YearlyPlansPage() {
               {/* Role Filter and View Mode - Only show role filter for admin */}
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-wrap">
+                  {/* Year Filter */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-600">
+                      {t("yearly_plans.year")}:
+                    </span>
+                    <Select
+                      value={selectedYear}
+                      onValueChange={setSelectedYear}
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 10 }, (_, i) => {
+                          const year = new Date().getFullYear() - 5 + i;
+                          return (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   {/* Role Filter - Only show for admin users */}
                   {isAdmin && (
                     <div className="flex items-center gap-2">

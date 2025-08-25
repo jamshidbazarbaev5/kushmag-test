@@ -691,6 +691,35 @@ export default function OrdersPage() {
     navigate(`/orders/edit/${order.id}`);
   };
 
+  // Helper function to determine door material type
+  const getDoorMaterialType = (order: any) => {
+    if (!order.doors || order.doors.length === 0) {
+      return "unknown";
+    }
+
+    // Check the material_type of the first door (assuming all doors in an order are same type)
+    const firstDoor = order.doors[0];
+    if (firstDoor && firstDoor.material_type) {
+      // Assuming material_type 1 = WOOD, material_type 2 = STEEL
+      // This mapping might need adjustment based on actual data
+      return firstDoor.material_type === 2 ? "steel" : "wood";
+    }
+
+    return "unknown";
+  };
+
+  // Helper function to get material color
+  const getMaterialColor = (materialType: string) => {
+    switch (materialType) {
+      case "wood":
+        return "#D2691E"; // Chocolate/wood brown color for wood
+      case "steel":
+        return "#1F2937"; // Dark gray/black for steel
+      default:
+        return "#9CA3AF"; // Light gray for unknown
+    }
+  };
+
   return (
     <div className="space-y-4 p-6">
       <div className="flex justify-between items-center">
@@ -1433,7 +1462,24 @@ export default function OrdersPage() {
                 >
                   {visibleColumns.number && (
                     <td className="px-3 py-2 text-center text-sm font-medium text-gray-700">
-                      {(currentPage - 1) * itemsPerPage + index + 1}
+                      <div className="flex items-center justify-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{
+                            backgroundColor: getMaterialColor(
+                              getDoorMaterialType(order),
+                            ),
+                          }}
+                          title={
+                            getDoorMaterialType(order) === "wood"
+                              ? "Деревянные двери"
+                              : getDoorMaterialType(order) === "steel"
+                                ? "Стальные двери"
+                                : "Неизвестный тип"
+                          }
+                        />
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </div>
                     </td>
                   )}
                   {visibleColumns.order_status && (
