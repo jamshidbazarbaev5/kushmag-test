@@ -311,11 +311,9 @@ export default function EditOrderPage() {
     return t("forms.unknown_product");
   };
 
-  // Initialize form with order data - wait for reference data to load
-  useEffect(() => {
-    if (
-      orderData &&
-      // currencies &&
+  // Memoize reference data loaded state to prevent unnecessary re-renders
+  const isReferenceDataLoaded = useMemo(() => {
+    return !!(
       stores &&
       projects &&
       counterparties &&
@@ -324,7 +322,21 @@ export default function EditOrderPage() {
       sellers &&
       operators &&
       zamershiks
-    ) {
+    );
+  }, [
+    stores,
+    projects,
+    counterparties,
+    organizations,
+    salesChannels,
+    sellers,
+    operators,
+    zamershiks,
+  ]);
+
+  // Initialize form with order data - wait for reference data to load
+  useEffect(() => {
+    if (orderData && isReferenceDataLoaded) {
       // Helper function to format date for datetime-local input
       const formatDateForInput = (dateString: string) => {
         if (!dateString) return "";
@@ -537,60 +549,35 @@ export default function EditOrderPage() {
         zamershiks: !!zamershiks,
       });
     }
-  }, [
-    orderData,
-    orderForm,
-    // currencies,
-    stores,
-    projects,
-    counterparties,
-    organizations,
-    salesChannels,
-    sellers,
-    branches,
-    zamershiks,
-    operators,
-  ]);
+  }, [orderData, isReferenceDataLoaded, orderForm]);
 
-  // Auto-calculate order when data is loaded
-  useEffect(() => {
-    // Only auto-calculate if we have all the necessary data and doors
-    if (
+  // Auto-calculate order when data is loaded (debounced)
+  const shouldCalculateOrder = useMemo(() => {
+    return !!(
       orderData &&
       doors.length > 0 &&
-      // currencies &&
-      stores &&
-      projects &&
-      counterparties &&
-      organizations &&
-      salesChannels &&
-      sellers &&
+      isReferenceDataLoaded &&
       branches &&
-      zamershiks &&
-      operators &&
       productsList.length > 0 &&
-      totals.total_sum === 0 // Only calculate if not already calculated
-    ) {
-      // Delay the calculation to ensure all form data is properly set
-      setTimeout(() => {
-        handleCalculateOrder();
-      }, 500);
-    }
+      totals.total_sum === 0
+    );
   }, [
     orderData,
-    doors,
-    // currencies,
-    stores,
-    projects,
-    counterparties,
-    organizations,
-    salesChannels,
-    sellers,
-    operators,
-    zamershiks,
-    productsList,
+    doors.length,
+    isReferenceDataLoaded,
+    branches,
+    productsList.length,
     totals.total_sum,
   ]);
+
+  useEffect(() => {
+    if (shouldCalculateOrder) {
+      const timeoutId = setTimeout(() => {
+        handleCalculateOrder();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [shouldCalculateOrder]);
 
   // Synchronize form material fields with globalDoorSettings
   const materialFormFields = orderForm.watch([
@@ -604,82 +591,126 @@ export default function EditOrderPage() {
     "beading_additional2",
   ]);
 
+  // Memoize material form fields to prevent unnecessary updates
+  const materialFieldsHash = useMemo(() => {
+    if (!materialFormFields || materialFormFields.every((field) => !field))
+      return "";
+    return JSON.stringify(materialFormFields);
+  }, [materialFormFields]);
+
+  const prevMaterialFieldsHashRef = useRef<string>("");
+
   useEffect(() => {
-    if (materialFormFields && materialFormFields.length > 0) {
-      const [
-        material,
-        material_type,
-        massif,
-        color,
-        patina_color,
-        beading_main,
-        beading_additional,
-        beading_additional2,
-      ] = materialFormFields;
-
-      setGlobalDoorSettings((prev: any) => ({
-        ...prev,
-        material: material || "",
-        material_type: material_type || "",
-        massif: massif || "",
-        color: color || "",
-        patina_color: patina_color || "",
-        beading_main: beading_main || "",
-        beading_additional: beading_additional ?? null,
-        beading_additional2: beading_additional2 ?? null,
-      }));
+    if (
+      prevMaterialFieldsHashRef.current === materialFieldsHash ||
+      !materialFieldsHash
+    ) {
+      return;
     }
-  }, materialFormFields);
+    prevMaterialFieldsHashRef.current = materialFieldsHash;
 
-  // --- Format Options for Selects ---
-  const fieldOptions = {
-    // rateOptions: formatReferenceOptions(currencies),
-    branchOptions: formatReferenceOptions(branches),
-    storeOptions: formatReferenceOptions(stores),
-    projectOptions: formatReferenceOptions(projects),
-    agentOptions: formatReferenceOptions(counterparties),
-    organizationOptions: formatReferenceOptions(organizations),
-    salesChannelOptions: formatReferenceOptions(salesChannels),
-    sellerOptions: formatReferenceOptions((sellers as any)?.results || sellers),
-    operatorOptions: formatReferenceOptions(
-      (operators as any)?.results || operators,
-    ),
-    materialOptions: formatReferenceOptions(materials),
-    materialTypeOptions: formatReferenceOptions(materialTypes),
-    massifOptions: formatReferenceOptions(massifs),
-    colorOptions: formatReferenceOptions(colors),
-    zamershikOptions: formatZamershikOptions(zamershiks),
-    patinaColorOptions: formatReferenceOptions(patinaColors),
-    beadingMainOptions: formatReferenceOptions(
-      Array.isArray(beadings)
-        ? beadings.filter((b) => b.type === "main")
-        : {
-            results: beadings?.results?.filter((b) => b.type === "main") || [],
-          },
-    ),
-    beadingAdditionalOptions: formatReferenceOptions(
-      Array.isArray(beadings)
-        ? beadings.filter((b) => b.type === "additional")
-        : {
-            results:
-              beadings?.results?.filter((b) => b.type === "additional") || [],
-          },
-    ),
-    glassTypeOptions: formatReferenceOptions(glassTypes),
-    thresholdOptions: formatReferenceOptions(thresholds),
-    casingRangeOptions: (Array.isArray(casingRanges)
-      ? casingRanges
-      : casingRanges?.results || []
-    ).map((range) => ({
-      value: String(range.id), // Convert to string for Select component
-      label: `${range.casing_size}`,
-      ...range,
-    })),
-    steelColorOptions: formatReferenceOptions(steelColors),
-    frameOptions: formatReferenceOptions(frames),
-    claddingOptions: formatReferenceOptions(claddings),
-    lockOptions: formatReferenceOptions(locks),
-  };
+    const [
+      material,
+      material_type,
+      massif,
+      color,
+      patina_color,
+      beading_main,
+      beading_additional,
+      beading_additional2,
+    ] = materialFormFields;
+
+    setGlobalDoorSettings((prev: any) => ({
+      ...prev,
+      material: material || "",
+      material_type: material_type || "",
+      massif: massif || "",
+      color: color || "",
+      patina_color: patina_color || "",
+      beading_main: beading_main || "",
+      beading_additional: beading_additional ?? null,
+      beading_additional2: beading_additional2 ?? null,
+    }));
+  }, [materialFieldsHash, materialFormFields]);
+
+  // --- Format Options for Selects (Memoized) ---
+  const fieldOptions = useMemo(
+    () => ({
+      // rateOptions: formatReferenceOptions(currencies),
+      branchOptions: formatReferenceOptions(branches),
+      storeOptions: formatReferenceOptions(stores),
+      projectOptions: formatReferenceOptions(projects),
+      agentOptions: formatReferenceOptions(counterparties),
+      organizationOptions: formatReferenceOptions(organizations),
+      salesChannelOptions: formatReferenceOptions(salesChannels),
+      sellerOptions: formatReferenceOptions(
+        (sellers as any)?.results || sellers,
+      ),
+      operatorOptions: formatReferenceOptions(
+        (operators as any)?.results || operators,
+      ),
+      materialOptions: formatReferenceOptions(materials),
+      materialTypeOptions: formatReferenceOptions(materialTypes),
+      massifOptions: formatReferenceOptions(massifs),
+      colorOptions: formatReferenceOptions(colors),
+      zamershikOptions: formatZamershikOptions(zamershiks),
+      patinaColorOptions: formatReferenceOptions(patinaColors),
+      beadingMainOptions: formatReferenceOptions(
+        Array.isArray(beadings)
+          ? beadings.filter((b) => b.type === "main")
+          : {
+              results:
+                beadings?.results?.filter((b) => b.type === "main") || [],
+            },
+      ),
+      beadingAdditionalOptions: formatReferenceOptions(
+        Array.isArray(beadings)
+          ? beadings.filter((b) => b.type === "additional")
+          : {
+              results:
+                beadings?.results?.filter((b) => b.type === "additional") || [],
+            },
+      ),
+      glassTypeOptions: formatReferenceOptions(glassTypes),
+      thresholdOptions: formatReferenceOptions(thresholds),
+      casingRangeOptions: (Array.isArray(casingRanges)
+        ? casingRanges
+        : casingRanges?.results || []
+      ).map((range) => ({
+        value: String(range.id), // Convert to string for Select component
+        label: `${range.casing_size}`,
+        ...range,
+      })),
+      steelColorOptions: formatReferenceOptions(steelColors),
+      frameOptions: formatReferenceOptions(frames),
+      claddingOptions: formatReferenceOptions(claddings),
+      lockOptions: formatReferenceOptions(locks),
+    }),
+    [
+      branches,
+      stores,
+      projects,
+      counterparties,
+      organizations,
+      salesChannels,
+      sellers,
+      operators,
+      materials,
+      materialTypes,
+      massifs,
+      colors,
+      zamershiks,
+      patinaColors,
+      beadings,
+      glassTypes,
+      thresholds,
+      casingRanges,
+      steelColors,
+      frames,
+      claddings,
+      locks,
+    ],
+  );
 
   // Debug log to check if casingRanges data is being received
   console.log("Casing Ranges Data:", casingRanges);
@@ -1202,7 +1233,7 @@ function StepOne({
   doorType,
 }: any) {
   const { t } = useTranslation();
-    const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("ru-RU", {
@@ -1228,7 +1259,8 @@ function StepOne({
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Package className="h-6 w-6 text-blue-600" />
                 </div>
-                {t("forms.order_information")} {order.order_code} / {formatDate(order.created_at)}
+                {t("forms.order_information")} {order.order_code} /{" "}
+                {formatDate(order.created_at)}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -1647,44 +1679,25 @@ function StepTwo({
   ]);
 
   // Update tables when initializedTables changes
-  // Use a ref to track if we're in the middle of updating to prevent circular dependencies
-  const isUpdatingTablesRef = useRef(false);
+  // Memoize tables structure hash to prevent unnecessary updates
+  const tablesStructureHash = useMemo(() => {
+    return initializedTables.map((table) => ({
+      doorsCount: table.doors.length,
+      doorModelId: table.doorModel?.id || null,
+    }));
+  }, [initializedTables]);
+
+  const prevTablesHashRef = useRef<string>("");
 
   useEffect(() => {
-    // Prevent circular updates
-    if (isUpdatingTablesRef.current) {
+    const currentHash = JSON.stringify(tablesStructureHash);
+    if (prevTablesHashRef.current === currentHash) {
       return;
     }
+    prevTablesHashRef.current = currentHash;
 
-    setTables((prevTables) => {
-      // Only update if the structure actually changed
-      // Compare table count and basic structure instead of deep JSON comparison
-      if (prevTables.length === initializedTables.length) {
-        let hasChanges = false;
-        for (let i = 0; i < prevTables.length; i++) {
-          if (
-            prevTables[i].doors.length !== initializedTables[i].doors.length ||
-            prevTables[i].doorModel?.id !== initializedTables[i].doorModel?.id
-          ) {
-            hasChanges = true;
-            break;
-          }
-        }
-        if (!hasChanges) {
-          return prevTables;
-        }
-      }
-
-      // Set flag to prevent circular updates
-      isUpdatingTablesRef.current = true;
-      // Reset flag after a short delay
-      setTimeout(() => {
-        isUpdatingTablesRef.current = false;
-      }, 0);
-
-      return initializedTables;
-    });
-  }, [initializedTables]);
+    setTables(initializedTables);
+  }, [tablesStructureHash, initializedTables]);
 
   // Add new table functionality
   const handleAddNewTable = () => {
@@ -2192,104 +2205,83 @@ function StepTwo({
     setTables(updatedTables);
   };
 
-  // Auto-sync tables data to main doors state whenever tables change
-  // Use a ref to track if we're in the middle of updating to prevent circular dependencies
-  const isUpdatingDoorsRef = useRef(false);
-
-  useEffect(() => {
-    // Prevent circular updates
-    if (isUpdatingDoorsRef.current) {
-      return;
-    }
-
-    const allDoors = tables.flatMap((table) =>
+  // Memoize doors data to prevent unnecessary recalculations
+  const doorsFromTables = useMemo(() => {
+    return tables.flatMap((table) =>
       table.doors.map((door: any) => ({
         ...door,
         model: table.doorModel ? table.doorModel.id : door.model,
       })),
     );
-
-    console.log("Syncing tables to doors state - allDoors:", allDoors);
-
-    // Only update doors if the data actually changed
-    setDoors((prevDoors: any) => {
-      // Comprehensive comparison: check length and all relevant properties
-      if (prevDoors.length === allDoors.length) {
-        let hasChanges = false;
-        for (let i = 0; i < prevDoors.length; i++) {
-          const prevDoor = prevDoors[i];
-          const newDoor = allDoors[i];
-
-          // Check all door properties that can be changed
-          if (
-            prevDoor.model !== newDoor.model ||
-            prevDoor.quantity !== newDoor.quantity ||
-            prevDoor.width !== newDoor.width ||
-            prevDoor.height !== newDoor.height ||
-            prevDoor.door_name !== newDoor.door_name ||
-            prevDoor.price !== newDoor.price ||
-            prevDoor.steel_color !== newDoor.steel_color ||
-            prevDoor.frame !== newDoor.frame ||
-            prevDoor.cladding !== newDoor.cladding ||
-            prevDoor.lock !== newDoor.lock ||
-            prevDoor.peephole !== newDoor.peephole ||
-            prevDoor.opening_side !== newDoor.opening_side ||
-            prevDoor.promog !== newDoor.promog ||
-            prevDoor.price_type !== newDoor.price_type ||
-            prevDoor.material !== newDoor.material ||
-            prevDoor.material_type !== newDoor.material_type ||
-            prevDoor.massif !== newDoor.massif ||
-            prevDoor.color !== newDoor.color ||
-            prevDoor.patina_color !== newDoor.patina_color ||
-            prevDoor.beading_main !== newDoor.beading_main ||
-            prevDoor.beading_additional !== newDoor.beading_additional ||
-            prevDoor.beading_additional2 !== newDoor.beading_additional2 ||
-            JSON.stringify(prevDoor.crown_casing) !==
-              JSON.stringify(newDoor.crown_casing) ||
-            JSON.stringify(prevDoor.extensions) !==
-              JSON.stringify(newDoor.extensions) ||
-            JSON.stringify(prevDoor.casings) !==
-              JSON.stringify(newDoor.casings) ||
-            JSON.stringify(prevDoor.crowns) !==
-              JSON.stringify(newDoor.crowns) ||
-            JSON.stringify(prevDoor.accessories) !==
-              JSON.stringify(newDoor.accessories)
-          ) {
-            hasChanges = true;
-            break;
-          }
-        }
-        if (!hasChanges) {
-          return prevDoors;
-        }
-      }
-
-      // Set flag to prevent circular updates
-      isUpdatingDoorsRef.current = true;
-      // Reset flag after a short delay
-      setTimeout(() => {
-        isUpdatingDoorsRef.current = false;
-      }, 0);
-
-      return allDoors;
-    });
   }, [tables]);
 
-  // Effect to update door type when doorType changes
+  // Create a stable hash of doors for comparison
+  const doorsHash = useMemo(() => {
+    return JSON.stringify(
+      doorsFromTables.map((door) => ({
+        model: door.model,
+        quantity: door.quantity,
+        width: door.width,
+        height: door.height,
+        door_name: door.door_name,
+        price: door.price,
+        steel_color: door.steel_color,
+        frame: door.frame,
+        cladding: door.cladding,
+        lock: door.lock,
+        peephole: door.peephole,
+        opening_side: door.opening_side,
+        promog: door.promog,
+        price_type: door.price_type,
+        material: door.material,
+        material_type: door.material_type,
+        massif: door.massif,
+        color: door.color,
+        patina_color: door.patina_color,
+        beading_main: door.beading_main,
+        beading_additional: door.beading_additional,
+        beading_additional2: door.beading_additional2,
+        extensions: door.extensions,
+        casings: door.casings,
+        crowns: door.crowns,
+        accessories: door.accessories,
+      })),
+    );
+  }, [doorsFromTables]);
+
+  const prevDoorsHashRef = useRef<string>("");
+
   useEffect(() => {
-    if (tables.length > 0) {
+    if (prevDoorsHashRef.current === doorsHash) {
+      return;
+    }
+    prevDoorsHashRef.current = doorsHash;
+
+    console.log(
+      "Syncing tables to doors state - doors count:",
+      doorsFromTables.length,
+    );
+    setDoors(doorsFromTables);
+  }, [doorsHash, doorsFromTables]);
+
+  // Effect to update door type when doorType changes (debounced)
+  useEffect(() => {
+    if (tables.length === 0) return;
+
+    const timeoutId = setTimeout(() => {
       setTables((prevTables) => {
-        const updatedTables = prevTables.map((table) => ({
+        return prevTables.map((table) => ({
           ...table,
           doors: table.doors.map((door: any) => ({
             ...door,
             // Remove door_type from individual doors since it's now at order level
           })),
         }));
-        return updatedTables;
       });
-    }
-  }, [doorType]);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [doorType, tables.length]);
 
   // Remove door functionality
   const handleRemoveDoor = (doorIndex: number, tableId: number) => {
@@ -2673,20 +2665,37 @@ function StepTwo({
     "beading_additional2",
   ]);
 
-  useEffect(() => {
-    if (materialAttributes && materialAttributes.length > 0) {
-      const [
-        material,
-        material_type,
-        massif,
-        color,
-        patina_color,
-        beading_main,
-        beading_additional,
-        beading_additional2,
-      ] = materialAttributes;
+  // Memoize material attributes to prevent unnecessary updates
+  const materialAttributesHash = useMemo(() => {
+    if (!materialAttributes || materialAttributes.every((field) => !field))
+      return "";
+    return JSON.stringify(materialAttributes);
+  }, [materialAttributes]);
 
-      // Only update if material attributes actually changed
+  const prevMaterialAttributesHashRef = useRef<string>("");
+
+  useEffect(() => {
+    if (
+      prevMaterialAttributesHashRef.current === materialAttributesHash ||
+      !materialAttributesHash
+    ) {
+      return;
+    }
+    prevMaterialAttributesHashRef.current = materialAttributesHash;
+
+    const [
+      material,
+      material_type,
+      massif,
+      color,
+      patina_color,
+      beading_main,
+      beading_additional,
+      beading_additional2,
+    ] = materialAttributes;
+
+    // Debounce the table update
+    const timeoutId = setTimeout(() => {
       setTables((prevTables) => {
         const updatedTables = prevTables.map((table) => ({
           ...table,
@@ -2728,8 +2737,10 @@ function StepTwo({
 
         return hasAnyChanges ? updatedTables : prevTables;
       });
-    }
-  }, materialAttributes);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [materialAttributesHash, materialAttributes]);
 
   return (
     <div className="space-y-6">
@@ -5172,6 +5183,14 @@ function HeaderSearch({
   const abortControllerRef = useRef<AbortController | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Memoize search trigger to prevent unnecessary API calls
+  const searchTrigger = useMemo(() => {
+    return {
+      value: value.trim(),
+      selectedProductName: selectedProduct?.name || null,
+    };
+  }, [value, selectedProduct?.name]);
+
   // Search for products when user types
   useEffect(() => {
     // Clear previous timeout
@@ -5185,14 +5204,19 @@ function HeaderSearch({
     }
 
     const searchProducts = async () => {
-      if (value.length < 2) {
+      const searchValue = searchTrigger.value;
+
+      if (searchValue.length < 2) {
         setProducts([]);
         setIsLoading(false);
         return;
       }
 
       // Don't search if the current value exactly matches the selected product name
-      if (selectedProduct && value === selectedProduct.name) {
+      if (
+        searchTrigger.selectedProductName &&
+        searchValue === searchTrigger.selectedProductName
+      ) {
         setProducts([]);
         setIsLoading(false);
         return;
@@ -5205,7 +5229,7 @@ function HeaderSearch({
       setIsLoading(true);
       try {
         const res = await api.get(
-          `products?search=${encodeURIComponent(value)}`,
+          `products?search=${encodeURIComponent(searchValue)}`,
           { signal: abortController.signal },
         );
 
@@ -5233,11 +5257,11 @@ function HeaderSearch({
     };
 
     // Set loading immediately for better UX
-    if (value.length >= 2) {
+    if (searchTrigger.value.length >= 2) {
       setIsLoading(true);
     }
 
-    searchTimeoutRef.current = setTimeout(searchProducts, 600);
+    searchTimeoutRef.current = setTimeout(searchProducts, 800);
 
     return () => {
       if (searchTimeoutRef.current) {
@@ -5247,7 +5271,7 @@ function HeaderSearch({
         abortControllerRef.current.abort();
       }
     };
-  }, [value, selectedProduct]);
+  }, [searchTrigger]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

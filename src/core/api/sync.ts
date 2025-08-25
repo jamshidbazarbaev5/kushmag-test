@@ -11,6 +11,8 @@ export interface SyncLog {
   id: number;
   sync_time: string;
   success: boolean;
+  synced_models: string[];
+  synced_models_translation: string[];
 }
 
 export interface SyncLogsResponse {
@@ -20,11 +22,33 @@ export interface SyncLogsResponse {
   results: SyncLog[];
 }
 
-// Sync all data
+export interface SyncAllRequest {
+  models: string[];
+}
+
+// Available models with their translations
+export const AVAILABLE_MODELS = {
+  Product: "Товар",
+  Agent: "Контрагент",
+  UOM: "Единица измерения",
+  Seller: "Продавец",
+  Branch: "Филиал",
+  Organization: "Организация",
+  SalesChannel: "Канал продаж",
+  Store: "Склад",
+  Project: "Проект",
+  Zamershik: "Замерщик",
+  Operator: "Оператор",
+  PriceType: "Тип цены",
+} as const;
+
+export type ModelKey = keyof typeof AVAILABLE_MODELS;
+
+// Sync selected models
 export const useSyncAll = () => {
-  return useMutation<SyncResponse, Error>({
-    mutationFn: async (): Promise<SyncResponse> => {
-      const response = await api.post("/sync-all/");
+  return useMutation<SyncResponse, Error, SyncAllRequest>({
+    mutationFn: async (data: SyncAllRequest): Promise<SyncResponse> => {
+      const response = await api.post("/sync-all/", data);
       return response.data;
     },
     onError: (error) => {

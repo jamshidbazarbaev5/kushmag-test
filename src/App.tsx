@@ -146,7 +146,7 @@ function App() {
             {/* <Route path="/test" element={<EnhancedYearlyPlansPage />} /> */}
           </Route>
         </Routes>
-        <Toaster position="top-right" richColors />
+        <Toaster position="bottom-right" richColors />
       </AuthProvider>
     </QueryClientProvider>
   );

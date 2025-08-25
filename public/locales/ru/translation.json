@@ -592,6 +592,7 @@
     "beading": "Штапик"
   },
   "messages": {
+    "pdf_opened":"Пдф открыт",
     "change_password_for_user": "Изменить пароль для пользователя {{username}}",
     "success": {
       "created": "{{item}} успешно создан",
