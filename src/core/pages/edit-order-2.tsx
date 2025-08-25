@@ -1,6 +1,6 @@
 // Edit-order page with create-order pattern
 import { useNavigate, useParams } from "react-router-dom";
-import {formatCurrency } from "../../utils/numberFormat";
+import { formatCurrency } from "../../utils/numberFormat";
 import { useTranslation } from "react-i18next";
 import { ResourceForm } from "../helpers/ResourceForm";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import {
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import { useAuth } from "../context/AuthContext";
 import {
-  useGetCurrencies,
+  // useGetCurrencies,
   useGetStores,
   useGetProjects,
   useGetCounterparties,
@@ -206,7 +206,8 @@ export default function EditOrderPage() {
     color: "",
     patina_color: "",
     beading_main: "",
-    beading_additional: "",
+    beading_additional: null,
+    beading_additional2: null,
     glass_type: "",
     threshold: "",
     paska_orin: [],
@@ -243,7 +244,8 @@ export default function EditOrderPage() {
       color: "",
       patina_color: "",
       beading_main: "",
-      beading_additional: "",
+      beading_additional: null,
+      beading_additional2: null,
     },
   });
 
@@ -255,7 +257,7 @@ export default function EditOrderPage() {
   // Initialize steps data
 
   //  Fetching ---
-  const { data: currencies } = useGetCurrencies();
+  // const { data: currencies } = useGetCurrencies();
   const { data: branches } = useGetBranches();
 
   const { data: stores } = useGetStores();
@@ -313,7 +315,7 @@ export default function EditOrderPage() {
   useEffect(() => {
     if (
       orderData &&
-      currencies &&
+      // currencies &&
       stores &&
       projects &&
       counterparties &&
@@ -369,7 +371,8 @@ export default function EditOrderPage() {
         color: orderData.doors?.[0]?.color || "",
         patina_color: orderData.doors?.[0]?.patina_color || "",
         beading_main: orderData.doors?.[0]?.beading_main || "",
-        beading_additional: orderData.doors?.[0]?.beading_additional || "",
+        beading_additional: orderData.doors?.[0]?.beading_additional ?? null,
+        beading_additional2: orderData.doors?.[0]?.beading_additional2 ?? null,
       };
 
       // Initialize discount and advance payment state from order data
@@ -503,7 +506,8 @@ export default function EditOrderPage() {
             color: firstDoor.color || "",
             patina_color: firstDoor.patina_color || "",
             beading_main: firstDoor.beading_main || "",
-            beading_additional: firstDoor.beading_additional,
+            beading_additional: firstDoor.beading_additional ?? null,
+            beading_additional2: firstDoor.beading_additional2 ?? null,
             glass_type: firstDoor.glass_type || "",
             threshold: firstDoor.threshold || "",
             paska_orin: Array.isArray(firstDoor.paska_orin)
@@ -522,7 +526,7 @@ export default function EditOrderPage() {
     } else {
       console.log("Required data not loaded yet:", {
         orderData: !!orderData,
-        currencies: !!currencies,
+        // currencies: !!currencies,
         stores: !!stores,
         projects: !!projects,
         counterparties: !!counterparties,
@@ -536,7 +540,7 @@ export default function EditOrderPage() {
   }, [
     orderData,
     orderForm,
-    currencies,
+    // currencies,
     stores,
     projects,
     counterparties,
@@ -554,7 +558,7 @@ export default function EditOrderPage() {
     if (
       orderData &&
       doors.length > 0 &&
-      currencies &&
+      // currencies &&
       stores &&
       projects &&
       counterparties &&
@@ -575,7 +579,7 @@ export default function EditOrderPage() {
   }, [
     orderData,
     doors,
-    currencies,
+    // currencies,
     stores,
     projects,
     counterparties,
@@ -597,6 +601,7 @@ export default function EditOrderPage() {
     "patina_color",
     "beading_main",
     "beading_additional",
+    "beading_additional2",
   ]);
 
   useEffect(() => {
@@ -609,6 +614,7 @@ export default function EditOrderPage() {
         patina_color,
         beading_main,
         beading_additional,
+        beading_additional2,
       ] = materialFormFields;
 
       setGlobalDoorSettings((prev: any) => ({
@@ -619,14 +625,15 @@ export default function EditOrderPage() {
         color: color || "",
         patina_color: patina_color || "",
         beading_main: beading_main || "",
-        beading_additional: beading_additional || "",
+        beading_additional: beading_additional ?? null,
+        beading_additional2: beading_additional2 ?? null,
       }));
     }
   }, materialFormFields);
 
   // --- Format Options for Selects ---
   const fieldOptions = {
-    rateOptions: formatReferenceOptions(currencies),
+    // rateOptions: formatReferenceOptions(currencies),
     branchOptions: formatReferenceOptions(branches),
     storeOptions: formatReferenceOptions(stores),
     projectOptions: formatReferenceOptions(projects),
@@ -831,6 +838,13 @@ export default function EditOrderPage() {
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
     },
+    {
+      name: "beading_additional2",
+      label: t("forms.beading_additional2"),
+      type: "searchable-resource-select",
+      resourceType: "beadings",
+      placeholder: t("placeholders.select_beading_additional2"),
+    },
   ];
 
   // --- API-based Calculation Function ---
@@ -845,6 +859,7 @@ export default function EditOrderPage() {
       patina_color: globalDoorSettings.patina_color,
       beading_main: globalDoorSettings.beading_main,
       beading_additional: globalDoorSettings.beading_additional,
+      beading_additional2: globalDoorSettings.beading_additional2,
     }));
     setDoors(updatedDoors);
 
@@ -1187,6 +1202,20 @@ function StepOne({
   doorType,
 }: any) {
   const { t } = useTranslation();
+    const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("ru-RU", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return "-";
+    }
+  };
 
   return (
     <div className="w-full">
@@ -1199,7 +1228,7 @@ function StepOne({
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <Package className="h-6 w-6 text-blue-600" />
                 </div>
-                {t("forms.order_information")} {order.order_code}
+                {t("forms.order_information")} {order.order_code} / {formatDate(order.created_at)}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -1760,7 +1789,8 @@ function StepTwo({
         color: orderData.color || "",
         patina_color: orderData.patina_color || "",
         beading_main: orderData.beading_main || "",
-        beading_additional: orderData.beading_additional || "",
+        beading_additional: orderData.beading_additional ?? null,
+        beading_additional2: orderData.beading_additional2 ?? null,
         glass_type: "",
         threshold: "",
         paska_orin: [],
@@ -2020,7 +2050,8 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: orderData.beading_additional,
+      beading_additional: orderData.beading_additional ?? null,
+      beading_additional2: orderData.beading_additional2 ?? null,
       glass_type: "",
       threshold: "",
       paska_orin: [],
@@ -2212,6 +2243,7 @@ function StepTwo({
             prevDoor.patina_color !== newDoor.patina_color ||
             prevDoor.beading_main !== newDoor.beading_main ||
             prevDoor.beading_additional !== newDoor.beading_additional ||
+            prevDoor.beading_additional2 !== newDoor.beading_additional2 ||
             JSON.stringify(prevDoor.crown_casing) !==
               JSON.stringify(newDoor.crown_casing) ||
             JSON.stringify(prevDoor.extensions) !==
@@ -2638,6 +2670,7 @@ function StepTwo({
     "patina_color",
     "beading_main",
     "beading_additional",
+    "beading_additional2",
   ]);
 
   useEffect(() => {
@@ -2650,6 +2683,7 @@ function StepTwo({
         patina_color,
         beading_main,
         beading_additional,
+        beading_additional2,
       ] = materialAttributes;
 
       // Only update if material attributes actually changed
@@ -2665,7 +2699,8 @@ function StepTwo({
               door.color !== (color || "") ||
               door.patina_color !== (patina_color || "") ||
               door.beading_main !== (beading_main || "") ||
-              door.beading_additional !== (beading_additional || "2");
+              door.beading_additional !== beading_additional ||
+              door.beading_additional2 !== beading_additional2;
 
             if (!hasChanges) return door;
 
@@ -2677,7 +2712,8 @@ function StepTwo({
               color: color || "",
               patina_color: patina_color || "",
               beading_main: beading_main || "",
-              beading_additional: beading_additional || "2",
+              beading_additional: beading_additional ?? null,
+              beading_additional2: beading_additional2 ?? null,
             };
           }),
         }));
@@ -3041,7 +3077,9 @@ function StepTwo({
                                         beading_main:
                                           orderData.beading_main || "",
                                         beading_additional:
-                                          orderData.beading_additional || "2",
+                                          orderData.beading_additional ?? null,
+                                        beading_additional2:
+                                          orderData.beading_additional2 ?? null,
                                         glass_type: "",
                                         threshold: "",
                                         paska_orin: [],
@@ -5407,7 +5445,6 @@ function StepThree({
                   </p>
                   <p className="font-semibold">{doors.length}</p>
                 </div>
-
               </div>
 
               {/* Price Breakdown */}

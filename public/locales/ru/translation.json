@@ -8,7 +8,7 @@
     "actions": "Действия"
   },
   "common": {
-    "sms_history":"История смс",
+    "sms_history": "История смс",
     "language": "Язык",
     "wood": "Агаш капы",
     "update_order": "Обновить",
@@ -263,7 +263,12 @@
   },
 
   "forms": {
-    "order":"Заказ",
+    "sync": "Синхронизация",
+    "sync_history": "История синхронизации",
+    "sync_description": "Описание синхронизации",
+    "data": "Данные",
+    "syncing": "Синхронизирую",
+    "order": "Заказ",
     "add_component_row": "Добавить новую модель",
     "deadline_day": "День крайнего срока",
     "new_password": "Новый пароль",
@@ -459,6 +464,7 @@
     "patina_color": "Цвет патины",
     "beading_main": "Основной штапик",
     "beading_additional": "Дополнительный штапик",
+    "beading_additional2": "Дополнительный штапик 2",
     "price": "Цена",
     "client_information": "Информация о клиенте",
     "door_details": "Детали двери",
@@ -586,7 +592,7 @@
     "beading": "Штапик"
   },
   "messages": {
-    "change_password_for_user":"Изменить пароль для пользователя {{username}}",
+    "change_password_for_user": "Изменить пароль для пользователя {{username}}",
     "success": {
       "created": "{{item}} успешно создан",
       "updated": "{{item}} успешно обновлен",
@@ -707,6 +713,7 @@
     "select_patina_color": "Выберите цвет патины",
     "select_beading_main": "Основной штапик",
     "select_beading_additional": "штапик",
+    "select_beading_additional2": "штапик 2",
     "select_glass_type": "Выберите тип стекла",
     "select_threshold": "Выберите порог",
     "enter_name": "Введите название",
@@ -768,13 +775,13 @@
   },
 
   "pages": {
-    "no_sms_history":"Нет данных",
-    "sms_history":"История смс",
+    "no_sms_history": "Нет данных",
+    "sms_history": "История смс",
     "orders": "Заказы",
-    "sms_statistics":"Статистика смс",
-    "total_sms_sent":"Общее количество смсов",
-    "unique_admins":"Уникальные админы",
-    "last_sms_date":"Дата последнего смс",
+    "sms_statistics": "Статистика смс",
+    "total_sms_sent": "Общее количество смсов",
+    "unique_admins": "Уникальные админы",
+    "last_sms_date": "Дата последнего смс",
     "create_order": "Создать заказ",
     "create_order_from_measure": "Создать заказ из замера"
   },

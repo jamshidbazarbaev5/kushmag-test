@@ -11,7 +11,7 @@ import {
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import { useAuth } from "../context/AuthContext";
 import {
-  useGetCurrencies,
+  // useGetCurrencies,
   useGetStores,
   useGetProjects,
   useGetCounterparties,
@@ -316,6 +316,7 @@ export default function CreateOrderPage() {
         clearAllDrafts();
         // Set default value for beading_additional
         orderForm.setValue("beading_additional", null);
+        orderForm.setValue("beading_additional2", null);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,7 +325,7 @@ export default function CreateOrderPage() {
   const { discount_percentage, advance_payment } = orderForm.watch();
 
   //  Fetching ---
-  const { data: currencies } = useGetCurrencies();
+  // const { data: currencies } = useGetCurrencies();
   const { data: branches } = useGetBranches();
   const { data: stores } = useGetStores();
   const { data: projects } = useGetProjects();
@@ -374,7 +375,7 @@ export default function CreateOrderPage() {
 
   // --- Format Options for Selects ---
   const fieldOptions = {
-    rateOptions: formatReferenceOptions(currencies),
+    // rateOptions: formatReferenceOptions(currencies),
     branchOptions: formatReferenceOptions(branches),
     storeOptions: formatReferenceOptions(stores),
     projectOptions: formatReferenceOptions(projects),
@@ -580,6 +581,13 @@ export default function CreateOrderPage() {
       type: "searchable-resource-select",
       resourceType: "beadings",
       placeholder: t("placeholders.select_beading_additional"),
+    },
+    {
+      name: "beading_additional2",
+      label: t("forms.beading_additional2"),
+      type: "searchable-resource-select",
+      resourceType: "beadings",
+      placeholder: t("placeholders.select_beading_additional2"),
     },
   ];
 
@@ -930,6 +938,7 @@ export default function CreateOrderPage() {
       remaining_balance: remainingBalance.toFixed(2),
       agreement_amount: agreementAmountInput.toFixed(2),
       beading_additional: data.beading_additional,
+      beading_additional2: data.beading_additional2,
       discount_percentage: convertToNumber(data.discount_percentage, 0),
     };
 
@@ -1308,6 +1317,7 @@ function StepTwo({
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
       beading_additional: orderData.beading_additional || null,
+      beading_additional2: orderData.beading_additional2 || null,
       glass_type: "",
       threshold: "",
       paska_orin: [],
@@ -1675,6 +1685,7 @@ function StepTwo({
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
       beading_additional: orderData.beading_additional || null,
+      beading_additional2: orderData.beading_additional2 || null,
       glass_type: "",
       threshold: "",
       paska_orin: [],
@@ -1708,6 +1719,7 @@ function StepTwo({
     "patina_color",
     "beading_main",
     "beading_additional",
+    "beading_additional2",
   ]);
 
   useEffect(() => {
@@ -1720,6 +1732,7 @@ function StepTwo({
         patina_color,
         beading_main,
         beading_additional,
+        beading_additional2,
       ] = materialAttributes;
 
       const updatedTables = tables.map((table) => ({
@@ -1733,6 +1746,7 @@ function StepTwo({
           patina_color: patina_color || "",
           beading_main: beading_main || "",
           beading_additional: beading_additional || null,
+          beading_additional2: beading_additional2 || null,
         })),
       }));
 
@@ -2368,6 +2382,8 @@ function StepTwo({
                                           orderData.beading_main || "",
                                         beading_additional:
                                           orderData.beading_additional || null,
+                                        beading_additional2:
+                                          orderData.beading_additional2 || null,
                                         glass_type: "",
                                         threshold: "",
                                         paska_orin: [],

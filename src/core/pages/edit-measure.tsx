@@ -505,8 +505,9 @@ export default function EditMeasure() {
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>{t("forms.room_name")}</TableHead>
                     <TableHead>{t("forms.glass_type")}</TableHead>
+                     <TableHead>{t("forms.height")}</TableHead>
                     <TableHead>{t("forms.width")}</TableHead>
-                    <TableHead>{t("forms.height")}</TableHead>
+                   
                     <TableHead>{t("forms.quantity")}</TableHead>
                     <TableHead>{t("forms.opening_side")}</TableHead>
                     <TableHead>{t("forms.swing_direction")}</TableHead>
@@ -564,6 +565,17 @@ export default function EditMeasure() {
                           </SelectContent>
                         </Select>
                       </TableCell>
+                        <TableCell>
+                        <Input
+                          placeholder="H"
+                          type="text"
+                          value={door.height}
+                          onChange={(e) =>
+                            handleDoorChange(idx, "height", e.target.value)
+                          }
+                          className="w-20"
+                        />
+                      </TableCell>
                       <TableCell>
                         <Input
                           placeholder="W"
@@ -575,17 +587,7 @@ export default function EditMeasure() {
                           className="w-20"
                         />
                       </TableCell>
-                      <TableCell>
-                        <Input
-                          placeholder="H"
-                          type="text"
-                          value={door.height}
-                          onChange={(e) =>
-                            handleDoorChange(idx, "height", e.target.value)
-                          }
-                          className="w-20"
-                        />
-                      </TableCell>
+                    
                       <TableCell>
                         <Input
                           placeholder="Qty"

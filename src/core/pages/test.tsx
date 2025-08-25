@@ -716,7 +716,7 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: "",
+      beading_additional: null,
       glass_type: "",
       threshold: "",
       extensions: [],

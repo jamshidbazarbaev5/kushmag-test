@@ -19,6 +19,13 @@ import {
   useSearchZamershiks,
   formatSearchableOptions,
 } from "../hooks/useSearchableResources";
+import { useGetMaterial } from "../api/material";
+import { useGetMaterialType } from "../api/materialType";
+import { useGetMassif } from "../api/massif";
+import { useGetColor } from "../api/color";
+import { useGetPatinaColor } from "../api/patinaColor";
+import { useGetBeading } from "../api/beading";
+import { useGetGlassType } from "../api/glassType";
 
 interface SearchableResourceSelectProps {
   value?: string | number;
@@ -64,6 +71,61 @@ export function SearchableResourceSelect({
     placeholder,
     searchTerm,
   });
+
+  // Fetch individual items for supported resource types
+  const hasValue = value !== null && value !== undefined && value !== "";
+
+  const materialQuery = useGetMaterial(
+    resourceType === "materials" && hasValue ? value : "",
+  );
+
+  const materialTypeQuery = useGetMaterialType(
+    resourceType === "material-types" && hasValue ? value : "",
+  );
+
+  const massifQuery = useGetMassif(
+    resourceType === "massifs" && hasValue ? value : "",
+  );
+
+  const colorQuery = useGetColor(
+    resourceType === "colors" && hasValue ? value : "",
+  );
+
+  const patinaColorQuery = useGetPatinaColor(
+    resourceType === "patina-colors" && hasValue ? value : "",
+  );
+
+  const beadingQuery = useGetBeading(
+    resourceType === "beadings" && hasValue ? value : "",
+  );
+
+  const glassTypeQuery = useGetGlassType(
+    resourceType === "glass-types" && hasValue ? value : "",
+  );
+
+  // Get the appropriate individual query result
+  const getIndividualData = () => {
+    switch (resourceType) {
+      case "materials":
+        return materialQuery.data;
+      case "material-types":
+        return materialTypeQuery.data;
+      case "massifs":
+        return massifQuery.data;
+      case "colors":
+        return colorQuery.data;
+      case "patina-colors":
+        return patinaColorQuery.data;
+      case "beadings":
+        return beadingQuery.data;
+      case "glass-types":
+        return glassTypeQuery.data;
+      default:
+        return null;
+    }
+  };
+
+  const individualItemData = getIndividualData();
 
   // Map resource types to their corresponding hooks
   const useResourceHook = useMemo(() => {
@@ -118,20 +180,37 @@ export function SearchableResourceSelect({
 
   // Format options for the select component
   const options = useMemo(() => {
-    if (!data || !Array.isArray(data)) {
-      console.log(
-        `SearchableResourceSelect [${resourceType}] - No data:`,
-        data,
-      );
-      return [];
+    let baseOptions: { value: string | number; label: string }[] = [];
+
+    if (data && Array.isArray(data)) {
+      baseOptions = formatSearchableOptions(data);
     }
-    const formattedOptions = formatSearchableOptions(data);
+
+    // Add individual item if it exists and isn't already in the list
+    if (individualItemData && hasValue) {
+      const individualOption = {
+        value: individualItemData.id,
+        label: individualItemData.name,
+      };
+
+      const existsInOptions = baseOptions.some(
+        (opt) =>
+          opt.value === individualOption.value ||
+          opt.value?.toString() === individualOption.value?.toString(),
+      );
+
+      if (!existsInOptions) {
+        baseOptions = [individualOption, ...baseOptions];
+      }
+    }
+
     console.log(
-      `SearchableResourceSelect [${resourceType}] - Options:`,
-      formattedOptions,
+      `SearchableResourceSelect [${resourceType}] - Final Options:`,
+      baseOptions,
     );
-    return formattedOptions;
-  }, [data, resourceType]);
+
+    return baseOptions;
+  }, [data, resourceType, individualItemData, hasValue]);
 
   // Handle errors
   if (error) {

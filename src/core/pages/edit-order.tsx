@@ -11,7 +11,7 @@ import {
 import SearchableCounterpartySelect from "@/components/ui/searchable-counterparty-select";
 import { useAuth } from "../context/AuthContext";
 import {
-  useGetCurrencies,
+  // useGetCurrencies,
   useGetStores,
   useGetProjects,
   useGetCounterparties,
@@ -129,7 +129,8 @@ export default function CreateOrderPage() {
     color: "",
     patina_color: "",
     beading_main: "",
-    beading_additional: "2",
+    beading_additional: null,
+    beading_additional2: null,
     glass_type: "",
     threshold: "",
   });
@@ -208,6 +209,9 @@ export default function CreateOrderPage() {
             : "",
           beading_additional: measureDoor.beading_additional?.id
             ? String(measureDoor.beading_additional.id)
+            : "",
+          beading_additional2: measureDoor.beading_additional2?.id
+            ? String(measureDoor.beading_additional2.id)
             : "",
           // Handle glass_type and threshold - they come as direct IDs in measure data
           glass_type: measureDoor.glass_type
@@ -333,7 +337,7 @@ export default function CreateOrderPage() {
   // ];
 
   //  Fetching ---
-  const { data: currencies } = useGetCurrencies();
+  // const { data: currencies } = useGetCurrencies();
   const { data: stores } = useGetStores();
   const { data: projects } = useGetProjects();
   const { data: counterparties } = useGetCounterparties();
@@ -360,7 +364,7 @@ export default function CreateOrderPage() {
 
   // --- Format Options for Selects ---
   const fieldOptions = {
-    rateOptions: formatReferenceOptions(currencies),
+    // rateOptions: formatReferenceOptions(currencies),
     storeOptions: formatReferenceOptions(stores),
     projectOptions: formatReferenceOptions(projects),
     agentOptions: formatReferenceOptions(counterparties),
@@ -584,6 +588,13 @@ export default function CreateOrderPage() {
       placeholder: t("placeholders.select_beading_additional"),
     },
     {
+      name: "beading_additional2",
+      label: t("forms.beading_additional2"),
+      type: "searchable-resource-select",
+      resourceType: "beadings",
+      placeholder: t("placeholders.select_beading_additional2"),
+    },
+    {
       name: "extra_comment",
       label: t("forms.extra_comment"),
       type: "textarea",
@@ -600,6 +611,7 @@ export default function CreateOrderPage() {
     "patina_color",
     "beading_main",
     "beading_additional",
+    "beading_additional2",
   ]);
 
   useEffect(() => {
@@ -612,6 +624,7 @@ export default function CreateOrderPage() {
         patina_color,
         beading_main,
         beading_additional,
+        beading_additional2,
       ] = materialFormFields;
 
       setGlobalDoorSettings((prev: any) => ({
@@ -622,7 +635,8 @@ export default function CreateOrderPage() {
         color: color || "",
         patina_color: patina_color || "",
         beading_main: beading_main || "",
-        beading_additional: beading_additional || "",
+        beading_additional: beading_additional ?? null,
+        beading_additional2: beading_additional2 ?? null,
       }));
     }
   }, materialFormFields);
@@ -640,6 +654,7 @@ export default function CreateOrderPage() {
       patina_color: globalDoorSettings.patina_color,
       beading_main: globalDoorSettings.beading_main,
       beading_additional: globalDoorSettings.beading_additional,
+      beading_additional2: globalDoorSettings.beading_additional2,
     }));
     setDoors(updatedDoors);
 
@@ -742,7 +757,7 @@ export default function CreateOrderPage() {
       door_type: "WOOD",
       // Map IDs to full meta objects for the API
       created_at: new Date().toISOString(),
-      rate: getMetaById(currencies, data.rate),
+      // rate: getMetaById(currencies, data.rate),
       store: getMetaById(stores, data.store),
       project: getMetaById(projects, data.project),
       agent:
@@ -1467,7 +1482,8 @@ function StepTwo({
       color: orderData.color || "",
       patina_color: orderData.patina_color || "",
       beading_main: orderData.beading_main || "",
-      beading_additional: orderData.beading_additional || "2",
+      beading_additional: orderData.beading_additional ?? null,
+      beading_additional2: orderData.beading_additional2 ?? null,
       glass_type: "",
       threshold: "",
       extensions: defaultExtensions,
@@ -1500,6 +1516,7 @@ function StepTwo({
     "patina_color",
     "beading_main",
     "beading_additional",
+    "beading_additional2",
   ]);
 
   useEffect(() => {
@@ -1512,6 +1529,7 @@ function StepTwo({
         patina_color,
         beading_main,
         beading_additional,
+        beading_additional2,
       ] = materialAttributes;
 
       const updatedTables = tables.map((table) => ({
@@ -1524,7 +1542,8 @@ function StepTwo({
           color: color || "",
           patina_color: patina_color || "",
           beading_main: beading_main || "",
-          beading_additional: beading_additional || "2",
+          beading_additional: beading_additional ?? null,
+          beading_additional2: beading_additional2 ?? null,
         })),
       }));
 

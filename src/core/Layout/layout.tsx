@@ -24,29 +24,16 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "../../components/LangugeSwitcher";
 import { useLogout } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import api from "../api/api";
 // import { ThemeToggle } from "../components/ThemeToggle";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   // const [isCollapsed, setIsCollapsed] = useState(false);
-  const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
-  const [currencyRate, setCurrencyRate] = useState("");
-  const [currencyId, setCurrencyId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  // const [currencyId, setCurrencyId] = useState<string | null>(null);
+  // const [loading, setLoading] = useState(false);
+  // const [success, setSuccess] = useState(false);
+  // const [error, setError] = useState("");
   const [newMeasuresCount, setNewMeasuresCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { data: measuresData } = useGetMeasures();
@@ -71,56 +58,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     navigate("/login");
   };
 
-  // Fetch current currency rate when modal opens
-  useEffect(() => {
-    if (currencyModalOpen) {
-      setLoading(true);
-      setError("");
-      setSuccess(false);
-      api
-        .get("items/currency/")
-        .then((res) => {
-          const results = res.data.results || [];
-          if (Array.isArray(results) && results.length > 0) {
-            // Only keep the integer part of the currency rate
-            const rate = results[0].currency_rate;
-            setCurrencyRate(rate ? String(Math.trunc(Number(rate))) : "");
-            setCurrencyId(results[0].id?.toString() || null);
-          } else {
-            setCurrencyRate("");
-            setCurrencyId(null);
-          }
-        })
-        .catch(() => {
-          setError("Failed to fetch currency rate");
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [currencyModalOpen]);
-
-  const handleCurrencySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setSuccess(false);
-    try {
-      if (currencyId) {
-        await api.patch(`items/currency/${currencyId}/`, {
-          currency_rate: Number(currencyRate),
-        });
-      } else {
-        await api.post("items/currency/", {
-          currency_rate: Number(currencyRate),
-        });
-      }
-      setSuccess(true);
-      setTimeout(() => setCurrencyModalOpen(false), 1000);
-    } catch (err: any) {
-      setError(err?.response?.data?.detail || "Error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -211,44 +148,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             </div>
                           )}
                       </div>
-                      <div className="py-1">
-                        {currentUser?.is_superuser && (
-                          <button
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setDropdownOpen(false);
-                              setCurrencyModalOpen(true);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors cursor-pointer"
-                            style={{ pointerEvents: "auto" }}
-                          >
-                            <Package size={16} className="text-gray-500" />
-                            {t("currency.set")}
-                          </button>
-                        )}
-                        <button
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDropdownOpen(false);
-                            handleLogout();
-                          }}
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors cursor-pointer"
-                          style={{ pointerEvents: "auto" }}
-                        >
-                          <LogOut size={16} className="text-red-500" />
-                          {t("common.logout")}
-                        </button>
-                      </div>
+                      
                     </>
                   )}
                 </div>
@@ -543,125 +443,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          {currentUser?.is_superuser && (
-            <Dialog
-              open={currencyModalOpen}
-              onOpenChange={setCurrencyModalOpen}
-            >
-              <DialogTrigger asChild>
-                <button
-                  className="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition mr-2"
-                  onClick={() => setCurrencyModalOpen(true)}
-                >
-                  {t("currency.set")}
-                </button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t("currency.set")}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleCurrencySubmit} className="space-y-4">
-                  <Input
-                    type="number"
-                    placeholder="12500"
-                    value={currencyRate}
-                    onChange={(e) => setCurrencyRate(e.target.value)}
-                    required
-                  />
-                  {error && <div className="text-red-500 text-sm">{error}</div>}
-                  {success && (
-                    <div className="text-green-600 text-sm">
-                      {t("Success!")}
-                    </div>
-                  )}
-                  <DialogFooter>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                      disabled={loading}
-                    >
-                      {loading ? t("common.saving") : t("common.save")}
-                    </button>
-                    <DialogClose asChild>
-                      <button
-                        type="button"
-                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                      >
-                        {t("common.cancel")}
-                      </button>
-                    </DialogClose>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
-          <LanguageSwitcher />
-          {/* Desktop Profile Icon - Hidden on mobile */}
-          <div className="relative hidden md:block" ref={dropdownRef}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setMobileMenuOpen(false);
-                setDropdownOpen(!dropdownOpen);
-              }}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <div className="relative">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <User size={18} className="text-emerald-600" />
-                </div>
-                {newMeasuresCount > 0 &&
-                  currentUser?.role !== "MANUFACTURE" && (
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {newMeasuresCount}
-                    </div>
-                  )}
-              </div>
-            </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-xl border py-3 z-[9999]">
-                {currentUser && (
-                  <>
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
-                          <User size={24} className="text-emerald-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-gray-800 text-lg truncate">
-                            {currentUser.username}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {currentUser.phone_number}
-                          </div>
-                          <div className="inline-block px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full mt-1">
-                            {currentUser.role}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="py-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDropdownOpen(false);
-                          handleLogout();
-                        }}
-                        className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                      >
-                        <LogOut size={16} className="text-red-500" />
-                        <span className="font-medium">
-                          {t("common.logout")}
-                        </span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+     
       </nav>
 
       {/* Main Content */}
@@ -1181,18 +963,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             </div>
                           </div>
 
-                          {currentUser?.is_superuser && (
-                            <button
-                              onClick={() => {
-                                setMobileMenuOpen(false);
-                                setCurrencyModalOpen(true);
-                              }}
-                              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors mb-2"
-                            >
-                              <Package size={16} className="text-gray-500" />
-                              <span>{t("currency.set")}</span>
-                            </button>
-                          )}
+                         
+
 
                           <button
                             onClick={() => {

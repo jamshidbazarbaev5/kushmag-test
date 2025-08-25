@@ -23,7 +23,8 @@ interface Door {
   color: number;
   patina_color: number;
   beading_main: number;
-  beading_additional: number;
+  beading_additional?: number;
+  beading_additional2?:number;
   glass_type: number;
   threshold: number;
   height: number;
