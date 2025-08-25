@@ -2667,7 +2667,7 @@ function StepTwo({
 
   // Memoize material attributes to prevent unnecessary updates
   const materialAttributesHash = useMemo(() => {
-    if (!materialAttributes || materialAttributes.every((field) => !field))
+    if (!materialAttributes || materialAttributes.every((field:any) => !field))
       return "";
     return JSON.stringify(materialAttributes);
   }, [materialAttributes]);
