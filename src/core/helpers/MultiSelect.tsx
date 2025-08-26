@@ -136,7 +136,7 @@ export function MultiSelect({
         <div
           className={cn(
             "absolute z-[99999] w-full bg-white border border-gray-200 rounded-md shadow-xl max-h-60 overflow-auto",
-            "min-w-max transform-gpu bottom-full mb-2 animate-in fade-in-0 zoom-in-95 duration-100 left-2 bottom-2",
+            "min-w-max transform-gpu cd mb-2 animate-in fade-in-0 zoom-in-95 duration-100 left-2 bottom-2",
           )}
           style={{
             position: "absolute",

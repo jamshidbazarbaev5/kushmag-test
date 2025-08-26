@@ -694,15 +694,22 @@ export default function OrdersPage() {
   // Helper function to determine door material type
   const getDoorMaterialType = (order: any) => {
     if (!order.doors || order.doors.length === 0) {
+      // Check order-level door_type if no doors array
+      if (order.door_type) {
+        return order.door_type.toLowerCase();
+      }
       return "unknown";
     }
 
-    // Check the material_type of the first door (assuming all doors in an order are same type)
+    // Check the door_type of the first door (assuming all doors in an order are same type)
     const firstDoor = order.doors[0];
-    if (firstDoor && firstDoor.material_type) {
-      // Assuming material_type 1 = WOOD, material_type 2 = STEEL
-      // This mapping might need adjustment based on actual data
-      return firstDoor.material_type === 2 ? "steel" : "wood";
+    if (firstDoor && firstDoor.door_type) {
+      return firstDoor.door_type.toLowerCase();
+    }
+
+    // Fallback to order-level door_type
+    if (order.door_type) {
+      return order.door_type.toLowerCase();
     }
 
     return "unknown";
@@ -710,7 +717,7 @@ export default function OrdersPage() {
 
   // Helper function to get material color
   const getMaterialColor = (materialType: string) => {
-    switch (materialType) {
+    switch (materialType.toLowerCase()) {
       case "wood":
         return "#D2691E"; // Chocolate/wood brown color for wood
       case "steel":

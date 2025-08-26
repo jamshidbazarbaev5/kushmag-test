@@ -4101,7 +4101,7 @@ function StepTwo({
                                 options={[
                                   { value: "Корона", label: "Корона" },
                                   { value: "Наличник", label: "Наличник" },
-                                  { value: "Жак", label: "Жак" },
+                                  { value: "Жок", label: "Жок" },
                                 ]}
                                 value={door.crown_casing || []}
                                 onChange={(value) =>
