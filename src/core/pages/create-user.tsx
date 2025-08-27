@@ -134,18 +134,18 @@ export default function CreateUserPage() {
   const { data: zamershiks } = useGetZamershiks();
 
   // Create form instance to watch values
-  const form = useForm({
+  const form = useForm<User & { staff_member?: string }>({
     defaultValues: {
       username: "",
       password: "",
       full_name: "",
       phone_number: "",
-      role: "",
+      role: "ADMIN" as const,
       staff_member: "",
       api_login: "",
       api_password: "",
-      fixed_salary: "",
-      order_percentage: "",
+      fixed_salary: 0,
+      order_percentage: 0,
     },
   });
 
