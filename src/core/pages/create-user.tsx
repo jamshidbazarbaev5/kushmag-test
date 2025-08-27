@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useCreateUser } from "../api/user";
 import type { User } from "../api/user";
 import { useGetSellers, useGetOperators, useGetZamershiks } from "../api/staff";
+import { useWatch, useForm } from "react-hook-form";
+import { useMemo } from "react";
 
 const userFields = (
   t: any,
@@ -13,6 +15,7 @@ const userFields = (
     operators,
     zamershiks,
   }: { sellers?: any[]; operators?: any[]; zamershiks?: any[] },
+  currentRole?: string,
 ) => [
   {
     name: "username",
@@ -61,7 +64,7 @@ const userFields = (
       onChange: (field: string, value: any) => void,
     ) => {
       onChange("role", value);
-      onChange("staff_member", null);
+      onChange("staff_member", "");
     },
   },
   {
@@ -69,40 +72,32 @@ const userFields = (
     label: t("forms.staff_member"),
     type: "select",
     required: (formData: any) =>
-      ["PRODAVEC", "OPERATOR"].includes(formData.role),
-    options: (formData: any) => {
-      console.log("Options formData:", formData); // Debug log
-      console.log("Current role:", formData.role); // Debug log
-
-      if (formData.role === "PRODAVEC" && sellers) {
-        console.log("Sellers available:", sellers.length);
+      ["PRODAVEC", "OPERATOR", "ZAMERSHIK"].includes(formData.role),
+    options: () => {
+      // Use the watched role value instead of formData.role
+      const role = currentRole;
+      if (role === "PRODAVEC" && sellers) {
         return sellers.map((seller) => ({
           label: seller.name,
           value: JSON.stringify(seller),
         }));
       }
-      if (formData.role === "OPERATOR" && operators) {
-        console.log("Operators available:", operators.length);
-        const mappedOperators = operators.map((operator) => ({
+      if (role === "OPERATOR" && operators) {
+        return operators.map((operator) => ({
           label: operator.name,
           value: JSON.stringify(operator),
         }));
-        console.log("Mapped operators:", mappedOperators);
-        return mappedOperators;
       }
-      if (formData.role === "ZAMERSHIK" && zamershiks) {
-        console.log("Zamershiks available:", zamershiks.length);
-        const mappedZamershiks = zamershiks.map((zamershik) => ({
+      if (role === "ZAMERSHIK" && zamershiks) {
+        return zamershiks.map((zamershik) => ({
           label: zamershik.name,
           value: JSON.stringify(zamershik),
         }));
-        console.log("Mapped zamershiks:", mappedZamershiks);
-        return mappedZamershiks;
       }
       return [];
     },
-    show: (formData: any) =>
-      ["PRODAVEC", "OPERATOR", "ZAMERSHIK"].includes(formData.role),
+    show: () =>
+      ["PRODAVEC", "OPERATOR", "ZAMERSHIK"].includes(currentRole || ""),
   },
   {
     name: "api_login",
@@ -138,7 +133,33 @@ export default function CreateUserPage() {
   const { data: operators } = useGetOperators();
   const { data: zamershiks } = useGetZamershiks();
 
-  //   console.log('Operators:', operators); // Debug log
+  // Create form instance to watch values
+  const form = useForm({
+    defaultValues: {
+      username: "",
+      password: "",
+      full_name: "",
+      phone_number: "",
+      role: "",
+      staff_member: "",
+      api_login: "",
+      api_password: "",
+      fixed_salary: "",
+      order_percentage: "",
+    },
+  });
+
+  // Watch the role field to dynamically update options
+  const watchedRole = useWatch({
+    control: form.control,
+    name: "role",
+  });
+
+  // Memoize fields to prevent unnecessary re-renders
+  const fields = useMemo(
+    () => userFields(t, { sellers, operators, zamershiks }, watchedRole),
+    [t, sellers, operators, zamershiks, watchedRole],
+  );
 
   const handleSubmit = (data: User & { staff_member?: string }) => {
     const formData = { ...data };
@@ -177,9 +198,10 @@ export default function CreateUserPage() {
 
       <div className="max-w-2xl">
         <ResourceForm
-          fields={userFields(t, { sellers, operators, zamershiks })}
+          fields={fields}
           onSubmit={handleSubmit}
           isSubmitting={isCreating}
+          form={form}
         />
       </div>
     </div>

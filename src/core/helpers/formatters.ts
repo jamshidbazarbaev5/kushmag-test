@@ -6,7 +6,7 @@ interface ReferenceItem {
 
 interface ZamershikItem {
   id: number | string;
-  full_name: string;
+  full_name?: string;
 }
 
 interface DataWithResults {
