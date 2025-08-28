@@ -1888,18 +1888,20 @@ export default function OrdersPage() {
                                 {t("common.export")}
                               </button>
 
-                              {currentUser?.role !== "MANUFACTURE" && (
-                                <button
-                                  className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                                  onClick={() => {
-                                    handleDeleteClick(order);
-                                    setOpenActionMenu(null);
-                                  }}
-                                >
-                                  <Trash className="h-4 w-4 mr-2" />
-                                  {t("common.delete")}
-                                </button>
-                              )}
+                              {currentUser?.role !== "MANUFACTURE" &&
+                                (currentUser?.role === "ADMIN" ||
+                                  order.order_status !== "moy_sklad") && (
+                                  <button
+                                    className="flex items-center justify-start w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                      handleDeleteClick(order);
+                                      setOpenActionMenu(null);
+                                    }}
+                                  >
+                                    <Trash className="h-4 w-4 mr-2" />
+                                    {t("common.delete")}
+                                  </button>
+                                )}
                             </div>
                           </div>
                         )}
