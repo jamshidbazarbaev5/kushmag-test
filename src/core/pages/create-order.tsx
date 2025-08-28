@@ -5182,13 +5182,15 @@ function StepThree({
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={orderForm.handleSubmit(onSubmit)}
-                  disabled={isLoading || createdOrderStatus === "moy_sklad"}
+                  disabled={isLoading || createdOrderId !== null}
                   className="w-full h-12 text-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   size="lg"
                 >
                   {isLoading
                     ? `${t("common.creating")}...`
-                    : t("common.create_order")}
+                    : createdOrderId
+                      ? t("messages.created")
+                      : t("common.create_order")}
                 </Button>
 
                 {createdOrderId && (
