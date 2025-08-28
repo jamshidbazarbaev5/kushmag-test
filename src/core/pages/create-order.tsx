@@ -794,6 +794,16 @@ export default function CreateOrderPage() {
 
     // Note: Extensions, casings, crowns, and accessories without models or with quantity 0 are automatically filtered out
 
+    // Debug: Log doors with accessories before processing
+    console.log(
+      "Doors before processing:",
+      doors.map((door: any, index: number) => ({
+        doorIndex: index,
+        accessories: door.accessories,
+        accessoriesLength: door.accessories?.length || 0,
+      })),
+    );
+
     //  const discount = convertToNumber(discount_percentage, 0);
     const orderData = {
       ...data,
@@ -816,11 +826,18 @@ export default function CreateOrderPage() {
 
       branch: getMetaById(branches, data.branch),
       // Hydrate door data with full product info and add price_type
-      doors: doors.map((door: any) => {
+      doors: doors.map((door: any, doorIndex: number) => {
+        console.log(`Processing door ${doorIndex}:`, {
+          doorType,
+          hasAccessories: !!(door.accessories && door.accessories.length > 0),
+          accessoriesCount: door.accessories?.length || 0,
+          accessories: door.accessories,
+        });
+
         const doorModel = getProductById(productsList, door.model);
 
         if (doorType === "STEEL") {
-          // Steel door structure - no extensions, casings, crowns, accessories
+          // Steel door structure - includes accessories but no extensions, casings, crowns
           return convertNumericFields({
             ...door,
             model: doorModel,
@@ -830,6 +847,45 @@ export default function CreateOrderPage() {
                   priceSettingsList,
                 )
               : getPriceTypeByProduct("door", priceSettingsList),
+            accessories:
+              door.accessories
+                ?.map((acc: any) => {
+                  const model = getProductById(productsList, acc.model);
+                  const processedAcc = convertNumericFields({
+                    ...acc,
+                    model,
+                    price_type: model
+                      ? getPriceTypeByProduct(
+                          model.name || "lock",
+                          priceSettingsList,
+                        )
+                      : getPriceTypeByProduct("lock", priceSettingsList),
+                  });
+                  console.log("Processing STEEL door accessory:", {
+                    original: acc,
+                    processed: processedAcc,
+                    model: model,
+                    hasModelId: !!(processedAcc.model && processedAcc.model.id),
+                    quantity: processedAcc.quantity,
+                    willBeIncluded: !!(
+                      processedAcc.model &&
+                      processedAcc.model.id &&
+                      processedAcc.quantity > 0
+                    ),
+                  });
+                  return processedAcc;
+                })
+                .filter((acc: any) => {
+                  const shouldInclude =
+                    acc.model && acc.model.id && acc.quantity > 0;
+                  console.log(
+                    "Filtering STEEL door accessory:",
+                    acc,
+                    "Include:",
+                    shouldInclude,
+                  );
+                  return shouldInclude;
+                }) || [],
           });
         }
 
@@ -910,7 +966,7 @@ export default function CreateOrderPage() {
             door.accessories
               ?.map((acc: any) => {
                 const model = getProductById(productsList, acc.model);
-                return convertNumericFields({
+                const processedAcc = convertNumericFields({
                   ...acc,
                   model,
                   price_type: model
@@ -920,14 +976,31 @@ export default function CreateOrderPage() {
                       )
                     : getPriceTypeByProduct("lock", priceSettingsList),
                 });
+                console.log("Processing accessory:", {
+                  original: acc,
+                  processed: processedAcc,
+                  model: model,
+                  hasModelId: !!(processedAcc.model && processedAcc.model.id),
+                  quantity: processedAcc.quantity,
+                  willBeIncluded: !!(
+                    processedAcc.model &&
+                    processedAcc.model.id &&
+                    processedAcc.quantity > 0
+                  ),
+                });
+                return processedAcc;
               })
-              .filter(
-                (acc: any) =>
-                  acc.quantity > 0 &&
-                  acc.model &&
-                  (acc.model.id ||
-                    (typeof acc.model === "string" && acc.model !== "")),
-              ) || [],
+              .filter((acc: any) => {
+                const shouldInclude =
+                  acc.model && acc.model.id && acc.quantity > 0;
+                console.log(
+                  "Filtering accessory:",
+                  acc,
+                  "Include:",
+                  shouldInclude,
+                );
+                return shouldInclude;
+              }) || [],
         });
       }),
 
@@ -942,16 +1015,31 @@ export default function CreateOrderPage() {
       discount_percentage: convertToNumber(data.discount_percentage, 0),
     };
 
+    // Debug: Log final order data before submission
+    console.log("Final order data being sent to API:", {
+      doorCount: orderData.doors?.length || 0,
+      doors: orderData.doors?.map((door: any, index: number) => ({
+        doorIndex: index,
+        doorType: door.door_type || orderData.door_type,
+        hasAccessories: !!(door.accessories && door.accessories.length > 0),
+        accessoriesCount: door.accessories?.length || 0,
+        accessories: door.accessories,
+        hasExtensions: !!(door.extensions && door.extensions.length > 0),
+        hasCasings: !!(door.casings && door.casings.length > 0),
+        hasCrowns: !!(door.crowns && door.crowns.length > 0),
+      })),
+      fullOrderData: orderData,
+    });
+
     createOrder(orderData, {
       onSuccess: (response: any) => {
         clearAllDrafts(); // Clear saved draft data on successful submission
         setCreatedOrderId(response.id);
         setCreatedOrderStatus(response.order_status);
         toast.success(t("messages.order_created_successfully"));
-        // navigate("/orders");
       },
-      onError: (e: any) => {
-        console.error("Error creating order:", e.response?.data);
+      onError: (error: any) => {
+        console.error("Failed to create order:", error);
         toast.error(t("messages.error_creating_order"));
       },
     });
