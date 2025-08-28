@@ -399,7 +399,8 @@
     "validation": {
       "password_required": "Parol qájetti",
       "password_min_length": "Parol keminde 6 táńba bolıwı kerek",
-      "passwords_not_match": "Parollar sáykes kelmeydi"
+      "passwords_not_match": "Parollar sáykes kelmeydi",
+      "staff_member_required": "Tańlanǵan rol úshin xızmetker qájetti"
     },
     "confirm": {
       "delete": "Bul elementdi joyıwǵa ishensiz be?"

@@ -6,7 +6,7 @@ import { useCreateUser } from "../api/user";
 import type { User } from "../api/user";
 import { useGetSellers, useGetOperators, useGetZamershiks } from "../api/staff";
 import { useWatch, useForm } from "react-hook-form";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 const userFields = (
   t: any,
@@ -155,6 +155,40 @@ export default function CreateUserPage() {
     name: "role",
   });
 
+  // Watch the staff_member field for validation
+  const watchedStaffMember = useWatch({
+    control: form.control,
+    name: "staff_member",
+  });
+
+  // State for validation errors
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  // Check if staff_member is required and validate
+  useEffect(() => {
+    const isStaffMemberRequired = [
+      "PRODAVEC",
+      "OPERATOR",
+      "ZAMERSHIK",
+    ].includes(watchedRole || "");
+    const isStaffMemberEmpty = !watchedStaffMember || watchedStaffMember === "";
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      staff_member: isStaffMemberRequired && isStaffMemberEmpty,
+    }));
+  }, [watchedRole, watchedStaffMember]);
+
+  // Function to clear field errors
+  const clearFieldError = (fieldName: string) => {
+    setValidationErrors((prev) => ({
+      ...prev,
+      [fieldName]: false,
+    }));
+  };
+
   // Memoize fields to prevent unnecessary re-renders
   const fields = useMemo(
     () => userFields(t, { sellers, operators, zamershiks }, watchedRole),
@@ -162,6 +196,26 @@ export default function CreateUserPage() {
   );
 
   const handleSubmit = (data: User & { staff_member?: string }) => {
+    // Check if staff_member is required but not provided
+    const isStaffMemberRequired = [
+      "PRODAVEC",
+      "OPERATOR",
+      "ZAMERSHIK",
+    ].includes(data.role || "");
+
+    if (
+      isStaffMemberRequired &&
+      (!data.staff_member || data.staff_member === "")
+    ) {
+      // Set validation error and show toast
+      setValidationErrors((prev) => ({
+        ...prev,
+        staff_member: true,
+      }));
+      toast.error(t("messages.validation.staff_member_required"));
+      return;
+    }
+
     const formData = { ...data };
 
     if (formData.staff_member) {
@@ -171,7 +225,7 @@ export default function CreateUserPage() {
           meta: staffMember.meta,
         };
         delete formData.staff_member;
-      } catch (e) {
+      } catch {
         console.error("Failed to parse staff member data");
       }
     }
@@ -202,6 +256,8 @@ export default function CreateUserPage() {
           onSubmit={handleSubmit}
           isSubmitting={isCreating}
           form={form}
+          validationErrors={validationErrors}
+          clearFieldError={clearFieldError}
         />
       </div>
     </div>

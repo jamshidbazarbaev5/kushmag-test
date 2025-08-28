@@ -592,7 +592,7 @@
     "beading": "Штапик"
   },
   "messages": {
-    "pdf_opened":"Пдф открыт",
+    "pdf_opened": "Пдф открыт",
     "change_password_for_user": "Изменить пароль для пользователя {{username}}",
     "success": {
       "created": "{{item}} успешно создан",
@@ -615,7 +615,8 @@
     "validation": {
       "password_required": "Пароль обязателен",
       "password_min_length": "Пароль должен содержать минимум 6 символов",
-      "passwords_not_match": "Пароли не совпадают"
+      "passwords_not_match": "Пароли не совпадают",
+      "staff_member_required": "Сотрудник обязателен для выбранной роли"
     },
     "confirm": {
       "delete": "Вы уверены, что хотите удалить этот элемент?"

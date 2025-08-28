@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   Form,
   FormControl,
@@ -138,6 +138,11 @@ export function ResourceForm<T extends Record<string, any>>({
 
   const form = providedForm || internalForm;
 
+  // Watch all form values to handle dynamic field visibility
+  const watchedValues = useWatch({
+    control: form.control,
+  });
+
   const handleSubmit = (data: any) => {
     // Transform form data back to the expected structure
     const transformedData = Object.entries(data).reduce(
@@ -177,7 +182,9 @@ export function ResourceForm<T extends Record<string, any>>({
           >
             {fields.map(
               (field) =>
-                !field.hidden && (
+                !field.hidden &&
+                (!field.show ||
+                  field.show(watchedValues || form.getValues())) && (
                   <div key={field.name} className="space-y-4 overflow-visible">
                     {field.type === "dynamic-list" ? (
                       <DynamicListField field={field} form={form} />
