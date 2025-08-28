@@ -198,6 +198,11 @@ export default function EditOrderPage() {
   const [advancePayment, setAdvancePayment] = useState<number>(0);
   const [agreementAmountInput, setAgreementAmountInput] = useState<number>(0);
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   // Global door attributes state
   const [globalDoorSettings, setGlobalDoorSettings] = useState({
     material: "",
@@ -221,6 +226,91 @@ export default function EditOrderPage() {
   const casingSize = attributeSettingsArray[0]?.casing_size; // Default fallback
   const crownSize = attributeSettingsArray[0]?.crown_size; // Default fallback
   const casingFormula = attributeSettingsArray[0]?.casing_formula ?? true; // Default to true (formula 1)
+
+  const validateRequiredFields = (
+    formData: any,
+    doors: any[],
+    doorType: "WOOD" | "STEEL",
+  ): boolean => {
+    const errors: { [key: string]: boolean } = {};
+    let isValid = true;
+
+    // Required fields for all orders
+    const requiredFields = [
+      { field: "agent", name: "Контрагент" },
+      { field: "organization", name: "Организация" },
+      { field: "seller", name: "Продавец" },
+      { field: "operator", name: "Оператор" },
+      { field: "deadline_date", name: "Срок исполнения" },
+    ];
+
+    // Check required form fields
+    requiredFields.forEach(({ field }) => {
+      const value = formData[field];
+      if (
+        !value ||
+        (typeof value === "string" && value.trim() === "") ||
+        (typeof value === "number" && value === 0) ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        errors[field] = true;
+        isValid = false;
+      }
+    });
+
+    // For steel doors, validate door_name is required
+    if (doorType === "STEEL" && doors && doors.length > 0) {
+      doors.forEach((door, index) => {
+        if (
+          !door.door_name ||
+          (typeof door.door_name === "string" && door.door_name.trim() === "")
+        ) {
+          errors[`door_name_${index}`] = true;
+          isValid = false;
+        }
+      });
+    }
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const clearFieldError = (fieldName: string) => {
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+  };
+
+  const scrollToFirstError = () => {
+    // Find the first field with validation error
+    const errorFields = Object.keys(validationErrors);
+    if (errorFields.length === 0) return;
+
+    const firstErrorField = errorFields[0];
+
+    // Try to find and scroll to the element
+    const element =
+      document.querySelector(`[name="${firstErrorField}"]`) ||
+      document.querySelector(`.border-red-500`) ||
+      document.querySelector('[data-error="true"]');
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Focus the element if it's focusable
+      if (
+        element instanceof HTMLElement &&
+        typeof element.focus === "function"
+      ) {
+        setTimeout(() => element.focus(), 100);
+      }
+    }
+  };
 
   const orderForm = useForm({
     defaultValues: {
@@ -975,6 +1065,13 @@ export default function EditOrderPage() {
   };
 
   const onSubmit = async (data: any) => {
+    // Validate required fields before submission
+    const isValid = validateRequiredFields(data, doors, doorType);
+    if (!isValid) {
+      toast.error("Пожалуйста, заполните все обязательные поля");
+      scrollToFirstError();
+      return;
+    }
     const { total_sum, remainingBalance } = totals;
 
     // Debug zamershik field
@@ -1086,6 +1183,19 @@ export default function EditOrderPage() {
   const handleSendToMoySklad = () => {
     if (!orderData?.id) return;
 
+    // Get current form data for validation
+    const currentFormData = orderForm.getValues();
+
+    // Validate required fields before sending to Moy Sklad
+    const isValid = validateRequiredFields(currentFormData, doors, doorType);
+    if (!isValid) {
+      toast.error(
+        "Перед отправкой в Мой Склад необходимо заполнить все обязательные поля: Контрагент, Организация, Продавец, Оператор, Срок исполнения",
+      );
+      scrollToFirstError();
+      return;
+    }
+
     sendToMoySklad(orderData.id, {
       onSuccess: () => {
         toast.success(t("messages.order_sent_to_moy_sklad"));
@@ -1179,6 +1289,8 @@ export default function EditOrderPage() {
             isLoading={isUpdating}
             order={orderData}
             doorType={doorType}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -1193,6 +1305,8 @@ export default function EditOrderPage() {
             casingFormula={casingFormula}
             doorType={doorType}
             setDoorType={setDoorType}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {currentUser?.role !== "MANUFACTURE" && (
@@ -1231,6 +1345,8 @@ function StepOne({
   isLoading,
   order,
   doorType,
+  validationErrors,
+  clearFieldError,
 }: any) {
   const { t } = useTranslation();
   const formatDate = (dateString: string) => {
@@ -1271,10 +1387,21 @@ function StepOne({
                 </label>
                 <SearchableCounterpartySelect
                   value={orderForm.watch("agent")}
-                  onChange={(value) => orderForm.setValue("agent", value)}
+                  onChange={(value) => {
+                    orderForm.setValue("agent", value);
+                    if (value) clearFieldError("agent");
+                  }}
                   placeholder={t("placeholders.select_agent")}
                   required={true}
+                  className={
+                    validationErrors.agent ? "border-red-500 border-2" : ""
+                  }
                 />
+                {validationErrors.agent && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Это поле обязательно для заполнения
+                  </p>
+                )}
               </div>
               <ResourceForm
                 fields={orderFields}
@@ -1283,6 +1410,8 @@ function StepOne({
                 hideSubmitButton={true}
                 form={orderForm}
                 gridClassName="md:grid-cols-2 gap-6"
+                validationErrors={validationErrors}
+                clearFieldError={clearFieldError}
               />
             </CardContent>
           </Card>
@@ -1329,6 +1458,8 @@ function StepTwo({
   casingFormula,
   doorType,
   setDoorType,
+  validationErrors,
+  clearFieldError,
 }: any) {
   const { t } = useTranslation();
 
@@ -2667,7 +2798,7 @@ function StepTwo({
 
   // Memoize material attributes to prevent unnecessary updates
   const materialAttributesHash = useMemo(() => {
-    if (!materialAttributes || materialAttributes.every((field:any) => !field))
+    if (!materialAttributes || materialAttributes.every((field: any) => !field))
       return "";
     return JSON.stringify(materialAttributes);
   }, [materialAttributes]);
@@ -4048,20 +4179,30 @@ function StepTwo({
                           <>
                             {/* Door Name */}
                             <TableCell className="align-middle">
-                              <Input
-                                type="text"
-                                value={door.door_name || ""}
-                                onChange={(e) =>
-                                  handleFieldChange(
-                                    index,
-                                    table.id,
-                                    "door_name",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Название двери"
-                                className="w-32"
-                              />
+                              <div>
+                                <Input
+                                  type="text"
+                                  value={door.door_name || ""}
+                                  onChange={(e) => {
+                                    handleFieldChange(
+                                      index,
+                                      table.id,
+                                      "door_name",
+                                      e.target.value,
+                                    );
+                                    if (e.target.value.trim() !== "") {
+                                      clearFieldError(`door_name_${index}`);
+                                    }
+                                  }}
+                                  placeholder="Название двери"
+                                  className={`w-32 ${validationErrors[`door_name_${index}`] ? "border-red-500 border-2" : ""}`}
+                                />
+                                {validationErrors[`door_name_${index}`] && (
+                                  <p className="text-red-500 text-xs mt-1">
+                                    Название двери обязательно
+                                  </p>
+                                )}
+                              </div>
                             </TableCell>
 
                             {/* Steel Color */}

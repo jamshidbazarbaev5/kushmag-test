@@ -1844,6 +1844,130 @@ function StepTwo({
     }
   }, materialAttributes);
 
+  // Effect to sync selected accessory products with existing accessories
+  useEffect(() => {
+    const updatedTables = tables.map((table) => ({
+      ...table,
+      doors: table.doors.map((door: any) => {
+        if (!door.accessories || door.accessories.length === 0) {
+          return door;
+        }
+
+        const updatedAccessories = [...door.accessories];
+
+        // Sync Кубик (cube) - index 0
+        if (
+          table.selectedCubeProduct &&
+          updatedAccessories[0] &&
+          updatedAccessories[0].quantity > 0
+        ) {
+          updatedAccessories[0] = {
+            ...updatedAccessories[0],
+            model: table.selectedCubeProduct.id,
+            price:
+              (table.selectedCubeProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        // Sync Ножка (leg) - index 1
+        if (
+          table.selectedLegProduct &&
+          updatedAccessories[1] &&
+          updatedAccessories[1].quantity > 0
+        ) {
+          updatedAccessories[1] = {
+            ...updatedAccessories[1],
+            model: table.selectedLegProduct.id,
+            price:
+              (table.selectedLegProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        // Sync Стекло (glass) - index 2
+        if (
+          table.selectedGlassProduct &&
+          updatedAccessories[2] &&
+          updatedAccessories[2].quantity > 0
+        ) {
+          updatedAccessories[2] = {
+            ...updatedAccessories[2],
+            model: table.selectedGlassProduct.id,
+            price:
+              (table.selectedGlassProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        // Sync Замок (lock) - index 3
+        if (
+          table.selectedLockProduct &&
+          updatedAccessories[3] &&
+          updatedAccessories[3].quantity > 0
+        ) {
+          updatedAccessories[3] = {
+            ...updatedAccessories[3],
+            model: table.selectedLockProduct.id,
+            price:
+              (table.selectedLockProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        // Sync Топса (topsa) - index 4
+        if (
+          table.selectedTopsaProduct &&
+          updatedAccessories[4] &&
+          updatedAccessories[4].quantity > 0
+        ) {
+          updatedAccessories[4] = {
+            ...updatedAccessories[4],
+            model: table.selectedTopsaProduct.id,
+            price:
+              (table.selectedTopsaProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        // Sync Шпингалет (beading) - index 5
+        if (
+          table.selectedBeadingProduct &&
+          updatedAccessories[5] &&
+          updatedAccessories[5].quantity > 0
+        ) {
+          updatedAccessories[5] = {
+            ...updatedAccessories[5],
+            model: table.selectedBeadingProduct.id,
+            price:
+              (table.selectedBeadingProduct.salePrices?.find(
+                (p: any) => p.priceType.name === "Цена продажи",
+              )?.value || 0) / 100,
+          };
+        }
+
+        return {
+          ...door,
+          accessories: updatedAccessories,
+        };
+      }),
+    }));
+
+    setTables(updatedTables);
+  }, [
+    tables.map((t) => t.selectedCubeProduct?.id).join(","),
+    tables.map((t) => t.selectedLegProduct?.id).join(","),
+    tables.map((t) => t.selectedGlassProduct?.id).join(","),
+    tables.map((t) => t.selectedLockProduct?.id).join(","),
+    tables.map((t) => t.selectedTopsaProduct?.id).join(","),
+    tables.map((t) => t.selectedBeadingProduct?.id).join(","),
+  ]);
+
   // Auto-sync tables data to main doors state whenever tables change
   useEffect(() => {
     const allDoors = tables.flatMap((table) =>
@@ -2772,10 +2896,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[0]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[0] = {
+                                              ...updatedAccessories[0],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedCubeProduct: product,
                                         cubeSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -2806,10 +2961,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[1]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[1] = {
+                                              ...updatedAccessories[1],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedLegProduct: product,
                                         legSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -2840,10 +3026,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[2]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[2] = {
+                                              ...updatedAccessories[2],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedGlassProduct: product,
                                         glassSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -2874,10 +3091,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[3]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[3] = {
+                                              ...updatedAccessories[3],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedLockProduct: product,
                                         lockSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -2908,10 +3156,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[4]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[4] = {
+                                              ...updatedAccessories[4],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedTopsaProduct: product,
                                         topsaSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -2942,10 +3221,41 @@ function StepTwo({
                                 onProductSelect={(product) => {
                                   const updatedTables = tables.map((t) => {
                                     if (t.id === table.id) {
+                                      // Update selected product and sync with existing accessories
+                                      const updatedDoors = t.doors.map(
+                                        (door: any) => {
+                                          if (
+                                            door.accessories &&
+                                            door.accessories[5]
+                                          ) {
+                                            const updatedAccessories = [
+                                              ...door.accessories,
+                                            ];
+                                            updatedAccessories[5] = {
+                                              ...updatedAccessories[5],
+                                              model: product ? product.id : "",
+                                              price: product
+                                                ? (product.salePrices?.find(
+                                                    (p: any) =>
+                                                      p.priceType.name ===
+                                                      "Цена продажи",
+                                                  )?.value || 0) / 100
+                                                : 0,
+                                            };
+                                            return {
+                                              ...door,
+                                              accessories: updatedAccessories,
+                                            };
+                                          }
+                                          return door;
+                                        },
+                                      );
+
                                       return {
                                         ...t,
                                         selectedBeadingProduct: product,
                                         beadingSearch: product?.name || "",
+                                        doors: updatedDoors,
                                       };
                                     }
                                     return t;
@@ -3735,6 +4045,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[0] = {
                                     model: table.selectedCubeProduct
                                       ? table.selectedCubeProduct.id
@@ -3747,10 +4060,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[0]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "cube",
                                     name: "Кубик",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedCubeProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[0].model) {
+                                      updatedAccessories[0].model = "";
+                                      updatedAccessories[0].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[0].model = "";
+                                    updatedAccessories[0].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
@@ -3788,6 +4118,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[1] = {
                                     model: table.selectedLegProduct
                                       ? table.selectedLegProduct.id
@@ -3800,10 +4133,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[1]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "leg",
                                     name: "Ножка",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedLegProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[1].model) {
+                                      updatedAccessories[1].model = "";
+                                      updatedAccessories[1].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[1].model = "";
+                                    updatedAccessories[1].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
@@ -3841,6 +4191,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[2] = {
                                     model: table.selectedGlassProduct
                                       ? table.selectedGlassProduct.id
@@ -3853,10 +4206,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[2]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "glass",
                                     name: "Стекло",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedGlassProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[2].model) {
+                                      updatedAccessories[2].model = "";
+                                      updatedAccessories[2].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[2].model = "";
+                                    updatedAccessories[2].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
@@ -3894,6 +4264,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[3] = {
                                     model: table.selectedLockProduct
                                       ? table.selectedLockProduct.id
@@ -3906,10 +4279,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[3]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "lock",
                                     name: "Замок",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedLockProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[3].model) {
+                                      updatedAccessories[3].model = "";
+                                      updatedAccessories[3].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[3].model = "";
+                                    updatedAccessories[3].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
@@ -3947,6 +4337,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[4] = {
                                     model: table.selectedTopsaProduct
                                       ? table.selectedTopsaProduct.id
@@ -3959,10 +4352,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[4]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "topsa",
                                     name: "Топса",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedTopsaProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[4].model) {
+                                      updatedAccessories[4].model = "";
+                                      updatedAccessories[4].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[4].model = "";
+                                    updatedAccessories[4].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
@@ -4000,6 +4410,9 @@ function StepTwo({
                                       name: "",
                                     });
                                   }
+                                  const quantity =
+                                    parseInt(e.target.value) || 0;
+
                                   updatedAccessories[5] = {
                                     model: table.selectedBeadingProduct
                                       ? table.selectedBeadingProduct.id
@@ -4012,10 +4425,27 @@ function StepTwo({
                                             p.priceType.name === "Цена продажи",
                                         )?.value || 0) / 100
                                       : updatedAccessories[5]?.price || 0,
-                                    quantity: parseInt(e.target.value) || 0,
+                                    quantity: quantity,
                                     accessory_type: "beading",
                                     name: "Шпингалет",
                                   };
+
+                                  // If quantity > 0 but no product is selected, keep existing model or set empty
+                                  if (
+                                    !table.selectedBeadingProduct &&
+                                    quantity > 0
+                                  ) {
+                                    if (!updatedAccessories[5].model) {
+                                      updatedAccessories[5].model = "";
+                                      updatedAccessories[5].price = 0;
+                                    }
+                                  }
+
+                                  // If quantity is 0, clear the accessory
+                                  if (quantity === 0) {
+                                    updatedAccessories[5].model = "";
+                                    updatedAccessories[5].price = 0;
+                                  }
                                   handleFieldChange(
                                     index,
                                     table.id,
