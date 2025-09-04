@@ -177,7 +177,7 @@ export default function CreateOrderPage() {
     [key: string]: boolean;
   }>({});
 
-  const validateRequiredFields = (formData: any, doors: any[]): boolean => {
+  const validateRequiredFields = (formData: any, _doors: any[]): boolean => {
     const errors: { [key: string]: boolean } = {};
     let isValid = true;
 
@@ -1144,8 +1144,6 @@ function StepTwo({
   casingFormula,
   measureDoors,
   measureProcessed,
-  validationErrors,
-  clearFieldError,
 }: any) {
   const { t } = useTranslation();
 
