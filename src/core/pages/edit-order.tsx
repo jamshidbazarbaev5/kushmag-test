@@ -171,6 +171,53 @@ export default function CreateOrderPage() {
   const [createdOrderStatus, setCreatedOrderStatus] = useState<string | null>(
     null,
   );
+
+  // Validation functionality
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const validateRequiredFields = (formData: any, doors: any[]): boolean => {
+    const errors: { [key: string]: boolean } = {};
+    let isValid = true;
+
+    // Required fields for all orders
+    const requiredFields = [
+      { field: "agent", name: "Контрагент" },
+      { field: "organization", name: "Организация" },
+      { field: "seller", name: "Продавец" },
+      { field: "operator", name: "Оператор" },
+      { field: "deadline_date", name: "Срок исполнения" },
+    ];
+
+    // Check required form fields
+    requiredFields.forEach(({ field }) => {
+      const value = formData[field];
+      if (
+        !value ||
+        (typeof value === "string" && value.trim() === "") ||
+        (typeof value === "number" && value === 0) ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        errors[field] = true;
+        isValid = false;
+      }
+    });
+
+    // Note: edit-order only handles WOOD doors, so no steel door validation needed
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
+  const clearFieldError = (fieldName: string) => {
+    setValidationErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[fieldName];
+      return newErrors;
+    });
+  };
+
   const orderForm = useForm();
 
   const { discount_percentage, advance_payment } = orderForm.watch();
@@ -310,6 +357,8 @@ export default function CreateOrderPage() {
             })) || [],
           // Add reference to measure door for identification
           measureDoor: measureDoor,
+          // Add measureDoor id directly to door object for payload
+          id: measureDoor.id,
           isFromMeasure: true, // Flag to identify doors from measure
         }));
         // Store measure doors separately to pass to StepTwo
@@ -320,6 +369,11 @@ export default function CreateOrderPage() {
         measureDoors.forEach((door, index) => {
           console.log(`Door ${index + 1} glass_type:`, door.glass_type);
           console.log(`Door ${index + 1} threshold:`, door.threshold);
+          console.log(`Door ${index + 1} id:`, door.id);
+          console.log(
+            `Door ${index + 1} measureDoor.id:`,
+            door.measureDoor?.id,
+          );
         });
       }
 
@@ -644,18 +698,31 @@ export default function CreateOrderPage() {
   // --- API-based Calculation Function ---
   const handleCalculateOrder = () => {
     // First, apply global door settings to all doors
-    const updatedDoors = doors.map((door: any) => ({
-      ...door,
+    const updatedDoors = doors.map((door: any) => {
+      console.log("Global settings - before applying:", {
+        id: door.id,
+        measureDoorId: door.measureDoor?.id,
+      });
 
-      material: globalDoorSettings.material,
-      material_type: globalDoorSettings.material_type,
-      massif: globalDoorSettings.massif,
-      color: globalDoorSettings.color,
-      patina_color: globalDoorSettings.patina_color,
-      beading_main: globalDoorSettings.beading_main,
-      beading_additional: globalDoorSettings.beading_additional,
-      beading_additional2: globalDoorSettings.beading_additional2,
-    }));
+      const updatedDoor = {
+        ...door,
+        material: globalDoorSettings.material,
+        material_type: globalDoorSettings.material_type,
+        massif: globalDoorSettings.massif,
+        color: globalDoorSettings.color,
+        patina_color: globalDoorSettings.patina_color,
+        beading_main: globalDoorSettings.beading_main,
+        beading_additional: globalDoorSettings.beading_additional,
+        beading_additional2: globalDoorSettings.beading_additional2,
+      };
+
+      console.log("Global settings - after applying:", {
+        id: updatedDoor.id,
+        measureDoorId: updatedDoor.measureDoor?.id,
+      });
+
+      return updatedDoor;
+    });
     setDoors(updatedDoors);
 
     const orderData = orderForm.getValues();
@@ -737,6 +804,13 @@ export default function CreateOrderPage() {
   };
 
   const onSubmit = async (data: any) => {
+    // Validate required fields before submission
+    const isValid = validateRequiredFields(data, doors);
+    if (!isValid) {
+      toast.error("Пожалуйста, заполните все обязательные поля");
+      return;
+    }
+
     const {
       total_sum,
       discountAmount: calculatedDiscountAmount,
@@ -824,6 +898,18 @@ export default function CreateOrderPage() {
       agreement_amount: agreementAmountInput.toFixed(2),
     };
 
+    // Debug: Log doors with ids in final payload
+    console.log(
+      "Final order payload doors:",
+      orderData.doors?.map((door: any, index: number) => ({
+        doorIndex: index,
+        id: door.id,
+        measureDoorId: door.measureDoor?.id,
+        model: door.model?.id || door.model,
+        hasId: !!door.id,
+      })),
+    );
+
     // If measureId is available, make a request to the specific endpoint
     if (measureId) {
       try {
@@ -904,6 +990,8 @@ export default function CreateOrderPage() {
             orderFields={orderFields}
             materialFields={materialFields}
             isLoading={isLoading}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {/* Step 2: Doors Configuration */}
@@ -918,6 +1006,8 @@ export default function CreateOrderPage() {
             casingFormula={casingFormula}
             measureDoors={measureDoors}
             measureProcessed={measureProcessed}
+            validationErrors={validationErrors}
+            clearFieldError={clearFieldError}
           />
 
           {currentUser?.role !== "MANUFACTURE" && (
@@ -948,7 +1038,14 @@ export default function CreateOrderPage() {
 }
 
 // Step Components
-function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
+function StepOne({
+  orderForm,
+  orderFields,
+  materialFields,
+  isLoading,
+  validationErrors,
+  clearFieldError,
+}: any) {
   const { t } = useTranslation();
 
   return (
@@ -976,10 +1073,21 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 </label>
                 <SearchableCounterpartySelect
                   value={orderForm.watch("agent")}
-                  onChange={(value) => orderForm.setValue("agent", value)}
+                  onChange={(value) => {
+                    orderForm.setValue("agent", value);
+                    if (value) clearFieldError("agent");
+                  }}
                   placeholder={t("placeholders.select_agent")}
                   required={true}
+                  className={
+                    validationErrors.agent ? "border-red-500 border-2" : ""
+                  }
                 />
+                {validationErrors.agent && (
+                  <p className="text-red-500 text-sm mt-1">
+                    Это поле обязательно для заполнения
+                  </p>
+                )}
               </div>
               <ResourceForm
                 fields={orderFields}
@@ -988,6 +1096,8 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 hideSubmitButton={true}
                 form={orderForm}
                 gridClassName="md:grid-cols-2 gap-6"
+                validationErrors={validationErrors}
+                clearFieldError={clearFieldError}
               />
             </CardContent>
           </Card>
@@ -1012,6 +1122,8 @@ function StepOne({ orderForm, orderFields, materialFields, isLoading }: any) {
                 hideSubmitButton={true}
                 form={orderForm}
                 gridClassName="md:grid-cols-3 gap-6"
+                validationErrors={validationErrors}
+                clearFieldError={clearFieldError}
               />
             </CardContent>
           </Card>
@@ -1032,6 +1144,8 @@ function StepTwo({
   casingFormula,
   measureDoors,
   measureProcessed,
+  validationErrors,
+  clearFieldError,
 }: any) {
   const { t } = useTranslation();
 
@@ -1142,7 +1256,14 @@ function StepTwo({
             return defaultValue;
           };
 
-          return {
+          console.log(
+            "Door before calculations - id:",
+            door.id,
+            "measureDoor.id:",
+            door.measureDoor?.id,
+          );
+
+          const calculatedDoor = {
             ...door,
             casings:
               door.casings?.map((casing: any) =>
@@ -1159,6 +1280,15 @@ function StepTwo({
                 width: convertToNumber(door.width, 0) + (crownSize || 0),
               })) || [],
           };
+
+          console.log(
+            "Door after calculations - id:",
+            calculatedDoor.id,
+            "measureDoor.id:",
+            calculatedDoor.measureDoor?.id,
+          );
+
+          return calculatedDoor;
         });
 
         setTables([
@@ -1556,10 +1686,24 @@ function StepTwo({
   // Auto-sync tables data to main doors state whenever tables change
   useEffect(() => {
     const allDoors = tables.flatMap((table) =>
-      table.doors.map((door: any) => ({
-        ...door,
-        model: table.doorModel?.id || door.model,
-      })),
+      table.doors.map((door: any) => {
+        console.log("Door sync - before mapping:", {
+          id: door.id,
+          measureDoorId: door.measureDoor?.id,
+        });
+
+        const mappedDoor = {
+          ...door,
+          model: table.doorModel?.id || door.model,
+        };
+
+        console.log("Door sync - after mapping:", {
+          id: mappedDoor.id,
+          measureDoorId: mappedDoor.measureDoor?.id,
+        });
+
+        return mappedDoor;
+      }),
     );
     setDoors(allDoors);
   }, [tables, setDoors]);

@@ -62,6 +62,12 @@ const promogOptions = [
 const casingZamerOptions = [
   { value: "p", label: "" },
   { value: "g", label: "" },
+  { value: "j", label: "" },
+];
+const casingZamerOutsideOptions = [
+  { value: "p", label: "" },
+  { value: "g", label: "" },
+  { value: "j", label: "" },
 ];
 const zamerStatusOptions = [
   { value: "new", label: "" },
@@ -91,6 +97,7 @@ interface Door {
   promog: string;
   threshold: string;
   casing_zamer: string;
+  casing_zamer_outside: string;
   extensions: Extension[];
   crowns: Crown[];
 }
@@ -107,6 +114,7 @@ const defaultDoor: Door = {
   promog: "",
   threshold: "",
   casing_zamer: "",
+  casing_zamer_outside: "",
   extensions: [],
   crowns: [],
 };
@@ -125,6 +133,10 @@ export default function EditMeasure() {
   promogOptions[1].label = t("forms.promog_joq");
   casingZamerOptions[0].label = t("forms.casing_zamer_p");
   casingZamerOptions[1].label = t("forms.casing_zamer_g");
+  casingZamerOptions[2].label = t("forms.casing_zamer_j");
+  casingZamerOutsideOptions[0].label = t("forms.casing_zamer_outside_p");
+  casingZamerOutsideOptions[1].label = t("forms.casing_zamer_outside_g");
+  casingZamerOutsideOptions[2].label = t("forms.casing_zamer_outside_j");
   zamerStatusOptions[0].label = t("status.new");
   zamerStatusOptions[1].label = t("status.completed");
   zamerStatusOptions[2].label = t("status.cancelled");
@@ -274,6 +286,7 @@ export default function EditMeasure() {
                 promog: door.promog || "",
                 threshold: door.threshold?.toString() || "",
                 casing_zamer: door.casing_zamer || "",
+                casing_zamer_outside: door.casing_zamer_outside || "",
                 extensions: Array.isArray(door.extensions)
                   ? door.extensions.map((ext: any) => ({
                       width: ext.width?.toString() || "",
@@ -483,35 +496,46 @@ export default function EditMeasure() {
   return (
     <div className="max-w-7xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <Edit3 className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               {t("titles.edit_measure")}
             </h1>
           </div>
-          <div className="flex justify-end mb-4 gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Button
               onClick={handleViewPDF}
               disabled={!id || isLoadingPDF}
-              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-sm sm:text-base"
             >
               <ExternalLink className="h-4 w-4" />
-              {isLoadingPDF
-                ? t("common.loading") || "Loading..."
-                : t("common.view_pdf") || "View PDF"}
+              <span className="hidden sm:inline">
+                {isLoadingPDF ? t("common.loading") : t("common.view_pdf")}
+              </span>
+              <span className="sm:hidden">
+                {isLoadingPDF ? "..." : "Распечатать"}
+              </span>
             </Button>
             <Button
               onClick={handleDownloadPDF}
               disabled={!id || isDownloadingPDF}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-sm sm:text-base"
             >
               <Download className="h-4 w-4" />
-              {isDownloadingPDF
-                ? t("common.downloading") || "Downloading..."
-                : t("common.download_pdf") || "Download PDF"}
+              <span className="hidden sm:inline">
+                {isDownloadingPDF
+                  ? t("common.downloading")
+                  : t("common.download_pdf")}
+              </span>
+              <span className="sm:hidden">
+                {isDownloadingPDF ? "..." : "Скачать"}
+              </span>
             </Button>
-            <Button onClick={onBack} className="flex items-center gap-2">
+            <Button
+              onClick={onBack}
+              className="flex items-center justify-center gap-2 text-sm sm:text-base"
+            >
               Назад
             </Button>
           </div>
@@ -648,6 +672,7 @@ export default function EditMeasure() {
                     <TableHead>{t("forms.promog")}</TableHead>
                     <TableHead>{t("forms.threshold")}</TableHead>
                     <TableHead>{t("forms.casing_zamer")}</TableHead>
+                    <TableHead>{t("forms.casing_zamer_outside")}</TableHead>
                     <TableHead className="min-w-[250px]">
                       {t("forms.extensions")}
                     </TableHead>
@@ -842,6 +867,26 @@ export default function EditMeasure() {
                           </SelectTrigger>
                           <SelectContent>
                             {casingZamerOptions.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      {/* Casing Zamer Outside Column */}
+                      <TableCell>
+                        <Select
+                          value={door.casing_zamer_outside}
+                          onValueChange={(v) =>
+                            handleDoorChange(idx, "casing_zamer_outside", v)
+                          }
+                        >
+                          <SelectTrigger className="min-w-[80px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {casingZamerOutsideOptions.map((opt) => (
                               <SelectItem key={opt.value} value={opt.value}>
                                 {opt.label}
                               </SelectItem>
