@@ -38,6 +38,7 @@ import {
   Edit3,
   User,
   ExternalLink,
+  Download,
 } from "lucide-react";
 import api from "../api/api";
 
@@ -133,11 +134,12 @@ export default function EditMeasure() {
   const { id } = useParams<{ id: string }>();
   const [doors, setDoors] = useState<Door[]>([{ ...defaultDoor }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingPDF, setIsLoadingPDF] = useState(false);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
-
-  const onBack = ()=>{
-    navigate('/measures')
-  }
+  const onBack = () => {
+    navigate("/measures");
+  };
 
   // For nested extensions/crowns per door
   const handleDoorChange = (idx: number, field: keyof Door, value: string) => {
@@ -330,30 +332,151 @@ export default function EditMeasure() {
     }
   };
 
-  const handleViewPDF = async () => {
+  const handleDownloadPDF = async () => {
     if (!id) return;
 
+    setIsDownloadingPDF(true);
     try {
       const response = await api.get(`measures/${id}/pdf/`, {
         responseType: "blob",
       });
 
-      // Create blob URL and open in new window
+      // Validate response content type
+      const contentType = response.headers["content-type"];
+      if (contentType && !contentType.includes("application/pdf")) {
+        throw new Error("Invalid PDF response");
+      }
+
       const blob = new Blob([response.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
 
-      // Open PDF in new window
-      window.open(url, "_blank");
+      // Create meaningful filename
+      const clientName = form.getValues("client_name");
+      const sanitizedClientName = clientName
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .replace(/\s+/g, "_")
+        .substring(0, 30);
+      const date = new Date().toISOString().split("T")[0];
+      const filename = sanitizedClientName
+        ? `measure_${id}_${sanitizedClientName}_${date}.pdf`
+        : `measure_${id}_${date}.pdf`;
 
-      // Clean up the blob URL after a short delay
+      // Create download link
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+
+      toast.success(
+        t("messages.pdf_downloaded") || "PDF downloaded successfully",
+      );
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast.error(
+        t("messages.error_downloading_pdf") || "Error downloading PDF",
+      );
+    } finally {
+      setIsDownloadingPDF(false);
+    }
+  };
+
+  const handleViewPDF = async () => {
+    if (!id) return;
+
+    setIsLoadingPDF(true);
+    try {
+      const response = await api.get(`measures/${id}/pdf/`, {
+        responseType: "blob",
+      });
+
+      // Validate response content type
+      const contentType = response.headers["content-type"];
+      if (contentType && !contentType.includes("application/pdf")) {
+        throw new Error("Invalid PDF response");
+      }
+
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // Create meaningful filename
+      const clientName = form.getValues("client_name");
+      const sanitizedClientName = clientName
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .replace(/\s+/g, "_")
+        .substring(0, 30);
+      const date = new Date().toISOString().split("T")[0];
+      const filename = sanitizedClientName
+        ? `measure_${id}_${sanitizedClientName}_${date}.pdf`
+        : `measure_${id}_${date}.pdf`;
+
+      // Create a temporary anchor element to handle the download with proper filename
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+
+      // Open in new tab for viewing
+      const newWindow = window.open(url, "_blank");
+
+      // Add download functionality to the new window
+      if (newWindow) {
+        newWindow.document.title = `Measure ${id} PDF`;
+
+        // Add download button to the new window
+        newWindow.addEventListener("load", () => {
+          const downloadBtn = newWindow.document.createElement("button");
+          downloadBtn.innerHTML = "📥 Download PDF";
+          downloadBtn.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+          `;
+          downloadBtn.onclick = () => {
+            const downloadLink = newWindow.document.createElement("a");
+            downloadLink.href = url;
+            downloadLink.download = filename;
+            downloadLink.click();
+          };
+          newWindow.document.body.appendChild(downloadBtn);
+        });
+      } else {
+        // Popup was blocked, fallback to direct download
+        toast.warning(
+          t("messages.popup_blocked_downloading") ||
+            "Popup blocked. Downloading PDF instead...",
+        );
+        const fallbackLink = document.createElement("a");
+        fallbackLink.href = url;
+        fallbackLink.download = filename;
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        document.body.removeChild(fallbackLink);
+      }
+
+      // Clean up the blob URL after 30 seconds (increased from 1 second)
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
-      }, 1000);
+      }, 30000);
 
       toast.success(t("messages.pdf_opened") || "PDF opened in new window");
     } catch (error) {
       console.error("Error opening PDF:", error);
       toast.error(t("messages.error_opening_pdf") || "Error opening PDF");
+    } finally {
+      setIsLoadingPDF(false);
     }
   };
 
@@ -366,22 +489,32 @@ export default function EditMeasure() {
             <h1 className="text-3xl font-bold text-gray-900">
               {t("titles.edit_measure")}
             </h1>
-
           </div>
-          <div  className='flex justify-end mb-4 gap-4'>
+          <div className="flex justify-end mb-4 gap-4">
             <Button
-                onClick={handleViewPDF}
-                disabled={!id}
-                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+              onClick={handleViewPDF}
+              disabled={!id || isLoadingPDF}
+              className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50"
             >
               <ExternalLink className="h-4 w-4" />
-              {t("common.view_pdf") || "View PDF"}
+              {isLoadingPDF
+                ? t("common.loading") || "Loading..."
+                : t("common.view_pdf") || "View PDF"}
+            </Button>
+            <Button
+              onClick={handleDownloadPDF}
+              disabled={!id || isDownloadingPDF}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              {isDownloadingPDF
+                ? t("common.downloading") || "Downloading..."
+                : t("common.download_pdf") || "Download PDF"}
             </Button>
             <Button onClick={onBack} className="flex items-center gap-2">
               Назад
             </Button>
           </div>
-
         </div>
       </div>
 
@@ -505,9 +638,9 @@ export default function EditMeasure() {
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>{t("forms.room_name")}</TableHead>
                     <TableHead>{t("forms.glass_type")}</TableHead>
-                     <TableHead>{t("forms.height")}</TableHead>
+                    <TableHead>{t("forms.height")}</TableHead>
                     <TableHead>{t("forms.width")}</TableHead>
-                   
+
                     <TableHead>{t("forms.quantity")}</TableHead>
                     <TableHead>{t("forms.opening_side")}</TableHead>
                     <TableHead>{t("forms.swing_direction")}</TableHead>
@@ -565,7 +698,7 @@ export default function EditMeasure() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                        <TableCell>
+                      <TableCell>
                         <Input
                           placeholder="H"
                           type="text"
@@ -587,7 +720,7 @@ export default function EditMeasure() {
                           className="w-20"
                         />
                       </TableCell>
-                    
+
                       <TableCell>
                         <Input
                           placeholder="Qty"

@@ -8,6 +8,7 @@
     "actions": "Действия"
   },
   "common": {
+    "downloading":"Загрузка",
     "sms_history": "История смс",
     "language": "Язык",
     "wood": "Агаш капы",
@@ -263,6 +264,7 @@
   },
 
   "forms": {
+    "view":"Вид",
     "sync": "Синхронизация",
     "sync_history": "История синхронизации",
     "sync_description": "Описание синхронизации",

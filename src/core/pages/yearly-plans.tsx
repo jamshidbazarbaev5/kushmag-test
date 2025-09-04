@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import { useGetAllUsers } from "../api/user";
@@ -53,18 +54,150 @@ import {
 export default function YearlyPlansPage() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const [selectedUser] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>(
-    new Date().getFullYear().toString(),
-  );
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [_filtersRestoredFromStorage, setFiltersRestoredFromStorage] =
+    useState(false);
 
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN";
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeTab, setActiveTab] = useState<"yearly" | "daily">("yearly");
-  const [viewMode, setViewMode] = useState<"planned" | "comparison">("planned");
-  const [userSearchTerm] = useState<string>("");
+
+  // localStorage key for filter persistence
+  const FILTERS_STORAGE_KEY = "yearly-plans-filters";
+
+  // Helper functions for localStorage management
+  const saveFiltersToStorage = (filters: Record<string, string>) => {
+    try {
+      const existingFilters = JSON.parse(
+        localStorage.getItem(FILTERS_STORAGE_KEY) || "{}",
+      );
+      const updatedFilters = {
+        ...existingFilters,
+        ...filters,
+        _timestamp: new Date().toISOString(),
+        _savedAt: Date.now().toString(),
+      };
+      localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(updatedFilters));
+    } catch (error) {
+      console.error("Failed to save filters to localStorage:", error);
+    }
+  };
+
+  const getFiltersFromStorage = (): Record<string, string> => {
+    try {
+      return JSON.parse(localStorage.getItem(FILTERS_STORAGE_KEY) || "{}");
+    } catch (error) {
+      console.error("Failed to load filters from localStorage:", error);
+      return {};
+    }
+  };
+
+  // Helper functions for URL parameter management
+  const getUrlParam = (key: string, defaultValue: string = "") => {
+    return searchParams.get(key) || defaultValue;
+  };
+
+  const updateUrlParam = useCallback(
+    (key: string, value: string) => {
+      const newParams = new URLSearchParams(searchParams);
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+      setSearchParams(newParams, { replace: true });
+
+      // Also save to localStorage
+      saveFiltersToStorage({ [key]: value });
+    },
+    [searchParams, setSearchParams],
+  );
+
+  // Get filter values with localStorage fallback
+  const storageFilters = getFiltersFromStorage();
+  const selectedUser = getUrlParam("user") || storageFilters.user || "";
+  const selectedYear =
+    getUrlParam("year") ||
+    storageFilters.year ||
+    new Date().getFullYear().toString();
+  const selectedRole = getUrlParam("role") || storageFilters.role || "";
+  const activeTab = (getUrlParam("tab") || storageFilters.tab || "yearly") as
+    | "yearly"
+    | "daily";
+  const viewMode = (getUrlParam("view") || storageFilters.view || "planned") as
+    | "planned"
+    | "comparison";
+  const userSearchTerm = getUrlParam("search") || storageFilters.search || "";
+
+  // Date handling - convert URL date string back to Date object
+  const urlDate = getUrlParam("date") || storageFilters.date;
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (urlDate) {
+      const parsedDate = new Date(urlDate);
+      return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+    }
+    return new Date();
+  });
+
+  // Update URL when date changes
+  useEffect(() => {
+    updateUrlParam("date", selectedDate.toISOString().split("T")[0]);
+  }, [selectedDate, updateUrlParam]);
+
+  // Initialize URL parameters from localStorage on first load (if no URL params exist)
+  useEffect(() => {
+    const hasUrlParams = Array.from(searchParams.keys()).length > 0;
+    if (!hasUrlParams) {
+      const savedFilters = getFiltersFromStorage();
+      if (Object.keys(savedFilters).length > 0) {
+        const newParams = new URLSearchParams();
+        Object.entries(savedFilters).forEach(([key, value]) => {
+          if (value) {
+            newParams.set(key, value);
+          }
+        });
+        // Set defaults if not in storage
+        if (!savedFilters.year) {
+          newParams.set("year", new Date().getFullYear().toString());
+        }
+        if (!savedFilters.tab) {
+          newParams.set("tab", "yearly");
+        }
+        if (!savedFilters.view) {
+          newParams.set("view", "planned");
+        }
+        if (!savedFilters.date) {
+          newParams.set("date", new Date().toISOString().split("T")[0]);
+        }
+        setSearchParams(newParams, { replace: true });
+        setFiltersRestoredFromStorage(true);
+      }
+    }
+  }, [setSearchParams, searchParams]);
+
+  // Functions to update filters and URL
+  const setSelectedYear = (year: string) => {
+    updateUrlParam("year", year);
+  };
+
+  const setSelectedRole = (role: string) => {
+    updateUrlParam("role", role);
+  };
+
+  const setActiveTab = (tab: "yearly" | "daily") => {
+    updateUrlParam("tab", tab);
+  };
+
+  const setViewMode = (mode: "planned" | "comparison") => {
+    updateUrlParam("view", mode);
+  };
+
+  const setUserSearchTerm = (term: string) => {
+    updateUrlParam("search", term);
+  };
+
+
+
+
 
   const { data: users } = useGetAllUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
@@ -284,13 +417,13 @@ export default function YearlyPlansPage() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {t("navigation.yearly_plans")}
             </h1>
+            {/* Active filters summary */}
+          
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-sm px-3 py-1">
-              {selectedYear} {t("yearly_plans.year")}
-            </Badge>
-          </div>
+        
         </div>
+
+       
 
         {/* Enhanced Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -473,18 +606,82 @@ export default function YearlyPlansPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Search and Quick Filters */}
-              {/* <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex items-center gap-2 flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder={t("placeholders.search_user")}
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="flex-1"
-                  />
+             
+
+              {/* Active Filters Indicator */}
+              {(selectedRole ||
+                userSearchTerm ||
+                selectedYear !== new Date().getFullYear().toString() ||
+                viewMode !== "planned") && (
+                <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <span className="text-sm font-medium text-blue-800">
+                 Активные фильтри
+                  </span>
+                  {selectedYear !== new Date().getFullYear().toString() && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 flex items-center gap-1"
+                    >
+                      Year: {selectedYear}
+                      <button
+                        onClick={() =>
+                          setSelectedYear(new Date().getFullYear().toString())
+                        }
+                        className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                        aria-label="Clear year filter"
+                      >
+                        ✕
+                      </button>
+                    </Badge>
+                  )}
+                  {selectedRole && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 flex items-center gap-1"
+                    >
+                      {t('forms.role')}:{" "}
+                      {t(`roles.${selectedRole.toLowerCase()}`, selectedRole)}
+                      <button
+                        onClick={() => setSelectedRole("")}
+                        className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                        aria-label="Clear role filter"
+                      >
+                        ✕
+                      </button>
+                    </Badge>
+                  )}
+                  {userSearchTerm && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 flex items-center gap-1"
+                    >
+                      Search: "{userSearchTerm}"
+                      <button
+                        onClick={() => setUserSearchTerm("")}
+                        className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                        aria-label="Clear search filter"
+                      >
+                        ✕
+                      </button>
+                    </Badge>
+                  )}
+                  {viewMode !== "planned" && (
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-800 flex items-center gap-1"
+                    >
+                      {t('forms.view')}: {t(`yearly_plans.${viewMode}_view`, viewMode)}
+                      <button
+                        onClick={() => setViewMode("planned")}
+                        className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
+                        aria-label="Clear view mode filter"
+                      >
+                        ✕
+                      </button>
+                    </Badge>
+                  )}
                 </div>
-              </div> */}
+              )}
 
               {/* Role Filter and View Mode - Only show role filter for admin */}
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -783,9 +980,7 @@ export default function YearlyPlansPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">{t("common.all")}</SelectItem>
-                          <SelectItem value="ADMIN">
-                            {t("roles.admin")}
-                          </SelectItem>
+                         
                           <SelectItem value="PRODAVEC">
                             {t("roles.prodavec")}
                           </SelectItem>
@@ -795,28 +990,30 @@ export default function YearlyPlansPage() {
                           <SelectItem value="OPERATOR">
                             {t("roles.operator")}
                           </SelectItem>
-                          <SelectItem value="SOTRUDNIK">
-                            {t("roles.sotrudnik")}
-                          </SelectItem>
-                          <SelectItem value="MANUFACTURE">
-                            {t("roles.manufacture")}
-                          </SelectItem>
+                         
                         </SelectContent>
                       </Select>
                     </div>
                   )}
                 </div>
 
-                {/* User Search for Daily Plans
-                <div className="flex items-center gap-2 flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-gray-500" />
-                  <Input
-                    placeholder={t("placeholders.search_user")}
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="flex-1"
-                  />
-                </div> */}
+               
+
+                {/* Clear Filters Button for Daily Plans */}
+                {(selectedRole || userSearchTerm) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      updateUrlParam("role", "");
+                      updateUrlParam("search", "");
+                    }}
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                  >
+                    <Filter className="w-4 h-4" />
+                    {t("common.clear_filters", "Clear Filters")}
+                  </Button>
+                )}
               </div>
 
               {/* <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
