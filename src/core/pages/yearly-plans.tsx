@@ -9,6 +9,7 @@ import {
   useGetYearlyPlans,
   useCreateYearlyPlan,
   useUpdateYearlyPlan,
+  useGetYearlyPlanTotals,
 } from "../api/yearlyPlan";
 import { useGetDailyPlans, type DailyPlanResponse } from "../api/dailyPlan";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,8 +56,6 @@ export default function YearlyPlansPage() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [_filtersRestoredFromStorage, setFiltersRestoredFromStorage] =
-    useState(false);
 
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN";
@@ -138,6 +137,11 @@ export default function YearlyPlansPage() {
     return new Date();
   });
 
+  // Add month selector state for totals
+  const [selectedTotalsMonth, setSelectedTotalsMonth] = useState<number>(
+    new Date().getMonth() + 1,
+  );
+
   // Update URL when date changes
   useEffect(() => {
     updateUrlParam("date", selectedDate.toISOString().split("T")[0]);
@@ -169,7 +173,6 @@ export default function YearlyPlansPage() {
           newParams.set("date", new Date().toISOString().split("T")[0]);
         }
         setSearchParams(newParams, { replace: true });
-        setFiltersRestoredFromStorage(true);
       }
     }
   }, [setSearchParams, searchParams]);
@@ -195,10 +198,6 @@ export default function YearlyPlansPage() {
     updateUrlParam("search", term);
   };
 
-
-
-
-
   const { data: users } = useGetAllUsers();
   const { data: yearlyPlans, isLoading } = useGetYearlyPlans({
     params: {
@@ -216,6 +215,21 @@ export default function YearlyPlansPage() {
   });
   const { mutate: createYearlyPlan } = useCreateYearlyPlan();
   const { mutate: updateYearlyPlan } = useUpdateYearlyPlan();
+
+  // Add totals API hook
+  const {
+    mutate: getYearlyTotals,
+    data: yearlyTotals,
+    isPending: isTotalsLoading,
+  } = useGetYearlyPlanTotals();
+
+  // Load totals data when year or month changes
+  useEffect(() => {
+    getYearlyTotals({
+      year: parseInt(selectedYear),
+      month: selectedTotalsMonth,
+    });
+  }, [selectedYear, selectedTotalsMonth, getYearlyTotals]);
 
   const usersList = users || [];
   const plansList = Array.isArray(yearlyPlans)
@@ -418,12 +432,84 @@ export default function YearlyPlansPage() {
               {t("navigation.yearly_plans")}
             </h1>
             {/* Active filters summary */}
-          
           </div>
-        
         </div>
 
-       
+        {/* Yearly Totals Section */}
+        <Card className="border-l-4 border-l-indigo-500 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2 text-indigo-900">
+                <BarChart3 className="w-5 h-5" />
+                Итоги по году
+              </CardTitle>
+              <Select
+                value={selectedTotalsMonth.toString()}
+                onValueChange={(value) =>
+                  setSelectedTotalsMonth(parseInt(value))
+                }
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Январь</SelectItem>
+                  <SelectItem value="2">Февраль</SelectItem>
+                  <SelectItem value="3">Март</SelectItem>
+                  <SelectItem value="4">Апрель</SelectItem>
+                  <SelectItem value="5">Май</SelectItem>
+                  <SelectItem value="6">Июнь</SelectItem>
+                  <SelectItem value="7">Июль</SelectItem>
+                  <SelectItem value="8">Август</SelectItem>
+                  <SelectItem value="9">Сентябрь</SelectItem>
+                  <SelectItem value="10">Октябрь</SelectItem>
+                  <SelectItem value="11">Ноябрь</SelectItem>
+                  <SelectItem value="12">Декабрь</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {isTotalsLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            ) : yearlyTotals ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-600 mb-2">
+                    Планируемые продажи
+                  </p>
+                  <p className="text-3xl font-bold text-blue-900">
+                    {yearlyTotals.total_plan.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm font-medium text-green-600 mb-2">
+                    Фактические продажи
+                  </p>
+                  <p className="text-3xl font-bold text-green-900">
+                    {yearlyTotals.total_sales.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm font-medium text-purple-600 mb-2">
+                    Выполнение
+                  </p>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {(yearlyTotals.percent_done * 100).toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Нет данных для выбранного периода
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Enhanced Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -606,8 +692,6 @@ export default function YearlyPlansPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-             
-
               {/* Active Filters Indicator */}
               {(selectedRole ||
                 userSearchTerm ||
@@ -615,7 +699,7 @@ export default function YearlyPlansPage() {
                 viewMode !== "planned") && (
                 <div className="flex flex-wrap items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <span className="text-sm font-medium text-blue-800">
-                 Активные фильтри
+                    Активные фильтри
                   </span>
                   {selectedYear !== new Date().getFullYear().toString() && (
                     <Badge
@@ -639,7 +723,7 @@ export default function YearlyPlansPage() {
                       variant="secondary"
                       className="bg-blue-100 text-blue-800 flex items-center gap-1"
                     >
-                      {t('forms.role')}:{" "}
+                      {t("forms.role")}:{" "}
                       {t(`roles.${selectedRole.toLowerCase()}`, selectedRole)}
                       <button
                         onClick={() => setSelectedRole("")}
@@ -670,7 +754,8 @@ export default function YearlyPlansPage() {
                       variant="secondary"
                       className="bg-blue-100 text-blue-800 flex items-center gap-1"
                     >
-                      {t('forms.view')}: {t(`yearly_plans.${viewMode}_view`, viewMode)}
+                      {t("forms.view")}:{" "}
+                      {t(`yearly_plans.${viewMode}_view`, viewMode)}
                       <button
                         onClick={() => setViewMode("planned")}
                         className="ml-1 text-blue-600 hover:text-blue-800 font-bold"
@@ -980,7 +1065,7 @@ export default function YearlyPlansPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">{t("common.all")}</SelectItem>
-                         
+
                           <SelectItem value="PRODAVEC">
                             {t("roles.prodavec")}
                           </SelectItem>
@@ -990,14 +1075,11 @@ export default function YearlyPlansPage() {
                           <SelectItem value="OPERATOR">
                             {t("roles.operator")}
                           </SelectItem>
-                         
                         </SelectContent>
                       </Select>
                     </div>
                   )}
                 </div>
-
-               
 
                 {/* Clear Filters Button for Daily Plans */}
                 {(selectedRole || userSearchTerm) && (

@@ -53,6 +53,19 @@ export interface YearlyPlanParams {
   role?: string;
 }
 
+export interface YearlyPlanTotals {
+  year: string;
+  month: string;
+  total_plan: number;
+  total_sales: number;
+  percent_done: number;
+}
+
+export interface YearlyPlanTotalsParams {
+  year: number;
+  month?: number;
+}
+
 const YEARLY_PLAN_URL = "yearly-plans/";
 
 export const {
@@ -92,6 +105,21 @@ export const useUpdateYearlyPlan = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["yearly-plans"] });
+    },
+  });
+};
+
+export const useGetYearlyPlanTotals = () => {
+  return useMutation({
+    mutationFn: async (params: YearlyPlanTotalsParams) => {
+      const queryParams = new URLSearchParams({
+        year: params.year.toString(),
+        ...(params.month && { month: params.month.toString() }),
+      });
+      const response = await api.get<YearlyPlanTotals>(
+        `yearly-plans/totals/?${queryParams.toString()}`,
+      );
+      return response.data;
     },
   });
 };
