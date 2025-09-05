@@ -740,8 +740,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, orderData.agent),
       organization: getMetaById(organizations, orderData.organization),
       salesChannel: getMetaById(salesChannels, orderData.salesChannel),
-      seller: getMetaById(sellers, orderData.seller),
-      operator: getMetaById(operators, orderData.operator),
+      seller: orderData.seller,
+      operator: orderData.operator,
       branch: getMetaById(branches, orderData.branch),
       // Hydrate door data with full product info
       doors: updatedDoors.map((door: any) => ({
@@ -840,8 +840,8 @@ export default function CreateOrderPage() {
           : getMetaById(counterparties, data.agent),
       organization: getMetaById(organizations, data.organization),
       salesChannel: getMetaById(salesChannels, data.salesChannel),
-      seller: getMetaById(sellers, data.seller),
-      operator: getMetaById(operators, data.operator),
+      seller: data.seller,
+      operator: data.operator,
       branch: getMetaById(branches, data.branch),
 
       // Hydrate door data with full product info
