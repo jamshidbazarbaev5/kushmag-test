@@ -214,6 +214,7 @@
     "g_shaped": "G tárizli"
   },
   "forms": {
+    "casing_zamer_outside":"Nalichnik",
     "new_password": "Jańa parol",
     "confirm_password": "Paroldi tastıyıqlań",
     "currency": "Valyuta",
