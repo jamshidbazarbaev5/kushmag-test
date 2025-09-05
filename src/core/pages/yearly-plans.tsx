@@ -60,6 +60,9 @@ export default function YearlyPlansPage() {
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN";
 
+  // Check if current user is visitor (read-only mode)
+  const isVisitor = currentUser?.role === "VISITOR";
+
   // localStorage key for filter persistence
   const FILTERS_STORAGE_KEY = "yearly-plans-filters";
 
@@ -499,7 +502,7 @@ export default function YearlyPlansPage() {
                     Выполнение
                   </p>
                   <p className="text-3xl font-bold text-purple-900">
-                    {(yearlyTotals.percent_done * 100).toFixed(1)}%
+                    {yearlyTotals.percent_done.toFixed(1)}%
                   </p>
                 </div>
               </div>
@@ -955,42 +958,50 @@ export default function YearlyPlansPage() {
                 data={filteredPlans}
                 year={selectedYear ? parseInt(selectedYear) : undefined}
                 viewMode={viewMode}
-                onUpdatePlan={(planId, updatedDetails) => {
-                  const plan = plansList.find((p) => p.id === planId);
-                  if (plan) {
-                    updateYearlyPlan({
-                      id: planId,
-                      user: plan.user.id,
-                      year: plan.year,
-                      details: updatedDetails.map((detail) => ({
-                        month: detail.month,
-                        sales_plan: parseFloat(String(detail.sales_plan)),
-                        clients_plan: parseFloat(
-                          String(detail.clients_plan) || "0",
-                        ),
-                        sales_count_plan: parseFloat(
-                          String(detail.sales_count_plan) || "0",
-                        ),
-                      })),
-                    });
-                  }
-                }}
-                onCreatePlan={(newPlan) => {
-                  createYearlyPlan({
-                    user: newPlan.user.id,
-                    year: newPlan.year,
-                    details: newPlan.details.map((detail) => ({
-                      month: detail.month,
-                      sales_plan: parseFloat(String(detail.sales_plan)),
-                      clients_plan: parseFloat(
-                        String(detail.clients_plan) || "0",
-                      ),
-                      sales_count_plan: parseFloat(
-                        String(detail.sales_count_plan) || "0",
-                      ),
-                    })),
-                  });
-                }}
+                onUpdatePlan={
+                  isVisitor
+                    ? undefined
+                    : (planId, updatedDetails) => {
+                        const plan = plansList.find((p) => p.id === planId);
+                        if (plan) {
+                          updateYearlyPlan({
+                            id: planId,
+                            user: plan.user.id,
+                            year: plan.year,
+                            details: updatedDetails.map((detail) => ({
+                              month: detail.month,
+                              sales_plan: parseFloat(String(detail.sales_plan)),
+                              clients_plan: parseFloat(
+                                String(detail.clients_plan) || "0",
+                              ),
+                              sales_count_plan: parseFloat(
+                                String(detail.sales_count_plan) || "0",
+                              ),
+                            })),
+                          });
+                        }
+                      }
+                }
+                onCreatePlan={
+                  isVisitor
+                    ? undefined
+                    : (newPlan) => {
+                        createYearlyPlan({
+                          user: newPlan.user.id,
+                          year: newPlan.year,
+                          details: newPlan.details.map((detail) => ({
+                            month: detail.month,
+                            sales_plan: parseFloat(String(detail.sales_plan)),
+                            clients_plan: parseFloat(
+                              String(detail.clients_plan) || "0",
+                            ),
+                            sales_count_plan: parseFloat(
+                              String(detail.sales_count_plan) || "0",
+                            ),
+                          })),
+                        });
+                      }
+                }
                 users={usersList
                   .filter((user) => user.id !== undefined)
                   .filter(

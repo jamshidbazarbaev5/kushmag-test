@@ -8,7 +8,8 @@
     "actions": "Действия"
   },
   "common": {
-    "downloading":"Загрузка",
+    "no_data": "Данные не найдены",
+    "downloading": "Загрузка",
     "sms_history": "История смс",
     "language": "Язык",
     "wood": "Агаш капы",
@@ -87,12 +88,15 @@
     "total": "всего"
   },
   "roles": {
+
+    "smotrya":"Смотрящий",
     "admin": "Администратор",
     "prodavec": "Продавец",
     "zamershik": "Замерщик",
     "operator": "Оператор",
     "sotrudnik": "Сотрудник",
-    "manufacture": "Пройздводство"
+    "manufacture": "Пройздводство",
+    "visitor": "Посетитель"
   },
   "daily_plans": {
     "daily_breakdown": "Дневной отчет",
@@ -264,7 +268,7 @@
   },
 
   "forms": {
-    "view":"Вид",
+    "view": "Вид",
     "sync": "Синхронизация",
     "sync_history": "История синхронизации",
     "sync_description": "Описание синхронизации",

@@ -437,6 +437,7 @@ export default function OrdersPage() {
         // Check if activeStatusTab is deadline_day
         if (activeStatusTab === "deadline_day") {
           params.days_left__lte = currentDeadlineDay;
+          params.status = 2; // ПРОИЗВОДСТВО status
         }
         // Check if activeStatusTab is a numeric status ID
         else if (!isNaN(Number(activeStatusTab))) {

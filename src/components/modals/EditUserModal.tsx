@@ -491,6 +491,9 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                       <SelectItem value="SOTRUDNIK">
                         {t("roles.sotrudnik")}
                       </SelectItem>
+                      <SelectItem value="VISITOR">
+                        {t("roles.visitor")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -8,12 +8,16 @@ export default function RoleBasedRedirect() {
 
   useEffect(() => {
     if (!isLoading && currentUser) {
+      // If user is VISITOR, redirect to yearly-plans page only
+      if (currentUser.role === "VISITOR") {
+        navigate("/yearly-plans", { replace: true });
+      }
       // If user is admin (superuser) or manufacture, redirect to orders page
-      if (
+      else if (
         currentUser.role === "ADMIN" ||
         currentUser.role === "MANUFACTURE" ||
         currentUser.role === "PRODAVEC" ||
-            currentUser.role === "OPERATOR" ||
+        currentUser.role === "OPERATOR" ||
         currentUser.is_superuser
       ) {
         navigate("/orders", { replace: true });

@@ -216,10 +216,15 @@ const EditableConsolidatedSalesPlanTable: React.FC<
   // Check if current user is admin
   const isAdmin = currentUser?.role === "ADMIN";
 
+  // Check if current user is visitor (read-only mode)
+  const isVisitor = currentUser?.role === "VISITOR";
+
+  // Determine if user can edit (admin and not visitor)
+  const canEdit = isAdmin && !isVisitor;
+
   // Handle form submission
   const handleSubmit = () => {
-    if (!isAdmin) {
-      toast.error("You don't have permission to modify plans");
+    if (!canEdit) {
       return;
     }
 
@@ -315,7 +320,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
           <CardContent className="text-center py-8">
             <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500 mb-4">{t("yearly_plans.no_data")}</p>
-            {users.length > 0 && isAdmin && (
+            {users.length > 0 && canEdit && onCreatePlan && (
               <Button onClick={handleAddPlan}>
                 <Plus className="w-4 h-4 mr-2" />
                 {t("yearly_plans.add_first_plan")}
@@ -387,7 +392,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                         ? t("yearly_plans.comparison_view")
                         : t("yearly_plans.planned_values")}
                   </CardTitle>
-                  {isAdmin && (
+                  {canEdit && onCreatePlan && (
                     <Button onClick={handleAddPlan} size="sm">
                       <Plus className="w-4 h-4 mr-2" />
                       {t("yearly_plans.add_user_plan")}
@@ -564,10 +569,12 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                                 onClick={() => handleViewOrEditPlan(plan)}
                                 className="h-8 w-8 p-0"
                                 title={
-                                  isAdmin ? t("common.edit") : t("common.view")
+                                  canEdit && onUpdatePlan
+                                    ? t("common.edit")
+                                    : t("common.view")
                                 }
                               >
-                                {isAdmin ? (
+                                {canEdit && onUpdatePlan ? (
                                   <Edit className="w-4 h-4" />
                                 ) : (
                                   <Eye className="w-4 h-4" />
@@ -760,7 +767,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
             <WideDialogTitle>
               {modalState.mode === "add"
                 ? t("yearly_plans.add_new_plan")
-                : isAdmin
+                : canEdit && onUpdatePlan
                   ? t("yearly_plans.edit_plan")
                   : t("yearly_plans.view_plan")}
             </WideDialogTitle>
@@ -776,7 +783,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                   onValueChange={(value) =>
                     setFormData((prev) => ({ ...prev, user: parseInt(value) }))
                   }
-                  disabled={modalState.mode === "edit" || !isAdmin}
+                  disabled={modalState.mode === "edit" || !canEdit}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder={t("yearly_plans.select_user")} />
@@ -803,7 +810,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                   }
                   min="2020"
                   max="2030"
-                  disabled={modalState.mode === "edit" || !isAdmin}
+                  disabled={modalState.mode === "edit" || !canEdit}
                 />
               </div>
             </div>
@@ -858,7 +865,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                             )
                           }
                           className="text-center"
-                          readOnly={!isAdmin}
+                          readOnly={!canEdit}
                         />
                       </TableCell>
                       <TableCell className="bg-blue-25">
@@ -879,7 +886,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                             )
                           }
                           className="text-center"
-                          readOnly={!isAdmin}
+                          readOnly={!canEdit}
                         />
                       </TableCell>
                       <TableCell className="bg-blue-25">
@@ -900,7 +907,7 @@ const EditableConsolidatedSalesPlanTable: React.FC<
                             )
                           }
                           className="text-center"
-                          readOnly={!isAdmin}
+                          readOnly={!canEdit}
                         />
                       </TableCell>
                       <TableCell className="bg-blue-25">
@@ -969,16 +976,17 @@ const EditableConsolidatedSalesPlanTable: React.FC<
           <WideDialogFooter>
             <Button variant="outline" onClick={handleCloseModal}>
               <X className="w-4 h-4 mr-2" />
-              {isAdmin ? t("common.cancel") : t("common.close")}
+              {canEdit ? t("common.cancel") : t("common.close")}
             </Button>
-            {isAdmin && (
-              <Button onClick={handleSubmit} disabled={formData.user === 0}>
-                <Save className="w-4 h-4 mr-2" />
-                {modalState.mode === "add"
-                  ? t("common.create")
-                  : t("common.save")}
-              </Button>
-            )}
+            {canEdit &&
+              (modalState.mode === "add" ? onCreatePlan : onUpdatePlan) && (
+                <Button onClick={handleSubmit} disabled={formData.user === 0}>
+                  <Save className="w-4 h-4 mr-2" />
+                  {modalState.mode === "add"
+                    ? t("common.create")
+                    : t("common.save")}
+                </Button>
+              )}
           </WideDialogFooter>
         </WideDialogContent>
       </WideDialog>

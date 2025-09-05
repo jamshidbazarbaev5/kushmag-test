@@ -57,6 +57,7 @@ const userFields = (
       { value: "ZAMERSHIK", label: t("roles.zamershik") },
       { value: "OPERATOR", label: t("roles.operator") },
       { value: "SOTRUDNIK", label: t("roles.sotrudnik") },
+       { value: "VISITOR", label: t("roles.smotrya") },
     ],
     onChange: (
       value: string,
