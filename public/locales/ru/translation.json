@@ -270,6 +270,7 @@
   "forms": {
     "casing_zamer_outside":"Наличник  ",
     "view": "Вид",
+    
     "sync": "Синхронизация",
     "sync_history": "История синхронизации",
     "sync_description": "Описание синхронизации",
@@ -551,6 +552,7 @@
     "clients_plan": "План клиентов",
     "sales_count_plan": "План количества продаж",
     "acc_short": "акс.",
+    "casing_zamer_j":"Жок",
     "opening_side_onga": "Направо",
     "opening_side_shepke": "Налево",
     "swing_direction_sirtka": "Наружу",
@@ -561,6 +563,9 @@
     "promog_joq": "Нет",
     "casing_zamer_p": "П-образный",
     "casing_zamer_g": "Г-образный",
+    "casing_zamer_outside_p": "П-образный",
+    "casing_zamer_outside_g": "Г-образный",
+    "casing_zamer_outside_j": "Жок",
     "update_door": "Обновить дверь",
     "measure_data": "Данные замера",
     "prefilled": "предварительно заполнено",
