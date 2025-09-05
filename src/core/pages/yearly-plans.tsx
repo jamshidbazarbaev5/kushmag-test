@@ -516,8 +516,8 @@ export default function YearlyPlansPage() {
 
         {/* Enhanced Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Total Users - Only show for admin users */}
-          {isAdmin && (
+          {/* Total Users - Show for admin and visitor users */}
+          {(isAdmin || isVisitor) && (
             <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -606,8 +606,8 @@ export default function YearlyPlansPage() {
             </CardContent>
           </Card>
 
-          {/* High Performers - Only show for admin users */}
-          {isAdmin && (
+          {/* High Performers - Show for admin and visitor users */}
+          {(isAdmin || isVisitor) && (
             <Card className="border-l-4 border-l-indigo-500 hover:shadow-lg transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -631,36 +631,7 @@ export default function YearlyPlansPage() {
           )}
         </div>
 
-        {/* Top Performer Highlight - Only show for admin users */}
-        {/* {isAdmin && enhancedStats.topPerformer && (
-          <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <Target className="w-5 h-5 text-yellow-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-yellow-800">
-                      🏆 {t("forms.top_performer")}
-                    </p>
-                    <p className="text-lg font-bold text-yellow-900">
-                      {enhancedStats.topPerformer.user} -{" "}
-                      {enhancedStats.topPerformer.performance.toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <PerformanceRating
-                    percentage={enhancedStats.topPerformer.performance}
-                    maxStars={5}
-                    size="md"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )} */}
+
       </div>
 
       <Tabs
