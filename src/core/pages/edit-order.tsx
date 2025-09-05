@@ -843,6 +843,9 @@ export default function CreateOrderPage() {
       seller: data.seller,
       operator: data.operator,
       branch: getMetaById(branches, data.branch),
+      zamershik: data.zamershik,
+      // Include measure ID if available
+      zamer: measureId || null,
 
       // Hydrate door data with full product info
       doors: doors.map((door: any) => ({
@@ -913,7 +916,7 @@ export default function CreateOrderPage() {
     // If measureId is available, make a request to the specific endpoint
     if (measureId) {
       try {
-        const response = await api.put(`orders/${measureId}/`, orderData);
+        const response = await api.post(`orders/`, orderData);
         setCreatedOrderId(response.data.id);
         setCreatedOrderStatus(response.data.order_status);
         toast.success(t("messages.order_from_measure_created"));
