@@ -279,7 +279,7 @@ export default function MeasuresPage() {
       // Ensure dropdown doesn't go above viewport
       if (top < 10) {
         top = 10;
-      }
+                                                                                                                  }
 
       // Ensure dropdown doesn't go below viewport
       if (top + dropdownHeight > viewportHeight - 10) {

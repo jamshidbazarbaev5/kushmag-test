@@ -16,7 +16,7 @@ async function initApp() {
   root.render(
     <StrictMode>
       <LanguageProvider>
-        <BrowserRouter>
+        <BrowserRouter basename="/app">
           <App />
         </BrowserRouter>
       </LanguageProvider>

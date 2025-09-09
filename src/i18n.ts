@@ -16,7 +16,7 @@ await i18nInstance.init({
     escapeValue: false,
   },
   backend: {
-    loadPath: '/locales/{{lng}}/translation.json',
+    loadPath: '/app/locales/{{lng}}/translation.json',
   },
 });
 
