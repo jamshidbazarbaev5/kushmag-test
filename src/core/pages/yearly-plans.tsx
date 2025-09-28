@@ -231,8 +231,9 @@ export default function YearlyPlansPage() {
     getYearlyTotals({
       year: parseInt(selectedYear),
       month: selectedTotalsMonth,
+      ...(isAdmin && selectedRole && { role: selectedRole }),
     });
-  }, [selectedYear, selectedTotalsMonth, getYearlyTotals]);
+  }, [selectedYear, selectedTotalsMonth, selectedRole, isAdmin, getYearlyTotals]);
 
   const usersList = users || [];
   const plansList = Array.isArray(yearlyPlans)

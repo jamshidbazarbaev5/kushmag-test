@@ -147,6 +147,12 @@ export interface CalculateOrderResponse {
   extension_price: number;
   crown_price: number;
   accessory_price: number;
+  door_items:[]
+  casing_items:[]
+  extension_items:[];
+  crown_items:[];
+  accessory_items:[],
+
 }
 
 export const useCalculateOrder = () => {

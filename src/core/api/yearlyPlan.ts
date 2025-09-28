@@ -61,10 +61,11 @@ export interface YearlyPlanTotals {
   percent_done: number;
 }
 
-export interface YearlyPlanTotalsParams {
+export type YearlyPlanTotalsParams = {
   year: number;
   month?: number;
-}
+  role?: string;
+};
 
 const YEARLY_PLAN_URL = "yearly-plans/";
 
@@ -115,6 +116,7 @@ export const useGetYearlyPlanTotals = () => {
       const queryParams = new URLSearchParams({
         year: params.year.toString(),
         ...(params.month && { month: params.month.toString() }),
+        ...(params.role && { role: params.role }),
       });
       const response = await api.get<YearlyPlanTotals>(
         `yearly-plans/totals/?${queryParams.toString()}`,

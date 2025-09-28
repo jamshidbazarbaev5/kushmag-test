@@ -186,10 +186,15 @@ export default function EditOrderPage() {
   const [totals, setTotals] = useState({
     total_sum: 0,
     door_price: 0,
+    door_items: [],
     casing_price: 0,
+    casing_items: [],
     extension_price: 0,
+    extension_items: [],
     crown_price: 0,
+    crown_items: [],
     accessory_price: 0,
+    accessory_items: [],
     discountAmount: 0,
     remainingBalance: 0,
   });
@@ -1056,6 +1061,11 @@ export default function EditOrderPage() {
 
         setTotals({
           ...response,
+          door_items: response.door_items || [],
+          casing_items: response.casing_items || [],
+          extension_items: response.extension_items || [],
+          crown_items: response.crown_items || [],
+          accessory_items: response.accessory_items || [],
           discountAmount: finalDiscountAmount,
           remainingBalance: remainingBalance,
         });
@@ -3114,6 +3124,27 @@ function StepTwo({
                         onProductSelect={(product) => {
                           const updatedTables = tables.map((t) => {
                             if (t.id === table.id) {
+                              // If product is null (deselected), clear all door data but keep structure
+                              if (!product) {
+                                const clearedDoors = t.doors.map((door: any) => ({
+                                  ...door,
+                                  model: "",
+                                  price_type: "",
+                                  price: 0,
+                                  height: "",
+                                  width: "",
+                                  quantity: "",
+                                  // Keep the array structure but clear the data
+                                  accessories: door.accessories?.map(() => ({})) || []
+                                }));
+                                return {
+                                  ...t,
+                                  doorModel: null,
+                                  doorSearch: "",
+                                  doors: clearedDoors
+                                };
+                              }
+
                               // If this table was empty and we're selecting a model, add one row automatically
                               const shouldAddRow =
                                 t.doors.length === 0 && product;
@@ -5470,6 +5501,15 @@ function HeaderSearch({
   const abortControllerRef = useRef<AbortController | null>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Function to clear product selection
+  const clearProductSelection = () => {
+    setProducts([]);
+    onChange("");
+    if (onProductSelect) {
+      onProductSelect(null); // This will trigger door data clearing in parent
+    }
+  };
+
   // Memoize search trigger to prevent unnecessary API calls
   const searchTrigger = useMemo(() => {
     return {
@@ -5562,6 +5602,13 @@ function HeaderSearch({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    
+    // If we have a selected product and the input value changes, clear the selection
+    if (selectedProduct && newValue !== selectedProduct.name) {
+      clearProductSelection();
+      return;
+    }
+
     onChange(newValue);
 
     // Reset dropdown state immediately on input change
@@ -5578,12 +5625,21 @@ function HeaderSearch({
   };
 
   const handleBlur = () => {
+    // If we have a value but no selected product after blur,
+    // clear everything to prevent orphaned data
     setTimeout(() => {
+      if (value && !selectedProduct) {
+        clearProductSelection();
+      }
       setIsOpen(false);
     }, 150);
   };
 
   const handleProductSelect = (product: any) => {
+    if (!product) {
+      clearProductSelection();
+      return;
+    }
     onChange(product.name);
     setIsOpen(false);
     setProducts([]);
@@ -5759,48 +5815,111 @@ function StepThree({
               </div>
 
               {/* Price Breakdown */}
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-blue-50 rounded-lg p-4 space-y-4">
                 <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-blue-600" />
                   {t("forms.price_breakdown")}
                 </h4>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
+
+                {/* Doors Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold">
                     <span>{t("forms.doors_subtotal")}</span>
-                    <span className="font-semibold text-black">
+                    <span className="text-black">
                       {formatCurrency(totals.door_price)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>{t("forms.extensions_subtotal")}</span>
-                    <span className="text-black">
-                      {formatCurrency(totals.extension_price)}
-                    </span>
+                  <div className="pl-4 text-sm text-gray-600 space-y-1">
+                    {totals.door_items?.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between">
+                        <span>{item.label}</span>
+                        <span>{formatCurrency(item.total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between">
+                </div>
+
+                {/* Casings Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold">
                     <span>{t("forms.casings_subtotal")}</span>
                     <span className="text-black">
                       {formatCurrency(totals.casing_price)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>{t("forms.crowns_subtotal")}</span>
+                  <div className="pl-4 text-sm text-gray-600 space-y-1">
+                    {totals.casing_items?.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between">
+                        <span>{item.label}</span>
+                        <span>{formatCurrency(item.total)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Extensions Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between font-semibold">
+                    <span>{t("forms.extensions_subtotal")}</span>
                     <span className="text-black">
-                      {formatCurrency(totals.crown_price)}
+                      {formatCurrency(totals.extension_price)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span>{t("forms.accessories_subtotal")}</span>
-                    <span className="text-black">
-                      {formatCurrency(totals.accessory_price)}
-                    </span>
+                  <div className="pl-4 text-sm text-gray-600 space-y-1">
+                    {totals.extension_items?.map((item: any, index: number) => (
+                      <div key={index} className="flex justify-between">
+                        <span>{item.label}</span>
+                        <span>{formatCurrency(item.total)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between border-t pt-2 mt-2">
-                    <span className="font-bold">{t("forms.subtotal")}</span>
-                    <span className="font-bold text-black">
-                      {formatCurrency(totals.total_sum)}
-                    </span>
+                </div>
+
+                {/* Crowns Section */}
+                {totals.crown_price > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-semibold">
+                      <span>{t("forms.crowns_subtotal")}</span>
+                      <span className="text-black">
+                        {formatCurrency(totals.crown_price)}
+                      </span>
+                    </div>
+                    <div className="pl-4 text-sm text-gray-600 space-y-1">
+                      {totals.crown_items?.map((item: any, index: number) => (
+                        <div key={index} className="flex justify-between">
+                          <span>{item.label}</span>
+                          <span>{formatCurrency(item.total)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                {/* Accessories Section */}
+                {totals.accessory_price > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-semibold">
+                      <span>{t("forms.accessories_subtotal")}</span>
+                      <span className="text-black">
+                        {formatCurrency(totals.accessory_price)}
+                      </span>
+                    </div>
+                    <div className="pl-4 text-sm text-gray-600 space-y-1">
+                      {totals.accessory_items?.map((item: any, index: number) => (
+                        <div key={index} className="flex justify-between">
+                          <span>{item.label}</span>
+                          <span>{formatCurrency(item.total)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between border-t pt-2 mt-2 font-bold text-lg">
+                  <span>{t("forms.subtotal")}</span>
+                  <span className="text-black">
+                    {formatCurrency(totals.total_sum)}
+                  </span>
                 </div>
               </div>
 
