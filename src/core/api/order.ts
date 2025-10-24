@@ -24,7 +24,7 @@ interface Door {
   patina_color: number;
   beading_main: number;
   beading_additional?: number;
-  beading_additional2?:number;
+  beading_additional2?: number;
   glass_type: number;
   threshold: number;
   height: number;
@@ -147,12 +147,11 @@ export interface CalculateOrderResponse {
   extension_price: number;
   crown_price: number;
   accessory_price: number;
-  door_items:[]
-  casing_items:[]
-  extension_items:[];
-  crown_items:[];
-  accessory_items:[],
-
+  door_items: [];
+  casing_items: [];
+  extension_items: [];
+  crown_items: [];
+  accessory_items: [];
 }
 
 export const useCalculateOrder = () => {

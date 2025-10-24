@@ -163,6 +163,7 @@ export default function OrdersPage() {
     }
     const defaultColumns = {
       number: true,
+      manufacture_open_count: true,
       order_status: true,
       moy_sklad_id: true,
       client_name: false,
@@ -308,6 +309,8 @@ export default function OrdersPage() {
       toast.error(errorMessage);
     }
   };
+
+
 
   // Function to open SMS dialog
   const handleOpenSMSDialog = (orderId: string) => {
@@ -461,10 +464,24 @@ export default function OrdersPage() {
 
     // Add production door type filter
     if (activeProductionDoorTypeFilter !== "all") {
-      params.door_type = activeProductionDoorTypeFilter;
-      if (activeProductionStatusFilter === "all") {
-        // Default to status 2 for production door type filters
-        params.status = 2;
+      if (activeProductionDoorTypeFilter === "WOOD_PROCESS") {
+        params.door_type = "WOOD";
+        params.status = 10; // В процессе status
+      } else if (activeProductionDoorTypeFilter === "STEEL_PROCESS") {
+        params.door_type = "STEEL";
+        params.status = 10; // В процессе status
+      } else if (activeProductionDoorTypeFilter === "WOOD_DELIVERED") {
+        params.door_type = "WOOD";
+        params.status = 6; // Доставлен status
+      } else if (activeProductionDoorTypeFilter === "STEEL_DELIVERED") {
+        params.door_type = "STEEL";
+        params.status = 6; // Доставлен status
+      } else {
+        params.door_type = activeProductionDoorTypeFilter;
+        if (activeProductionStatusFilter === "all") {
+          // Default to status 2 for production door type filters
+          params.status = 2;
+        }
       }
     }
 
@@ -595,6 +612,7 @@ export default function OrdersPage() {
     setOperatorSearchQuery("");
     setZamershikSearchQuery("");
     setAdminSearchQuery("");
+    setDescriptionFilter("");
     setCurrentPage(1);
   };
 
@@ -688,8 +706,33 @@ export default function OrdersPage() {
     }
   };
 
-  const handleRowClick = (order: Order) => {
-    navigate(`/orders/edit/${order.id}`);
+  const handleRowClick = async (order: Order) => {
+    try {
+      // First open the order
+      await api.post(`orders/${order.id}/open/`);
+
+      // Then navigate to edit page
+      navigate(`/orders/edit/${order.id}`);
+
+      // Show success message
+      toast.success(
+        t("messages.order_opened_successfully") || "Order opened successfully",
+      );
+
+      // Refresh the orders data to update the count
+      refetchOrders();
+    } catch (error: any) {
+      console.error("Error opening order:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        t("messages.error.open_order") ||
+        "Error opening order";
+      toast.error(errorMessage);
+
+      // Still navigate to edit page even if open fails
+      navigate(`/orders/edit/${order.id}`);
+    }
   };
 
   // Helper function to determine door material type
@@ -946,6 +989,62 @@ export default function OrdersPage() {
               className="px-3 py-1 h-8 text-xs"
             >
               Темир производство
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "WOOD_PROCESS"
+                  ? "default"
+                  : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                handleProductionDoorTypeFilterChange("WOOD_PROCESS")
+              }
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Агаш В процессе
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "STEEL_PROCESS"
+                  ? "default"
+                  : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                handleProductionDoorTypeFilterChange("STEEL_PROCESS")
+              }
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Темир В процессе
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "WOOD_DELIVERED"
+                  ? "default"
+                  : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                handleProductionDoorTypeFilterChange("WOOD_DELIVERED")
+              }
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Агаш доставлен
+            </Button>
+            <Button
+              variant={
+                activeProductionDoorTypeFilter === "STEEL_DELIVERED"
+                  ? "default"
+                  : "ghost"
+              }
+              size="sm"
+              onClick={() =>
+                handleProductionDoorTypeFilterChange("STEEL_DELIVERED")
+              }
+              className="px-3 py-1 h-8 text-xs"
+            >
+              Темир доставлен
             </Button>
           </div>
         </div>
@@ -1293,6 +1392,11 @@ export default function OrdersPage() {
                   №
                 </th>
               )}
+              {visibleColumns.manufacture_open_count && (
+                <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
+                  {t("forms.open_count") || "Open Count"}
+                </th>
+              )}
               {visibleColumns.order_status && (
                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-24">
                   {t("forms.order_status")}
@@ -1490,6 +1594,19 @@ export default function OrdersPage() {
                       </div>
                     </td>
                   )}
+                  {visibleColumns.manufacture_open_count && (
+                    <td className="px-3 py-2 text-center">
+                      {order.manufacture_open_count > 0 ? (
+                        <div className="inline-flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full">
+                          {order.manufacture_open_count}
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center justify-center w-6 h-6 bg-gray-200 text-gray-500 text-xs font-medium rounded-full">
+                          0
+                        </div>
+                      )}
+                    </td>
+                  )}
                   {visibleColumns.order_status && (
                     <td className="px-3 py-2 text-xs text-gray-600">
                       <div
@@ -1512,38 +1629,25 @@ export default function OrdersPage() {
                             : null
                         }
                       >
-                        <div
-                          className={`flex items-center justify-start ${
-                            currentUser?.role !== "MANUFACTURE"
-                              ? "cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200 group"
-                              : "cursor-default"
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (currentUser?.role !== "MANUFACTURE") {
-                              setShowStatusChangeDropdown(
-                                showStatusChangeDropdown === order.id
-                                  ? null
-                                  : order.id,
-                              );
-                            }
-                          }}
-                          title={
-                            currentUser?.role !== "MANUFACTURE"
-                              ? "Click to change status"
-                              : "Status (read-only)"
-                          }
-                        >
-                          {renderStatusBadge(order.status)}
-                          {currentUser?.role !== "MANUFACTURE" && (
-                            <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              ✏️
-                            </span>
-                          )}
-                        </div>
+                      <div
+                        className="cursor-pointer hover:opacity-80 hover:scale-105 transition-all duration-200 group flex items-center justify-start"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowStatusChangeDropdown(
+                            showStatusChangeDropdown === order.id
+                              ? null
+                              : order.id,
+                          );
+                        }}
+                        title="Click to change status"
+                      >
+                        {renderStatusBadge(order.status)}
+                        <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          ✏️
+                        </span>
+                      </div>
 
-                        {showStatusChangeDropdown === order.id &&
-                          currentUser?.role !== "MANUFACTURE" && (
+                      {showStatusChangeDropdown === order.id && (
                             <div
                               className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
                               onClick={(e) => e.stopPropagation()}
@@ -1922,6 +2026,9 @@ export default function OrdersPage() {
                 >
                   {visibleColumns.number && "На странице"}
                 </td>
+                {visibleColumns.manufacture_open_count && (
+                  <td className="px-3 py-2"></td>
+                )}
                 {!visibleColumns.number && visibleColumns.order_status && (
                   <td className="px-3 py-2 text-sm font-semibold text-gray-700">
                     На странице
@@ -2009,6 +2116,9 @@ export default function OrdersPage() {
                 >
                   {visibleColumns.number && "Общее"}
                 </td>
+                {visibleColumns.manufacture_open_count && (
+                  <td className="px-3 py-2"></td>
+                )}
                 {!visibleColumns.number && visibleColumns.order_status && (
                   <td className="px-3 py-2 text-sm font-bold text-blue-900">
                     Общее

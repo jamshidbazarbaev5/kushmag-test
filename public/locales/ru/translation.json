@@ -270,7 +270,7 @@
   "forms": {
     "casing_zamer_outside":"Наличник cырты ",
     "view": "Вид",
-    
+    "open_count": "Открыто",
     "sync": "Синхронизация",
     "sync_history": "История синхронизации",
     "sync_description": "Описание синхронизации",
